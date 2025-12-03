@@ -7,7 +7,7 @@ from django.db.models import Model
 
 class Role(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=30, unique=True, blank=False, null=False)
+    title = models.CharField(max_length=30, unique=True, blank=False, null=False)  # admin/public/img
 
     def __str__(self):
         return self.title
@@ -23,6 +23,11 @@ class CustomUser(AbstractUser):
     department = models.CharField(max_length=120, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     role = models.ForeignKey(Role, on_delete=models.PROTECT, null=False)  # roles cannot be deleted
+
+    def save(self, *args, **kwargs, ):
+        if not self.role_id:
+            self.role = Role.objects.get(title="public")
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.username

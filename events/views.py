@@ -1,11 +1,19 @@
 from django.db.models import Q
 from rest_framework import viewsets, permissions
 
+from events.models import Event
 from events.permissions import user_is_admin, CreateEventPermission, IsCoordinator, RetrieveEventPermission, \
     EventPermission, user_is_img
+from events.serializers import EventWriteSerializer, EventReadSerializer
 
 
 class EventsView(viewsets.ModelViewSet):
+    queryset = Event.objects.all()
+
+    def get_serializer_class(self):
+        if self.action in ["create", 'update', 'partial_update']:
+            return EventWriteSerializer
+        return EventReadSerializer
 
     def get_permissions(self):
         if user_is_admin(self.request.user):

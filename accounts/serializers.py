@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 User = get_user_model()
 
+
 class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
 
@@ -21,9 +22,16 @@ class SignupSerializer(serializers.ModelSerializer):
         pwd = validated_data.pop("password")
         user = User(**validated_data)
         user.set_password(pwd)
-        #user.is_active = False  # TODO email not verified till now, implement OTP based verify
+        # user.is_active = False  # TODO email not verified till now, implement OTP based verify
         user.save()
         return user
+
+
+class SearchUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'name', 'profile_pic']
+        read_only_fields = fields
 
 
 class VerifyEmailSerializer(serializers.Serializer):

@@ -50,3 +50,17 @@ class PhotoTags(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['user_id', 'photo_id'], name="unique_tag")
         ]
+
+
+class PhotoShares(models.Model):
+    class PhotoVariant(models.TextChoices):
+        WATERMARKED = "W"
+        ORIGINAL = "O"
+
+    token = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    photo_id = models.ForeignKey(Photo, on_delete=models.CASCADE, null=False)
+    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False)
+    variant_key = models.CharField(choices=PhotoVariant, default=PhotoVariant.ORIGINAL)
+    allows_download = models.BooleanField(default=False)
+    expires_at = models.DateTimeField()
+    created_at = models.DateTimeField(default=timezone.now)

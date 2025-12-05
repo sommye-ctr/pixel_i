@@ -64,4 +64,3 @@ class PhotoShares(models.Model):
     allows_download = models.BooleanField(default=False)
     expires_at = models.DateTimeField()
     created_at = models.DateTimeField(default=timezone.now)
-    path = models.TextField(default="")

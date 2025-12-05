@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts.apps.AccountsConfig',
     'rest_framework',
-    'events.apps.EventsConfig'
+    'events.apps.EventsConfig',
+    'photos.apps.PhotosConfig'
 ]
 
 MIDDLEWARE = [

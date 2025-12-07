@@ -1,19 +1,7 @@
 from django.db import models
 from rest_framework import permissions
 
-
-def user_is_img(user):
-    role = getattr(user, "role", None)
-    if role:
-        return getattr(role, "title", "") == "img"
-    return False
-
-
-def user_is_admin(user):
-    role = getattr(user, "role", None)
-    if role:
-        return getattr(role, "title", "") == "admin"
-    return False
+from utils.user_utils import user_is_admin, user_is_img
 
 
 class EventPermission(models.TextChoices):

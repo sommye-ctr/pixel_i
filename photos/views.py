@@ -1,3 +1,11 @@
-from django.shortcuts import render
+from rest_framework import generics
 
-# Create your views here.
+from photos.models import Photo
+from photos.permissions import PhotoReadPermission
+from photos.serializers import PhotoSerializer
+
+
+class PhotoDetailView(generics.RetrieveAPIView):
+    queryset = Photo.objects.all()
+    serializer_class = PhotoSerializer
+    permission_classes = [PhotoReadPermission]

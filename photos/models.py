@@ -14,16 +14,6 @@ class Photo(models.Model):
         COMPLETED = "CO", "Completed"
         FAILED = "FA", "Failed"
 
-    class ReadPerm(models.TextChoices):
-        PUBLIC = "PUB", "Public"
-        IMG = "IMG", "IMG Member"
-        PRIVATE = "PRV", "Private"
-
-    class SharePerm(models.TextChoices):
-        OWNER_ROLES = "OR", "Owner or Roles"
-        ANYONE = "AN", "Anyone"
-        DISABLED = "DI", "Disabled"
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     timestamp = models.DateTimeField(default=timezone.now)
     # tags = models. TODO setup postgres to use array field

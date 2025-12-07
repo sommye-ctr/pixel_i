@@ -10,7 +10,6 @@ from utils.user_utils import user_is_admin, user_is_img
 
 class PhotoDetailView(viewsets.ModelViewSet):
     queryset = Photo.objects.all()
-    serializer_class = PhotoSerializer
 
     def get_serializer_class(self):
         if self.action == 'list':

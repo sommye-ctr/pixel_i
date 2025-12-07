@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from accounts.models import CustomUser
 from events.models import Event
+from photos.permissions import ReadPerm, SharePerm
 
 
 class Photo(models.Model):

@@ -16,19 +16,37 @@ class SharePerm(models.TextChoices):
     DISABLED = "DI", "Disabled"
 
 
+class IsPhotographer(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return getattr(obj, "photographer_id", None) == getattr(request.user, "id", None)
+
+
+class IsEventCoordinator(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        event = getattr(obj, 'event', None)
+        if not event:
+            return False
+
+        if event and getattr(event, 'coordinator_id', None) \
+                == getattr(request.user, 'id', None):
+            return True
+        return False
+
+
 class PhotoReadPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user
         if not user or not user.is_authenticated:
             return False
 
-        if user_is_admin(user):
+        if user_is_admin(user) \
+                or getattr(obj, "photographer_id", None) == getattr(user, "id", None):
             return True
 
         perm = getattr(obj, "read_perm", None)
         if perm == ReadPerm.PUBLIC:
             return True
-        elif perm == ReadPerm.PRIVATE:
-            return getattr(obj, "photographer_id", None) == getattr(user, "id", None)
-        else:
+        elif perm == ReadPerm.IMG:
             return user_is_img(user)
+
+        return False

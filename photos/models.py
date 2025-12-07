@@ -40,11 +40,14 @@ class Photo(models.Model):
     original_path = models.TextField(default="")
     thumbnail_path = models.TextField(default="")
     watermarked_path = models.TextField(default="")
+    tagged_users = models.ManyToManyField(
+        CustomUser, through="PhotoTags", related_name="tagged_photos"
+    )
 
 
 class PhotoTags(models.Model):
-    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False)
-    photo_id = models.ForeignKey(Photo, on_delete=models.CASCADE, null=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False)
+    photo = models.ForeignKey(Photo, on_delete=models.CASCADE, null=False)
 
     class Meta:
         constraints = [
@@ -58,7 +61,7 @@ class PhotoShares(models.Model):
         ORIGINAL = "O"
 
     token = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    photo_id = models.ForeignKey(Photo, on_delete=models.CASCADE, null=False)
+    photo = models.ForeignKey(Photo, on_delete=models.CASCADE, null=False)
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False)
     variant_key = models.CharField(choices=PhotoVariant, default=PhotoVariant.ORIGINAL)
     allows_download = models.BooleanField(default=False)

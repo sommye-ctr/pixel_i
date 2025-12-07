@@ -8,7 +8,7 @@ from photos.serializers import PhotoSerializer, PhotoListSerializer, PhotoWriteS
 from utils.user_utils import user_is_admin, user_is_img
 
 
-class PhotoDetailView(viewsets.ModelViewSet):
+class PhotoView(viewsets.ModelViewSet):
     queryset = Photo.objects.all()
 
     def get_serializer_class(self):

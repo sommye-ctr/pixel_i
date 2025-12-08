@@ -4,7 +4,7 @@ from rest_framework import serializers
 from accounts.models import CustomUser
 from photos.models import Photo, PhotoTags
 from photos.permissions import can_see_all_columns
-from utils.photo_utils import upload_to_storage
+from utils.photo_utils import upload_to_storage, generate_signed_url
 
 
 class TaggedUserSerializer(serializers.ModelSerializer):
@@ -12,20 +12,28 @@ class TaggedUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ['id', 'username']
 
+
 # downloads and views only for photographer
 class PhotoSerializer(serializers.ModelSerializer):
     tagged_users = TaggedUserSerializer(many=True, read_only=True)
+    original_url = serializers.SerializerMethodField()
+    thumbnail_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Photo
         fields = [
-            'id', 'timestamp', 'meta', 'photographer', 'event',
-            'original_path', 'thumbnail_path', 'watermarked_path',
-            'tagged_users', 'downloads', 'views', 'read_perm', 'share_perm'
+            'id', 'timestamp', 'meta', 'photographer', 'event', 'tagged_users', 'downloads', 'views',
+            'read_perm', 'share_perm', 'original_url', 'thumbnail_url'
         ]
         read_only_fields = fields
 
     SENSITIVE = ['downloads', 'views', 'read_perm', 'share_perm']
+
+    def get_original_url(self, obj):
+        return generate_signed_url(obj.original_path)
+
+    def get_thumbnail_url(self, obj):
+        return generate_signed_url(obj.thumbnail_path)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -45,12 +53,17 @@ class PhotoSerializer(serializers.ModelSerializer):
 
 
 class PhotoListSerializer(serializers.ModelSerializer):
+    thumbnail_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Photo
         fields = [
-            'id', 'thumbnail_path', 'timestamp', 'photographer'
+            'id', 'timestamp', 'photographer', 'thumbnail_url'
         ]
         read_only_fields = fields
+
+    def get_thumbnail_url(self, obj):
+        return generate_signed_url(obj.thumbnail_path)
 
 
 class PhotoWriteSerializer(serializers.ModelSerializer):

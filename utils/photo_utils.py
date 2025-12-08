@@ -1,9 +1,26 @@
+import os
+from datetime import timedelta
+
 from django.core.files.images import ImageFile
+from django.utils import timezone
+from dotenv import load_dotenv
 from firebase_admin import storage
 from firebase_admin.exceptions import FirebaseError
 from rest_framework.exceptions import APIException
 
 from photos.models import Photo
+
+load_dotenv()
+image_ttl = int(os.getenv("DEFAULT_IMAGE_TTL"))
+
+
+def generate_signed_url(path: str, ttl_seconds=image_ttl):
+    bucket = storage.bucket()
+    blob = bucket.blob(path)
+    return blob.generate_signed_url(
+        expiration=timezone.now() + timedelta(seconds=ttl_seconds),
+        method="GET",
+    )
 
 
 def upload_to_storage(photo: Photo, file: ImageFile):

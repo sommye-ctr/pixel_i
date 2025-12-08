@@ -1,7 +1,8 @@
 from rest_framework import serializers
-
+from django.db import transaction
 from accounts.models import CustomUser
 from photos.models import Photo, PhotoTags
+from utils.photo_utils import upload_to_storage
 
 
 class TaggedUserSerializer(serializers.ModelSerializer):
@@ -42,6 +43,7 @@ class PhotoListSerializer(serializers.ModelSerializer):
 
 
 class PhotoWriteSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(write_only=True, required=True)
     tagged_usernames = serializers.ListField(
         child=serializers.CharField(),
         write_only=True,
@@ -52,21 +54,24 @@ class PhotoWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photo
         fields = [
-            'timestamp', 'meta', 'read_perm', 'share_perm', 'event',
-            'tagged_usernames', 'tagged_users'
+            'id', 'timestamp', 'meta', 'read_perm', 'share_perm', 'event',
+            'tagged_usernames', 'tagged_users', 'image'
         ]
 
     def create(self, validated_data):
         tagged_usernames = validated_data.pop('tagged_usernames', [])
         request = self.context.get('request')
         photographer = getattr(request, 'user', None)
+        image_file = validated_data.pop('image', None)
 
-        photo = Photo.objects.create(
-            photographer=photographer,
-            **validated_data,
-        )
-
-        self._create_tags(photo, tagged_usernames)
+        with transaction.atomic():
+            photo = Photo.objects.create(
+                photographer=photographer,
+                **validated_data,
+            )
+            photo = upload_to_storage(photo, image_file)
+            photo.save(update_fields=['original_path'])
+            self._create_tags(photo, tagged_usernames)
         return photo
 
     def update(self, instance, validated_data):

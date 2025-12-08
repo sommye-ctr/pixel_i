@@ -1,5 +1,5 @@
 from django.db.models import Q
-from rest_framework import viewsets
+from rest_framework import viewsets, parsers
 from rest_framework.permissions import IsAuthenticated
 
 from photos.models import Photo
@@ -10,6 +10,7 @@ from utils.user_utils import user_is_admin, user_is_img
 
 class PhotoView(viewsets.ModelViewSet):
     queryset = Photo.objects.all()
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser]
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -20,19 +21,19 @@ class PhotoView(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if user_is_admin(self.request.user):
-            return [IsAuthenticated]
+            return [IsAuthenticated()]
 
         if self.action == 'create':
-            return [IsAuthenticated]
+            return [IsAuthenticated()]
         elif self.action == 'retrieve':
-            return [PhotoReadPermission]
+            return [PhotoReadPermission()]
         elif self.action == 'list':
-            return [IsAuthenticated]
+            return [IsAuthenticated()]
         elif self.action in ("update", "partial_update"):
-            return [IsPhotographer]
+            return [IsPhotographer()]
         elif self.action == 'destroy':
-            return [IsPhotographer, IsEventCoordinator]
-        return [IsAuthenticated]
+            return [IsPhotographer(), IsEventCoordinator()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         user = self.request.user

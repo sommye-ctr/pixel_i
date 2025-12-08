@@ -55,6 +55,5 @@ class PhotoShares(models.Model):
     photo = models.ForeignKey(Photo, on_delete=models.CASCADE, null=False)
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False)
     variant_key = models.CharField(choices=PhotoVariant, default=PhotoVariant.ORIGINAL)
-    allows_download = models.BooleanField(default=False)
     expires_at = models.DateTimeField()
     created_at = models.DateTimeField(default=timezone.now)

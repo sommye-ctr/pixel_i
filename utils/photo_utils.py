@@ -23,11 +23,10 @@ def upload_to_storage(photo: Photo, file: ImageFile):
     try:
         file.seek(0)
         blob.upload_from_file(file)
-        blob.make_public()
     except FirebaseError as e:
         raise APIException(f"Firebase uploading error {e}")
     except Exception as e:
         raise APIException(f"Unexpected server error during upload {e}")
 
-    photo.original_path = blob.public_url
+    photo.original_path = path
     return photo

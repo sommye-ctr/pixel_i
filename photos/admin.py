@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from photos.models import Photo, PhotoTags, PhotoShares
+from photos.models import Photo, PhotoTag, PhotoShare
 
 admin.site.register(Photo)
-admin.site.register(PhotoTags)
-admin.site.register(PhotoShares)
+admin.site.register(PhotoTag)
+admin.site.register(PhotoShare)

@@ -32,11 +32,11 @@ class Photo(models.Model):
     thumbnail_path = models.TextField(default="")
     watermarked_path = models.TextField(default="")
     tagged_users = models.ManyToManyField(
-        CustomUser, through="PhotoTags", related_name="tagged_photos"
+        CustomUser, through="PhotoTag", related_name="tagged_photos"
     )
 
 
-class PhotoTags(models.Model):
+class PhotoTag(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False)
     photo = models.ForeignKey(Photo, on_delete=models.CASCADE, null=False)
 
@@ -46,7 +46,7 @@ class PhotoTags(models.Model):
         ]
 
 
-class PhotoShares(models.Model):
+class PhotoShare(models.Model):
     class PhotoVariant(models.TextChoices):
         WATERMARKED = "W"
         ORIGINAL = "O"

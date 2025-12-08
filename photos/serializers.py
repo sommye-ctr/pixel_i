@@ -2,7 +2,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from accounts.models import CustomUser
-from photos.models import Photo, PhotoTags
+from photos.models import Photo, PhotoTag
 from photos.permissions import can_see_all_columns
 from utils.photo_utils import upload_to_storage, generate_signed_url
 
@@ -107,7 +107,7 @@ class PhotoWriteSerializer(serializers.ModelSerializer):
         instance.save()
 
         if tagged_usernames is not None:
-            PhotoTags.objects.filter(photo=instance).delete()
+            PhotoTag.objects.filter(photo=instance).delete()
             self._create_tags(instance, tagged_usernames)
 
         return instance
@@ -125,6 +125,6 @@ class PhotoWriteSerializer(serializers.ModelSerializer):
                 {"tagged_usernames": [f"Unknown usernames: {', '.join(sorted(missing))}"]}
             )
 
-        PhotoTags.objects.bulk_create(
-            [PhotoTags(photo=photo, user=u) for u in users]
+        PhotoTag.objects.bulk_create(
+            [PhotoTag(photo=photo, user=u) for u in users]
         )

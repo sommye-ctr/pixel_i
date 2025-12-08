@@ -33,14 +33,18 @@ class IsEventCoordinator(permissions.BasePermission):
         return False
 
 
+def can_see_all_columns(user, obj):
+    return user_is_admin(user) \
+        or getattr(obj, "photographer_id", None) == getattr(user, "id", None)
+
+
 class PhotoReadPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user
         if not user or not user.is_authenticated:
             return False
 
-        if user_is_admin(user) \
-                or getattr(obj, "photographer_id", None) == getattr(user, "id", None):
+        if can_see_all_columns(user, obj):
             return True
 
         perm = getattr(obj, "read_perm", None)

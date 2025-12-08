@@ -1,7 +1,9 @@
-from rest_framework import serializers
 from django.db import transaction
+from rest_framework import serializers
+
 from accounts.models import CustomUser
 from photos.models import Photo, PhotoTags
+from photos.permissions import can_see_all_columns
 from utils.photo_utils import upload_to_storage
 
 
@@ -28,9 +30,27 @@ class PhotoSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'timestamp', 'meta', 'photographer', 'event',
             'original_path', 'thumbnail_path', 'watermarked_path',
-            'tagged_users'
+            'tagged_users', 'downloads', 'views', 'read_perm', 'share_perm'
         ]
         read_only_fields = fields
+
+    SENSITIVE = ['downloads', 'views', 'read_perm', 'share_perm']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        user = getattr(self.context.get('request'), 'user', None)
+
+        can_view = False
+        if not user or not user.is_authenticated:
+            can_view = False
+
+        if can_see_all_columns(user, instance):
+            can_view = True
+
+        if not can_view:
+            for f in self.SENSITIVE:
+                data.pop(f, None)
+        return data
 
 
 class PhotoListSerializer(serializers.ModelSerializer):
@@ -76,6 +96,7 @@ class PhotoWriteSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         tagged_usernames = validated_data.pop('tagged_usernames', None)
+        print(f"TAGGED {tagged_usernames}")
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)

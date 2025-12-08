@@ -1,10 +1,13 @@
 from django.db.models import Q
-from rest_framework import viewsets, parsers
+from django.utils import timezone
+from rest_framework import viewsets, parsers, generics
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
-from photos.models import Photo
-from photos.permissions import PhotoReadPermission, ReadPerm, IsPhotographer, IsEventCoordinator
-from photos.serializers import PhotoSerializer, PhotoListSerializer, PhotoWriteSerializer
+from photos.models import Photo, PhotoShare
+from photos.permissions import PhotoReadPermission, ReadPerm, IsPhotographer, IsEventCoordinator, \
+    PhotoShareCreatePermission, PhotoShareRevokePermission
+from photos.serializers import PhotoSerializer, PhotoListSerializer, PhotoWriteSerializer, PhotoShareSerializer
 from utils.user_utils import user_is_admin, user_is_img
 
 
@@ -51,3 +54,36 @@ class PhotoView(viewsets.ModelViewSet):
         if user_is_img(user):
             return qs.filter(q_photographer | q_img | q_public).distinct()
         return qs.filter(q_photographer | q_public).distinct()
+
+
+class PhotoShareCreateView(generics.CreateAPIView):
+    serializer_class = PhotoShareSerializer
+    permission_classes = [PhotoShareCreatePermission]
+
+    def perform_create(self, serializer):
+        photo_id = self.kwargs["photo_id"]
+        photo = get_object_or_404(Photo, pk=photo_id)
+
+        serializer.save(
+            photo=photo,
+            created_by=self.request.user,
+        )
+
+
+class PhotoShareDetailView(generics.RetrieveDestroyAPIView):
+    serializer_class = PhotoShareSerializer
+    lookup_field = "token"
+    lookup_url_kwarg = "token"
+
+    def get_queryset(self):
+        now = timezone.now()
+        return PhotoShare.objects.filter(
+            expires_at__gt=now
+        )
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [IsAuthenticated()]
+        elif self.request.method == "DELETE":
+            return [PhotoShareRevokePermission()]
+        return [IsAuthenticated()]

@@ -2,7 +2,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from accounts.models import CustomUser
-from photos.models import Photo, PhotoTag
+from photos.models import Photo, PhotoTag, PhotoShare
 from photos.permissions import can_see_all_columns
 from utils.photo_utils import upload_to_storage, generate_signed_url
 
@@ -128,3 +128,19 @@ class PhotoWriteSerializer(serializers.ModelSerializer):
         PhotoTag.objects.bulk_create(
             [PhotoTag(photo=photo, user=u) for u in users]
         )
+
+
+class PhotoShareSerializer(serializers.ModelSerializer):
+    share_url = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = PhotoShare
+        fields = ['token', 'photo', 'variant_key', 'expires_at', 'share_url']
+        read_only_fields = ['token', 'photo']
+
+    def get_share_url(self, obj: PhotoShare):
+        if obj.variant_key == 'W':
+            path = obj.photo.watermarked_path
+        else:
+            path = obj.photo.original_path
+        return generate_signed_url(path)

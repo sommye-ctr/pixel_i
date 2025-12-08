@@ -5,7 +5,18 @@ from django.utils import timezone
 
 from accounts.models import CustomUser
 from events.models import Event
-from photos.permissions import ReadPerm, SharePerm
+
+
+class ReadPerm(models.TextChoices):
+    PUBLIC = "PUB", "Public"
+    IMG = "IMG", "IMG Member"
+    PRIVATE = "PRV", "Private"
+
+
+class SharePerm(models.TextChoices):
+    OWNER_ROLES = "OR", "Owner or Roles"
+    ANYONE = "AN", "Anyone"
+    DISABLED = "DI", "Disabled"
 
 
 class Photo(models.Model):

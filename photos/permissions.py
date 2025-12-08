@@ -1,19 +1,8 @@
-from django.db import models
 from rest_framework import permissions
+from rest_framework.generics import get_object_or_404
 
+from photos.models import Photo, ReadPerm
 from utils.user_utils import user_is_admin, user_is_img
-
-
-class ReadPerm(models.TextChoices):
-    PUBLIC = "PUB", "Public"
-    IMG = "IMG", "IMG Member"
-    PRIVATE = "PRV", "Private"
-
-
-class SharePerm(models.TextChoices):
-    OWNER_ROLES = "OR", "Owner or Roles"
-    ANYONE = "AN", "Anyone"
-    DISABLED = "DI", "Disabled"
 
 
 class IsPhotographer(permissions.BasePermission):
@@ -38,19 +27,52 @@ def can_see_all_columns(user, obj):
         or getattr(obj, "photographer_id", None) == getattr(user, "id", None)
 
 
+def can_read_photo(user, obj):
+    if can_see_all_columns(user, obj):
+        return True
+
+    perm = getattr(obj, "read_perm", None)
+    if perm == ReadPerm.PUBLIC:
+        return True
+    elif perm == ReadPerm.IMG:
+        return user_is_img(user)
+
+    return False
+
+
 class PhotoReadPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user
         if not user or not user.is_authenticated:
             return False
 
-        if can_see_all_columns(user, obj):
-            return True
+        return can_see_all_columns(user, obj)
 
-        perm = getattr(obj, "read_perm", None)
-        if perm == ReadPerm.PUBLIC:
+
+class PhotoShareRevokePermission(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+
+        if getattr(user, 'id', None) == obj.created_by.id:
             return True
-        elif perm == ReadPerm.IMG:
-            return user_is_img(user)
 
         return False
+
+
+class PhotoShareCreatePermission(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        if request.method != "POST":
+            return True
+
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        photo_id = view.kwargs.get("photo_id")
+        if photo_id is None:
+            return False
+
+        photo = get_object_or_404(Photo, pk=photo_id)
+        return can_read_photo(request.user, photo)

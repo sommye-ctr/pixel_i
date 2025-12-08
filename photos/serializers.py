@@ -10,20 +10,11 @@ from utils.photo_utils import upload_to_storage
 class TaggedUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['username']
-
-
-class PhotoTagSerializer(serializers.ModelSerializer):
-    user = TaggedUserSerializer(read_only=True)
-
-    class Meta:
-        model = PhotoTags
-        fields = ['user']
-
+        fields = ['id', 'username']
 
 # downloads and views only for photographer
 class PhotoSerializer(serializers.ModelSerializer):
-    tagged_users = PhotoTagSerializer(many=True, read_only=True)
+    tagged_users = TaggedUserSerializer(many=True, read_only=True)
 
     class Meta:
         model = Photo
@@ -69,7 +60,7 @@ class PhotoWriteSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
     )
-    tagged_users = PhotoTagSerializer(many=True, read_only=True)
+    tagged_users = TaggedUserSerializer(many=True, read_only=True)
 
     class Meta:
         model = Photo

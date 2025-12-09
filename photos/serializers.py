@@ -95,7 +95,7 @@ class PhotoWriteSerializer(serializers.ModelSerializer):
                 photographer=photographer,
                 **validated_data,
             )
-            photo = upload_to_storage(photo, image_file)
+            photo.original_path = upload_to_storage(photo.id, image_file)
             photo.save(update_fields=['original_path'])
             self._create_tags(photo, tagged_usernames)
         return photo

@@ -7,10 +7,10 @@ from engagement.serializers import LikeSerializer, CommentSerializer
 from photos.models import Photo
 
 
-class BaseEngagementPermission(generics.GenericAPIView,
-                               mixins.CreateModelMixin,
-                               mixins.DestroyModelMixin,
-                               mixins.ListModelMixin):
+class BaseEngagementView(generics.GenericAPIView,
+                         mixins.CreateModelMixin,
+                         mixins.DestroyModelMixin,
+                         mixins.ListModelMixin):
     def get_permissions(self):
         if self.request.method == 'DELETE':
             return [IsOwner()]
@@ -37,13 +37,16 @@ class BaseEngagementPermission(generics.GenericAPIView,
         serializer.save(photo=photo, user=self.request.user)
 
 
-class LikeView(BaseEngagementPermission):
+class LikeView(BaseEngagementView):
     model = Like
-    queryset = Like.objects.all()
     serializer_class = LikeSerializer
 
+    def get_object(self):
+        photo_id = self.kwargs['photo_id']
+        photo = get_object_or_404(Photo, pk=photo_id)
+        return get_object_or_404(Like, photo=photo, user=self.request.user)
 
-class CommentView(BaseEngagementPermission):
+
+class CommentView(BaseEngagementView):
     model = Comment
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer

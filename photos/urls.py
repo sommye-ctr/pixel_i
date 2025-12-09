@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from photos.views import PhotoView, PhotoShareCreateView, PhotoShareDetailView
+from photos.views import PhotoView, PhotoShareCreateView, PhotoShareDetailView, PhotoLikesView
 
 router = DefaultRouter()
 router.register('', PhotoView, 'photos')
@@ -16,5 +16,6 @@ urlpatterns = [
         'share/<uuid:token>/',
         PhotoShareDetailView.as_view(),
         name="photo-share-detail",
-    )
+    ),
+    path("<uuid:photo_id>/likes/", PhotoLikesView.as_view(), name='photo-likes')
 ]

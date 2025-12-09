@@ -46,7 +46,7 @@ class PhotoReadPermission(permissions.BasePermission):
         if not user or not user.is_authenticated:
             return False
 
-        return can_see_all_columns(user, obj)
+        return can_read_photo(user, obj)
 
 
 class PhotoShareRevokePermission(permissions.BasePermission):

@@ -15,16 +15,20 @@ class PhotoSerializer(serializers.ModelSerializer):
     tagged_users = MiniUserSerializer(many=True, read_only=True)
     original_url = serializers.SerializerMethodField()
     thumbnail_url = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Photo
         fields = [
             'id', 'timestamp', 'meta', 'photographer', 'event', 'tagged_users', 'downloads', 'views',
-            'read_perm', 'share_perm', 'original_url', 'thumbnail_url'
+            'read_perm', 'share_perm', 'original_url', 'thumbnail_url', 'likes_count'
         ]
         read_only_fields = fields
 
     SENSITIVE = ['downloads', 'views', 'read_perm', 'share_perm']
+
+    def get_likes_count(self, obj: Photo):
+        return obj.likes.count()
 
     def get_original_url(self, obj):
         return generate_signed_url(obj.original_path)
@@ -70,7 +74,7 @@ class PhotoWriteSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
     )
-    tagged_users = TaggedUserSerializer(many=True, read_only=True)
+    tagged_users = MiniUserSerializer(many=True, read_only=True)
 
     class Meta:
         model = Photo

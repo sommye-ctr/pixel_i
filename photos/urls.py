@@ -17,5 +17,4 @@ urlpatterns = [
         PhotoShareDetailView.as_view(),
         name="photo-share-detail",
     ),
-    path("<uuid:photo_id>/likes/", PhotoLikesView.as_view(), name='photo-likes')
 ]

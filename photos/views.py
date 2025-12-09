@@ -4,7 +4,6 @@ from rest_framework import viewsets, parsers, generics
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
-from engagement.serializers import LikeSerializer
 from photos.models import Photo, PhotoShare
 from photos.permissions import PhotoReadPermission, ReadPerm, IsPhotographer, IsEventCoordinator, \
     PhotoShareCreatePermission, PhotoShareRevokePermission
@@ -60,16 +59,6 @@ class PhotoView(viewsets.ModelViewSet):
         if user_is_img(user):
             return qs.filter(q_photographer | q_img | q_public).distinct()
         return qs.filter(q_photographer | q_public).distinct()
-
-
-class PhotoLikesView(generics.ListAPIView):
-    serializer_class = LikeSerializer
-    permission_classes = [PhotoReadPermission]
-
-    def get_queryset(self):
-        photo_id = self.kwargs['photo_id']
-        photo = get_object_or_404(Photo, pk=photo_id)
-        return photo.likes.all()
 
 
 class PhotoShareCreateView(generics.CreateAPIView):

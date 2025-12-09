@@ -9,18 +9,27 @@ from photos.models import Photo
 
 class BaseEngagementPermission(generics.GenericAPIView,
                                mixins.CreateModelMixin,
-                               mixins.DestroyModelMixin):
+                               mixins.DestroyModelMixin,
+                               mixins.ListModelMixin):
     def get_permissions(self):
-        if self.request.method == 'POST':
-            return [EngagementPermission()]
-        else:
+        if self.request.method == 'DELETE':
             return [IsOwner()]
+        else:
+            return [EngagementPermission()]
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+
+    def get_queryset(self):
+        photo_id = self.kwargs['photo_id']
+        photo = get_object_or_404(Photo, pk=photo_id)
+        return photo.likes.all() if self.model is Like else photo.comments.all()
 
     def perform_create(self, serializer):
         photo_id = self.kwargs['photo_id']
@@ -29,10 +38,12 @@ class BaseEngagementPermission(generics.GenericAPIView,
 
 
 class LikeView(BaseEngagementPermission):
+    model = Like
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
 
 
 class CommentView(BaseEngagementPermission):
+    model = Comment
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer

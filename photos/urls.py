@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from photos.views import PhotoView, PhotoShareCreateView, PhotoShareDetailView, PhotoLikesView
+from photos.views import PhotoView, PhotoShareCreateView, PhotoShareDetailView
 
 router = DefaultRouter()
 router.register('', PhotoView, 'photos')

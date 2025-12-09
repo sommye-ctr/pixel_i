@@ -21,5 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include("accounts.urls")),
     path('events/', include("events.urls")),
-    path('photos/', include("photos.urls"))
+    path('photos/', include("photos.urls")),
+    path('', include("engagement.urls"))
 ]

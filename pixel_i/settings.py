@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'rest_framework',
     'events.apps.EventsConfig',
-    'photos.apps.PhotosConfig'
+    'photos.apps.PhotosConfig',
+    'engagement.apps.EngagementConfig'
 ]
 
 MIDDLEWARE = [

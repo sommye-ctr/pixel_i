@@ -15,6 +15,7 @@ image_ttl = int(os.getenv("DEFAULT_IMAGE_TTL"))
 
 
 def generate_signed_url(path: str, ttl_seconds=image_ttl):
+    ttl_seconds = min(image_ttl, ttl_seconds)
     bucket = storage.bucket()
     blob = bucket.blob(path)
     return blob.generate_signed_url(

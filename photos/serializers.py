@@ -1,5 +1,7 @@
 from django.db import transaction
+from django.utils import timezone
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from accounts.models import CustomUser
 from photos.models import Photo, PhotoTag, PhotoShare
@@ -138,9 +140,24 @@ class PhotoShareSerializer(serializers.ModelSerializer):
         fields = ['token', 'photo', 'variant_key', 'expires_at', 'share_url']
         read_only_fields = ['token', 'photo']
 
+    def validate_expires_at(self, value):
+        if value is None:
+            raise ValidationError(f"expires_at field is required")
+        if value <= timezone.now():
+            raise ValidationError(f"Expiry {value} need to be greater than current time")
+        return value
+
     def get_share_url(self, obj: PhotoShare):
         if obj.variant_key == 'W':
             path = obj.photo.watermarked_path
         else:
             path = obj.photo.original_path
-        return generate_signed_url(path)
+
+        remaining = None
+        if obj.expires_at is not None:
+            now = timezone.now()
+            remaining = int((obj.expires_at - now).total_seconds())
+            if remaining <= 0:
+                return None
+
+        return generate_signed_url(path, remaining)

@@ -53,7 +53,7 @@ class PhotoTag(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['user_id', 'photo_id'], name="unique_tag")
+            models.UniqueConstraint(fields=['user', 'photo'], name="unique_tag")
         ]
 
 

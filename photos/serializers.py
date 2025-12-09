@@ -4,20 +4,15 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from accounts.models import CustomUser
+from accounts.serializers import MiniUserSerializer
 from photos.models import Photo, PhotoTag, PhotoShare
 from photos.permissions import can_see_all_columns
 from utils.photo_utils import upload_to_storage, generate_signed_url
 
 
-class TaggedUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ['id', 'username']
-
-
 # downloads and views only for photographer
 class PhotoSerializer(serializers.ModelSerializer):
-    tagged_users = TaggedUserSerializer(many=True, read_only=True)
+    tagged_users = MiniUserSerializer(many=True, read_only=True)
     original_url = serializers.SerializerMethodField()
     thumbnail_url = serializers.SerializerMethodField()
 

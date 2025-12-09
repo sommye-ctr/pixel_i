@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 
+from PIL import Image, ImageFilter, ImageOps
 from django.core.files.images import ImageFile
 from django.utils import timezone
 from dotenv import load_dotenv
@@ -48,3 +49,45 @@ def upload_to_storage(photo: Photo, file: ImageFile):
 
     photo.original_path = path
     return photo
+
+
+def generate_thumbnail_image(image_file, size=(300, 300), blur_radius=10):
+    with Image.open(image_file) as img:
+        img = img.convert('RGB')
+        img.thumbnail(size, Image.Resampling.LANCZOS)
+        img = img.filter(ImageFilter.GaussianBlur(blur_radius))
+
+        return img
+
+
+def _prepare_logo(target_width, logo_path="pixel-i.jpg"):
+    with Image.open(logo_path).convert("RGBA") as logo:
+        logo = logo.copy()
+        logo = logo.convert("L")
+        logo = logo.point(lambda x: 255 if x < 50 else 0)
+
+        w, h = logo.size
+        margin = 20
+        scale = (target_width - margin) / float(w)
+        new_size = (target_width, int(h * scale))
+        logo = logo.resize(new_size, Image.Resampling.LANCZOS)
+
+        logo = logo.filter(ImageFilter.CONTOUR)
+        mask = ImageOps.invert(logo)
+        logo_rgba = Image.new("RGBA", mask.size, (255, 255, 255, 0))
+        logo_rgba.putalpha(mask)
+
+        return logo_rgba
+
+
+def generate_watermarked_image(base_image_file):
+    with Image.open(base_image_file).convert("RGBA") as base:
+        bw, bh = base.size
+        logo_rgba = _prepare_logo(bw)
+        lw, lh = logo_rgba.size
+
+        x = (bw - lw) // 2
+        y = (bh - lh) // 2
+
+        base.paste(logo_rgba, (x, y), logo_rgba)
+        return base.convert("RGB")

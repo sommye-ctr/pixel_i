@@ -5,7 +5,7 @@ from photos.models import Photo
 from photos.permissions import can_read_photo
 
 
-class LikePermission(permissions.BasePermission):
+class EngagementPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method != "POST":
             return True

@@ -1,21 +1,18 @@
 from rest_framework import generics, mixins
 from rest_framework.generics import get_object_or_404
 
-from engagement.models import Like
-from engagement.permissions import LikePermission, IsOwner
-from engagement.serializers import LikeSerializer
+from engagement.models import Like, Comment
+from engagement.permissions import EngagementPermission, IsOwner
+from engagement.serializers import LikeSerializer, CommentSerializer
 from photos.models import Photo
 
 
-class LikeView(generics.GenericAPIView,
-               mixins.CreateModelMixin,
-               mixins.DestroyModelMixin):
-    model = Like
-    serializer_class = LikeSerializer
-
+class BaseEngagementPermission(generics.GenericAPIView,
+                               mixins.CreateModelMixin,
+                               mixins.DestroyModelMixin):
     def get_permissions(self):
         if self.request.method == 'POST':
-            return [LikePermission()]
+            return [EngagementPermission()]
         else:
             return [IsOwner()]
 
@@ -28,5 +25,14 @@ class LikeView(generics.GenericAPIView,
     def perform_create(self, serializer):
         photo_id = self.kwargs['photo_id']
         photo = get_object_or_404(Photo, pk=photo_id)
-
         serializer.save(photo=photo, user=self.request.user)
+
+
+class LikeView(BaseEngagementPermission):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+
+
+class CommentView(BaseEngagementPermission):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer

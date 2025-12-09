@@ -1,4 +1,6 @@
+from django.db import IntegrityError
 from rest_framework import generics, mixins
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 
 from engagement.models import Like, Comment
@@ -34,7 +36,10 @@ class BaseEngagementView(generics.GenericAPIView,
     def perform_create(self, serializer):
         photo_id = self.kwargs['photo_id']
         photo = get_object_or_404(Photo, pk=photo_id)
-        serializer.save(photo=photo, user=self.request.user)
+        try:
+            serializer.save(photo=photo, user=self.request.user)
+        except IntegrityError:
+            raise ValidationError({"detail": "You have already liked this photo!"})
 
 
 class LikeView(BaseEngagementView):

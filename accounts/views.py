@@ -1,11 +1,12 @@
 from django.db.models import Q
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from accounts.errors import OTPDeliveryError
 from accounts.models import CustomUser, EmailOTP
-from accounts.serializers import SignupSerializer, SearchUserSerializer, EmailVerifySerializer
+from accounts.serializers import SignupSerializer, SearchUserSerializer, EmailVerifySerializer, ResendEmailOTPSerializer
 from utils.auth_utils import get_otp_ttl, send_otp_email
 
 
@@ -31,6 +32,29 @@ class LoginView(TokenObtainPairView):
 class EmailVerifyView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = EmailVerifySerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = EmailVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"detail": "Email verified successfully"},
+            status=status.HTTP_200_OK,
+        )
+
+
+class ResendEmailOTPView(generics.CreateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = ResendEmailOTPSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = ResendEmailOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"detail": "OTP resent to your email."},
+            status=status.HTTP_200_OK,
+        )
 
 
 class SearchUserView(generics.ListAPIView):

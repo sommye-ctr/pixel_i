@@ -1,9 +1,12 @@
-from django.contrib.auth import get_user_model
-from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
+from datetime import timedelta
 
-from accounts.models import CustomUser, EmailOTP
-from utils.auth_utils import get_otp_max_attempts
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+from rest_framework import serializers
+
+from accounts.errors import OTPDeliveryError
+from accounts.models import EmailOTP
+from utils.auth_utils import get_otp_max_attempts, get_otp_cooldown, get_otp_ttl, send_otp_email
 
 User = get_user_model()
 
@@ -41,10 +44,13 @@ class EmailVerifySerializer(serializers.Serializer):
     otp = serializers.CharField(max_length=6)
 
     def validate(self, attrs):
-        email = attrs["email"]
-        otp = attrs["otp"]
+        email = attrs.get("email")
+        otp = attrs.get("otp")
 
-        user = get_object_or_404(CustomUser, email=email)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("No user with this email.")
         otp_obj = (
             EmailOTP.objects.filter(
                 user=user,
@@ -64,12 +70,12 @@ class EmailVerifySerializer(serializers.Serializer):
             raise serializers.ValidationError({"otp": "OTP has expired. Request a new one."})
 
         if otp_obj.code != otp:
-            otp.attempts += 1
-            otp.save(update_fields=["attempts"])
+            otp_obj.attempts += 1
+            otp_obj.save(update_fields=["attempts"])
             raise serializers.ValidationError({"otp": "Invalid OTP."})
 
         self.context["user"] = user
-        self.context["otp"] = otp
+        self.context["otp"] = otp_obj
         return attrs
 
     def create(self, validated_data):
@@ -82,7 +88,58 @@ class EmailVerifySerializer(serializers.Serializer):
         user.is_active = True
         user.save(update_fields=["is_active"])
 
-        return {"detail": "Email verified successfully."}
+        return validated_data
+
+
+class ResendEmailOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        try:
+            user = User.objects.get(email=value)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("No user with this email.")
+
+        if getattr(user, "is_active", False):
+            raise serializers.ValidationError("Email is already verified.")
+
+        self.context["user"] = user
+        return value
+
+    def create(self, validated_data):
+        user = self.context["user"]
+        now = timezone.now()
+
+        last_otp = (
+            EmailOTP.objects.filter(
+                user=user,
+                purpose=EmailOTP.PURPOSE_EMAIL_VERIFICATION,
+            )
+            .order_by("-created_at")
+            .first()
+        )
+
+        if last_otp and last_otp.created_at > now - timedelta(seconds=get_otp_cooldown()):
+            raise serializers.ValidationError(
+                {"detail": "OTP already sent recently. Please wait before requesting again."}
+            )
+
+        EmailOTP.objects.filter(
+            user=user,
+            purpose=EmailOTP.PURPOSE_EMAIL_VERIFICATION,
+            is_used=False,
+        ).delete()
+
+        otp = EmailOTP.create_for_user(
+            user=user,
+            purpose=EmailOTP.PURPOSE_EMAIL_VERIFICATION,
+            ttl_minutes=get_otp_ttl(),
+        )
+        sent = send_otp_email(user.email, user.name, otp.code)
+        if not sent:
+            raise OTPDeliveryError()
+
+        return validated_data
 
 
 class SearchUserSerializer(serializers.ModelSerializer):

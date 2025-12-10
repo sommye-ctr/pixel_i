@@ -12,6 +12,9 @@ def get_otp_ttl():
 def get_otp_max_attempts():
     return int(os.getenv("EMAIL_OTP_MAX_ATTEMPTS"))
 
+def get_otp_cooldown():
+    return int(os.getenv("EMAIL_OTP_COOLDOWN"))
+
 
 def send_otp_email(email, name, otp):
     payload = {

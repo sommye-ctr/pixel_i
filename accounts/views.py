@@ -3,8 +3,10 @@ from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from accounts.models import CustomUser
-from accounts.serializers import SignupSerializer, SearchUserSerializer
+from accounts.errors import OTPDeliveryError
+from accounts.models import CustomUser, EmailOTP
+from accounts.serializers import SignupSerializer, SearchUserSerializer, EmailVerifySerializer
+from utils.auth_utils import get_otp_ttl, send_otp_email
 
 
 class SignupView(generics.CreateAPIView):
@@ -14,13 +16,21 @@ class SignupView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         user = serializer.save()
-        # TODO implement otp based verification
-        # send email with otp to user
-        # return the signup user serializer object from here
+        otp = EmailOTP.create_for_user(user, get_otp_ttl())
+        otp.save()
+        sent = send_otp_email(user.email, user.name, otp.code)
+        if not sent:
+            raise OTPDeliveryError()
+        return user
 
 
 class LoginView(TokenObtainPairView):
     permission_classes = [AllowAny]
+
+
+class EmailVerifyView(generics.CreateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = EmailVerifySerializer
 
 
 class SearchUserView(generics.ListAPIView):

@@ -5,6 +5,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+def get_otp_ttl():
+    return int(os.getenv("EMAIL_OTP_TTL"))
+
+
+def get_otp_max_attempts():
+    return int(os.getenv("EMAIL_OTP_MAX_ATTEMPTS"))
+
 
 def send_otp_email(email, name, otp):
     payload = {

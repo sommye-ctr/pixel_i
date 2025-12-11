@@ -1,7 +1,8 @@
 from rest_framework import permissions
 from rest_framework.generics import get_object_or_404
 
-from photos.models import Photo, ReadPerm
+from accounts.models import CustomUser
+from photos.models import Photo, ReadPerm, SharePerm
 from utils.user_utils import user_is_admin, user_is_img
 
 
@@ -22,13 +23,13 @@ class IsEventCoordinator(permissions.BasePermission):
         return False
 
 
-def can_see_all_columns(user, obj):
+def is_admin_or_photographer(user, obj):
     return user_is_admin(user) \
         or getattr(obj, "photographer_id", None) == getattr(user, "id", None)
 
 
 def can_read_photo(user, obj):
-    if can_see_all_columns(user, obj):
+    if is_admin_or_photographer(user, obj):
         return True
 
     perm = getattr(obj, "read_perm", None)
@@ -38,6 +39,15 @@ def can_read_photo(user, obj):
         return user_is_img(user)
 
     return False
+
+
+def can_share_photo(user: CustomUser, photo: Photo):
+    perm = getattr(photo, "share_perm", None)
+    if perm == SharePerm.DISABLED:
+        return False
+    if perm == SharePerm.ANYONE:
+        return True
+    return is_admin_or_photographer(user, photo) or photo.event.coordinator.id == user.id
 
 
 class PhotoReadPermission(permissions.BasePermission):
@@ -62,7 +72,6 @@ class PhotoShareRevokePermission(permissions.BasePermission):
 
 
 class PhotoShareCreatePermission(permissions.BasePermission):
-
     def has_permission(self, request, view):
         if request.method != "POST":
             return True
@@ -75,4 +84,5 @@ class PhotoShareCreatePermission(permissions.BasePermission):
             return False
 
         photo = get_object_or_404(Photo, pk=photo_id)
-        return can_read_photo(request.user, photo)
+
+        return can_share_photo(request.user, photo)

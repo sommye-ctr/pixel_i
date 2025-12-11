@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 from accounts.models import CustomUser
 from accounts.serializers import MiniUserSerializer
 from photos.models import Photo, PhotoTag, PhotoShare
-from photos.permissions import can_see_all_columns
+from photos.permissions import is_admin_or_photographer
 from utils.photo_utils import upload_to_storage, generate_signed_url
 
 
@@ -44,7 +44,7 @@ class PhotoSerializer(serializers.ModelSerializer):
         if not user or not user.is_authenticated:
             can_view = False
 
-        if can_see_all_columns(user, instance):
+        if is_admin_or_photographer(user, instance):
             can_view = True
 
         if not can_view:

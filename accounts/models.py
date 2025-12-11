@@ -7,6 +7,8 @@ from django.db import models
 from django.db.models import Model
 from django.utils import timezone
 
+from pixel_i import settings
+
 
 class Role(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -14,6 +16,59 @@ class Role(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class OAuthUser(models.Model):
+    PROVIDER_CHOICES = [
+        ("omniport", "Omniport"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="oauth_accounts")
+    provider = models.CharField(max_length=50, choices=PROVIDER_CHOICES)
+    profile_json = models.JSONField(blank=True, null=True)
+    provider_user_id = models.CharField(max_length=255)
+
+    access_token = models.TextField(blank=True, null=True)
+    refresh_token = models.TextField(blank=True, null=True)
+    access_token_expires_at = models.DateTimeField(blank=True, null=True)
+    scopes = models.CharField(max_length=255, blank=True, null=True)
+
+    revoked = models.BooleanField(default=False)
+    last_synced = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["provider", "provider_user_id"],
+                name="uq_oauth_provider_provideruserid"
+            ),
+            models.UniqueConstraint(
+                fields=["user", "provider"],
+                name="uq_oauth_user_provider"
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["provider", "provider_user_id"]),
+            models.Index(fields=["user"]),
+        ]
+
+    def is_access_token_expired(self):
+        if not self.access_token_expires_at:
+            return True
+        return timezone.now() >= self.access_token_expires_at
+
+    def set_token_data(self, access_token, refresh_token=None, expires_in=None, scopes=None):
+        self.access_token = access_token
+        if refresh_token is not None:
+            self.refresh_token = refresh_token
+        if expires_in:
+            self.access_token_expires_at = timezone.now() + timedelta(seconds=expires_in)
+        if scopes is not None:
+            self.scopes = scopes
+        self.save(update_fields=["access_token", "refresh_token", "access_token_expires_at", "scopes", "updated_at"])
 
 
 class CustomUser(AbstractUser):

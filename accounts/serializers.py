@@ -90,6 +90,10 @@ class EmailVerifySerializer(serializers.Serializer):
 
         return validated_data
 
+    def save(self, **kwargs):
+        user = self.context['user']
+        return user
+
 
 class ResendEmailOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()

@@ -2,6 +2,7 @@ from django.db.models import Q
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from accounts.errors import OTPDeliveryError
@@ -36,9 +37,13 @@ class EmailVerifyView(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         serializer = EmailVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        user = serializer.save()
+
+        refresh = RefreshToken.for_user(user)
+        access = refresh.access_token
+
         return Response(
-            {"detail": "Email verified successfully"},
+            {"access": access, "refresh": refresh.__str__(), "detail": "Email Verified successfully"},
             status=status.HTTP_200_OK,
         )
 

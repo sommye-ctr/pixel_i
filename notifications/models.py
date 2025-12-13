@@ -28,11 +28,13 @@ class Notification(models.Model):
     read = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
     deleted = models.BooleanField(default=False)
+    dedupe_key = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         indexes = [
             models.Index(fields=["recipient", "read"]),
             models.Index(fields=["recipient", "-timestamp"]),
+            models.Index(fields=["recipient", "dedupe_key"])
         ]
         ordering = ["-timestamp"]
 

@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'events.apps.EventsConfig',
     'photos.apps.PhotosConfig',
-    'engagement.apps.EngagementConfig'
+    'engagement.apps.EngagementConfig',
+    'notifications.apps.NotificationsConfig'
 ]
 
 MIDDLEWARE = [

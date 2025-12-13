@@ -3,11 +3,10 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from accounts.models import CustomUser
 from accounts.serializers import MiniUserSerializer
-from photos.models import Photo, PhotoTag, PhotoShare
+from photos.models import Photo, PhotoShare
 from photos.permissions import is_admin_or_photographer
-from photos.services import upload_to_storage, generate_signed_url
+from photos.services import upload_to_storage, generate_signed_url, create_photo_tags
 
 
 # downloads and views only for photographer
@@ -96,39 +95,20 @@ class PhotoWriteSerializer(serializers.ModelSerializer):
             )
             photo.original_path = upload_to_storage(photo.id, image_file)
             photo.save(update_fields=['original_path'])
-            self._create_tags(photo, tagged_usernames)
+            create_photo_tags(photo, usernames=tagged_usernames, actor=photographer)
         return photo
 
     def update(self, instance, validated_data):
         tagged_usernames = validated_data.pop('tagged_usernames', None)
-        print(f"TAGGED {tagged_usernames}")
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
         if tagged_usernames is not None:
-            PhotoTag.objects.filter(photo=instance).delete()
-            self._create_tags(instance, tagged_usernames)
+            create_photo_tags(instance, usernames=tagged_usernames, actor=self.context.get("request").get("user"))
 
         return instance
-
-    def _create_tags(self, photo, usernames):
-        if not usernames:
-            return
-
-        users = list(CustomUser.objects.filter(username__in=usernames))
-        found_usernames = {u.username for u in users}
-        missing = set(usernames) - found_usernames
-        if missing:
-            from rest_framework.exceptions import ValidationError
-            raise ValidationError(
-                {"tagged_usernames": [f"Unknown usernames: {', '.join(sorted(missing))}"]}
-            )
-
-        PhotoTag.objects.bulk_create(
-            [PhotoTag(photo=photo, user=u) for u in users]
-        )
 
 
 class PhotoShareSerializer(serializers.ModelSerializer):

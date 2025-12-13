@@ -11,8 +11,48 @@ from firebase_admin import storage
 from firebase_admin.exceptions import FirebaseError
 from rest_framework.exceptions import APIException
 
+from accounts.models import CustomUser
+from notifications.models import Notification
+from notifications.services import create_notification
+from photos.models import PhotoTag
+
 load_dotenv()
 image_ttl = int(os.getenv("DEFAULT_IMAGE_TTL"))
+
+
+def create_photo_tags(photo, usernames, actor):
+    if not usernames:
+        return
+
+    users = list(CustomUser.objects.filter(username__in=usernames))
+    found_usernames = {u.username for u in users}
+    missing = set(usernames) - found_usernames
+    if missing:
+        from rest_framework.exceptions import ValidationError
+        raise ValidationError(
+            {"tagged_usernames": [f"Unknown usernames: {', '.join(sorted(missing))}"]}
+        )
+
+    already_tagged_ids = set(
+        PhotoTag.objects
+        .filter(photo=photo, user__in=users)
+        .values_list("user_id", flat=True)
+    )
+    new_users = [u for u in users if u.id not in already_tagged_ids]
+    if not new_users:
+        return
+
+    PhotoTag.objects.bulk_create(
+        [PhotoTag(photo=photo, user=u) for u in new_users]
+    )
+    for user in new_users:
+        create_notification(
+            recipient=user,
+            actor=actor,
+            verb=Notification.NotificationVerb.TAGGED,
+            target_type=Notification.NotificationTarget.PHOTO,
+            target_id=photo.id,
+        )
 
 
 def pillow_to_content_file(image, filename="img.webp", format="WEBP"):

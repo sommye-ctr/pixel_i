@@ -10,11 +10,11 @@ class Notification(models.Model):
         TAGGED = "TAGGED"
         LIKED = "LIKED"
         COMMENTED = "COMMENTED"
-        PHOTO_ADDED = "PHOTO_ADDED"
+        EVENT_PHOTO_ADDED = "EVENT_PHOTO_ADDED"
 
     class NotificationTarget(models.Choices):
         PHOTO = "PHOTO"
-        ALBUM = "ALBUM"
+        EVENT = "EVENT"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     recipient = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False,

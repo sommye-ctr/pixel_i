@@ -4,6 +4,8 @@ from rest_framework import viewsets, parsers, generics
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
+from notifications.models import Notification
+from notifications.services import create_notification
 from photos.models import Photo, PhotoShare
 from photos.permissions import PhotoReadPermission, ReadPerm, IsPhotographer, IsEventCoordinator, \
     PhotoShareCreatePermission, PhotoShareRevokePermission
@@ -18,6 +20,14 @@ class PhotoView(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         photo = serializer.save(status=Photo.PhotoStatus.PROCESSING)
+        create_notification(
+            recipient=photo.event.coordinator,
+            verb=Notification.NotificationVerb.EVENT_PHOTO_ADDED,
+            target_type=Notification.NotificationTarget.EVENT,
+            target_id=photo.event.id,
+            actor=self.request.user,
+            dedupe_key=f"event_add:{photo.event.id}:actor:{self.request.user.id}"
+        )
         generate_image_variants_task.delay(photo.id)
 
     def get_serializer_class(self):

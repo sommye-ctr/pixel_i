@@ -7,7 +7,7 @@ from accounts.models import CustomUser
 from accounts.serializers import MiniUserSerializer
 from photos.models import Photo, PhotoTag, PhotoShare
 from photos.permissions import is_admin_or_photographer
-from utils.photo_utils import upload_to_storage, generate_signed_url
+from photos.services import upload_to_storage, generate_signed_url
 
 
 # downloads and views only for photographer

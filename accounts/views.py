@@ -8,7 +8,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from accounts.errors import OTPDeliveryError
 from accounts.models import CustomUser, EmailOTP
 from accounts.serializers import SignupSerializer, SearchUserSerializer, EmailVerifySerializer, ResendEmailOTPSerializer
-from utils.auth_utils import get_otp_ttl, send_otp_email
+from accounts.services import send_otp_email
+from utils.auth_utils import get_otp_ttl
 
 
 class SignupView(generics.CreateAPIView):

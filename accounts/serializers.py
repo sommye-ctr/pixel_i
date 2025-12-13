@@ -6,7 +6,8 @@ from rest_framework import serializers
 
 from accounts.errors import OTPDeliveryError
 from accounts.models import EmailOTP
-from utils.auth_utils import get_otp_max_attempts, get_otp_cooldown, get_otp_ttl, send_otp_email
+from accounts.services import send_otp_email
+from utils.auth_utils import get_otp_max_attempts, get_otp_cooldown, get_otp_ttl
 
 User = get_user_model()
 

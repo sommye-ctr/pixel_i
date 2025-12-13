@@ -48,7 +48,7 @@ def generate_signed_url(path: str, ttl_seconds=image_ttl):
     )
 
 
-def upload_to_storage(photo_id, file: ImageFile, variant = "original"):
+def upload_to_storage(photo_id, file: ImageFile, variant="original"):
     try:
         bucket = storage.bucket()
     except FirebaseError as e:

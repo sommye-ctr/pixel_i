@@ -1,7 +1,7 @@
 from celery import shared_task
 
 from photos.models import Photo
-from utils.photo_utils import generate_watermarked_image, generate_thumbnail_image, upload_to_storage, \
+from photos.services import generate_watermarked_image, generate_thumbnail_image, upload_to_storage, \
     download_image_from_firebase
 
 

@@ -3,18 +3,22 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 
+def user_group(user_id):
+    return f"user_{str(user_id).replace('-', '')}"
+
+
 class NotificationConsumer(AsyncWebsocketConsumer):
     user = None
     group = None
 
     async def connect(self):
         self.user = self.scope["user"]
-
+        print("WS USER:", self.scope["user"], type(self.scope["user"]))
         if not self.user.is_authenticated:
             await self.close()
             return
 
-        self.group = f"user_{self.user.id}"
+        self.group = f"user_{user_group(self.user.pk)}"
 
         await self.channel_layer.group_add(
             self.group,
@@ -23,10 +27,12 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.group,
-            self.channel_name
-        )
+        if self.group:
+            await self.channel_layer.group_discard(
+                self.group,
+                self.channel_name
+            )
 
     async def send_notification(self, event):
+        print(f"WS NOTIF: SENDING NOTIF WITH {event['data']}")
         await self.send(text_data=json.dumps(event["data"]))

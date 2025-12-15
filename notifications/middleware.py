@@ -1,14 +1,8 @@
 from urllib.parse import parse_qs
 
+from asgiref.sync import sync_to_async
 from channels.middleware import BaseMiddleware
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AnonymousUser
-from jwt import decode
-from rest_framework_simplejwt.tokens import UntypedToken
-
-from pixel_i import settings
-
-User = get_user_model()
 
 
 class JWTAuthMiddleware(BaseMiddleware):
@@ -17,22 +11,19 @@ class JWTAuthMiddleware(BaseMiddleware):
         params = parse_qs(query_string)
         token = params.get("token")
 
+        from django.contrib.auth.models import AnonymousUser
         if not token:
             scope["user"] = AnonymousUser()
             return await super().__call__(scope, receive, send)
 
+        from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+        from rest_framework_simplejwt.tokens import AccessToken
         try:
-            token = token[0]
-            UntypedToken(token)
+            acc = AccessToken(token=token[0])
+            scope["user"] = await sync_to_async(get_user_model().objects.get)(id=acc['user_id'])
+            print(f"WS USER ID GOT {acc['user_id']}")
 
-            decoded = decode(
-                token,
-                settings.SECRET_KEY,
-                algorithms=["HS256"],
-            )
-            scope["user"] = User.objects.get(id=decoded["user_id"])
-
-        except Exception:
+        except (InvalidToken, TokenError):
             scope["user"] = AnonymousUser()
 
         return await super().__call__(scope, receive, send)

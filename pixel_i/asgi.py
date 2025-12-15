@@ -9,13 +9,13 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
 
 import os
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pixel_i.settings')
+
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 
 import notifications.routing
 from notifications.middleware import JWTAuthMiddleware
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pixel_i.settings')
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),

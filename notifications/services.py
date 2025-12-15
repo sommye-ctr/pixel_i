@@ -1,16 +1,16 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.db import transaction
-from django.forms.models import model_to_dict
 from django.utils import timezone
 
+from notifications.consumers import user_group
 from notifications.models import Notification
 
 
 def create_notification(
         *,
         recipient,
-        verb,
+        verb: Notification.NotificationVerb,
         target_type,
         target_id,
         actor=None,
@@ -44,11 +44,27 @@ def create_notification(
 
     # send websocket message
     channel_layer = get_channel_layer()
+
+    actor_json = {} if not actor else {
+        "id": str(actor.id),
+        "username": actor.username,
+    }
     async_to_sync(channel_layer.group_send)(
-        f"user_{recipient.id}",
+        f"user_{user_group(recipient.id)}",
         {
-            "type":"send_notification",
-            "data" : model_to_dict(notif)
+            "type": "send_notification",
+            "data": {
+                "id": str(notif.id),
+                "verb": str(verb),
+                "actor": actor_json,
+                "target": {
+                    "type": str(target_type),
+                    "id": str(target_id),
+                },
+                "data": {},
+                "timestamp": str(notif.timestamp),
+                "read": notif.read
+            }
         }
     )
 

@@ -1,4 +1,7 @@
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.db import transaction
+from django.forms.models import model_to_dict
 from django.utils import timezone
 
 from notifications.models import Notification
@@ -40,5 +43,14 @@ def create_notification(
         )
 
     # send websocket message
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"user_{recipient.id}",
+        {
+            "type":"send_notification",
+            "data" : model_to_dict(notif)
+        }
+    )
+
     # send fcm message
     return notif

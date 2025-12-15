@@ -137,3 +137,12 @@ SIMPLE_JWT = {
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 ASGI_APPLICATION = "pixel_i.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}

@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'events.apps.EventsConfig',
     'photos.apps.PhotosConfig',
     'engagement.apps.EngagementConfig',
-    'notifications.apps.NotificationsConfig'
+    'notifications.apps.NotificationsConfig',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -135,3 +136,4 @@ SIMPLE_JWT = {
 }
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
+ASGI_APPLICATION = "pixel_i.asgi.application"

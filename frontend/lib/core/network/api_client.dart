@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'token_storage.dart';
 import 'auth_interceptor.dart';
 import 'refresh_token_interceptor.dart';
+import 'error_interceptor.dart';
 
 class ApiClient {
   final String baseUrl;
@@ -20,7 +21,7 @@ class ApiClient {
           },
         ),
       ) {
-    // Add interceptors
+    // Add interceptors in order: Auth → Refresh Token → Error handling
     _dio.interceptors.addAll([
       AuthInterceptor(tokenStorage),
       RefreshTokenInterceptor(
@@ -28,6 +29,7 @@ class ApiClient {
         dio: _dio,
         baseUrl: baseUrl,
       ),
+      ErrorInterceptor(),
     ]);
   }
 

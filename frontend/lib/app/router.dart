@@ -5,9 +5,9 @@ import '../features/auth/view/signup_screen.dart';
 import '../features/auth/view/user_info_screen.dart';
 import '../features/home/view/home_screen.dart';
 
-GoRouter buildRouter() {
+GoRouter buildRouter({bool isLoggedIn = false}) {
   return GoRouter(
-    initialLocation: '/signup',
+    initialLocation: isLoggedIn ? '/' : '/signup',
     routes: [
       GoRoute(
         path: '/',

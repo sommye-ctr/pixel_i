@@ -11,7 +11,8 @@ import '../features/auth/bloc/auth_bloc.dart';
 import 'router.dart';
 
 class App extends StatelessWidget {
-  const App({super.key});
+  final bool isLoggedIn;
+  const App({super.key, this.isLoggedIn = false});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +23,7 @@ class App extends StatelessWidget {
     );
 
     final authRepository = AuthRepository(apiClient, tokenStorage);
-    final router = buildRouter();
+    final router = buildRouter(isLoggedIn: isLoggedIn);
 
     return MultiRepositoryProvider(
       providers: [RepositoryProvider.value(value: authRepository)],

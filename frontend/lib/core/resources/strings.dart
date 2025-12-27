@@ -42,6 +42,10 @@ const String userInfoContinueBtn = 'Continue';
 // Home
 const String homeTitle = 'Home';
 const String homeWelcome = 'Welcome to the Home Page';
+const String eventsTitle = 'Events';
+const String profileTitle = 'Profile';
+const String searchTitle = 'Search';
+const String photosTitle = 'Photos';
 
 // Error Messages
 const String errorSignupFailed = 'Signup failed: ';

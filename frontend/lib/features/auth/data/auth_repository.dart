@@ -25,6 +25,10 @@ class AuthRepository {
     );
   }
 
+  Future<void> requestOtp(String email) async {
+    await api.post('/auth/request-otp/', data: {'email': email});
+  }
+
   Future<User> verifyEmail(String email, String otp) async {
     final res = await api.post<Map<String, dynamic>>(
       '/auth/verify-email/',

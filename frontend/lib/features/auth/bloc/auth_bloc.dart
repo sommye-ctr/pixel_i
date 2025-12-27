@@ -30,6 +30,19 @@ sealed class AuthEvent extends Equatable {
   List<Object?> get props => [];
 
   factory AuthEvent.started() => const _Started();
+  factory AuthEvent.signup({
+    required String email,
+    required String name,
+    required String password,
+    required String username,
+  }) =>
+      _Signup(
+        email: email,
+        name: name,
+        password: password,
+        username: username,
+      );
+  factory AuthEvent.requestOtp(String email) => _RequestOtp(email);
   factory AuthEvent.submitOtp(String email, String otp) =>
       _SubmitOtp(email, otp);
   factory AuthEvent.loginWithOAuth(String token) => _LoginWithOAuth(token);
@@ -38,6 +51,30 @@ sealed class AuthEvent extends Equatable {
 
 class _Started extends AuthEvent {
   const _Started();
+}
+
+class _Signup extends AuthEvent {
+  final String email;
+  final String name;
+  final String password;
+  final String username;
+
+  const _Signup({
+    required this.email,
+    required this.name,
+    required this.password,
+    required this.username,
+  });
+
+  @override
+  List<Object?> get props => [email, name, password, username];
+}
+
+class _RequestOtp extends AuthEvent {
+  final String email;
+  const _RequestOtp(this.email);
+  @override
+  List<Object?> get props => [email];
 }
 
 class _Logout extends AuthEvent {
@@ -64,6 +101,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc(this._repo) : super(const AuthState()) {
     on<_Started>((event, emit) async {
       emit(const AuthState(status: AuthStatus.unauthenticated));
+    });
+
+    on<_Signup>((event, emit) async {
+      emit(const AuthState(status: AuthStatus.loading));
+      try {
+        await _repo.signup(
+          email: event.email,
+          name: event.name,
+          password: event.password,
+          username: event.username,
+        );
+        emit(const AuthState(status: AuthStatus.unauthenticated));
+      } catch (e) {
+        emit(AuthState(status: AuthStatus.error, error: e.toString()));
+      }
+    });
+
+    on<_RequestOtp>((event, emit) async {
+      emit(const AuthState(status: AuthStatus.loading));
+      try {
+        await _repo.requestOtp(event.email);
+        emit(const AuthState(status: AuthStatus.unauthenticated));
+      } catch (e) {
+        emit(AuthState(status: AuthStatus.error, error: e.toString()));
+      }
     });
 
     on<_SubmitOtp>((event, emit) async {

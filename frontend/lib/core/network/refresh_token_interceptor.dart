@@ -21,7 +21,7 @@ class RefreshTokenInterceptor extends Interceptor {
       final refreshToken = await tokenStorage.getRefreshToken();
 
       if (refreshToken == null) {
-        handler.reject(err);
+        handler.next(err);
         return;
       }
 
@@ -41,12 +41,12 @@ class RefreshTokenInterceptor extends Interceptor {
         }
       } catch (e) {
         await tokenStorage.clearTokens();
-        handler.reject(err);
+        handler.next(err);
         return;
       }
     }
 
-    handler.reject(err);
+    handler.next(err);
   }
 
   Future<Response> _refreshAccessToken(String refreshToken) async {

@@ -2,12 +2,12 @@ const String appName = 'Pixel-i';
 
 // Auth - Login
 const String loginTitle = 'Login';
-const String loginEmailLabel = 'Email';
-const String loginOtpLabel = 'Enter OTP';
-const String loginRequestOtpBtn = 'Request OTP';
-const String loginOAuthBtn = 'Login via OAuth';
-const String loginVerifyOtpBtn = 'Verify OTP';
-const String loginStatus = 'Status';
+const String loginUsernameLabel = 'Username';
+const String loginPasswordLabel = 'Password';
+const String loginButton = 'Login';
+const String loginOAuthBtn = 'Continue with channel-i';
+const String loginNoAccount = 'No account? ';
+const String loginSignupLink = 'Create account';
 
 // Auth - Signup
 const String signupTitle = 'Sign Up';

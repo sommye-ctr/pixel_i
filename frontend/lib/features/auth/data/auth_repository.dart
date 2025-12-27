@@ -25,6 +25,36 @@ class AuthRepository {
     );
   }
 
+  Future<User> login({
+    required String username,
+    required String password,
+  }) async {
+    final res = await api.post<Map<String, dynamic>>(
+      '/auth/login/',
+      data: {
+        'username': username,
+        'password': password,
+      },
+    );
+    final data = res.data ?? {};
+
+    // Extract and store JWT tokens
+    final accessToken = data['access'] as String?;
+    final refreshToken = data['refresh'] as String?;
+
+    if (accessToken != null && refreshToken != null) {
+      await tokenStorage.saveTokens(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      );
+    }
+
+    final profile = await api.get<Map<String, dynamic>>('/auth/me/');
+    final profileData = profile.data ?? {};
+
+    return User.fromMap(profileData);
+  }
+
   Future<void> requestOtp(String email) async {
     await api.post('/auth/request-otp/', data: {'email': email});
   }

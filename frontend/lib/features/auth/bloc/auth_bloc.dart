@@ -30,7 +30,6 @@ sealed class AuthEvent extends Equatable {
   List<Object?> get props => [];
 
   factory AuthEvent.started() => const _Started();
-  factory AuthEvent.requestOtp(String email) => _RequestOtp(email);
   factory AuthEvent.submitOtp(String email, String otp) =>
       _SubmitOtp(email, otp);
   factory AuthEvent.loginWithOAuth(String token) => _LoginWithOAuth(token);
@@ -43,13 +42,6 @@ class _Started extends AuthEvent {
 
 class _Logout extends AuthEvent {
   const _Logout();
-}
-
-class _RequestOtp extends AuthEvent {
-  final String email;
-  const _RequestOtp(this.email);
-  @override
-  List<Object?> get props => [email];
 }
 
 class _SubmitOtp extends AuthEvent {
@@ -73,33 +65,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<_Started>((event, emit) async {
       emit(const AuthState(status: AuthStatus.unauthenticated));
     });
-    on<_RequestOtp>((event, emit) async {
-      emit(const AuthState(status: AuthStatus.loading));
-      try {
-        await _repo.requestOtp(event.email);
-        emit(const AuthState(status: AuthStatus.unauthenticated));
-      } catch (e) {
-        emit(AuthState(status: AuthStatus.error, error: e.toString()));
-      }
-    });
+
     on<_SubmitOtp>((event, emit) async {
       emit(const AuthState(status: AuthStatus.loading));
       try {
-        final user = await _repo.verifyOtp(event.email, event.otp);
+        final user = await _repo.verifyEmail(event.email, event.otp);
         emit(AuthState(status: AuthStatus.authenticated, user: user));
       } catch (e) {
         emit(AuthState(status: AuthStatus.error, error: e.toString()));
       }
     });
-    on<_LoginWithOAuth>((event, emit) async {
-      emit(const AuthState(status: AuthStatus.loading));
-      try {
-        final user = await _repo.loginWithOAuth(event.token);
-        emit(AuthState(status: AuthStatus.authenticated, user: user));
-      } catch (e) {
-        emit(AuthState(status: AuthStatus.error, error: e.toString()));
-      }
-    });
+
+    // on<_LoginWithOAuth>((event, emit) async {
+    //   emit(const AuthState(status: AuthStatus.loading));
+    //   try {
+    //     final user = await _repo.loginWithOAuth(event.token);
+    //     emit(AuthState(status: AuthStatus.authenticated, user: user));
+    //   } catch (e) {
+    //     emit(AuthState(status: AuthStatus.error, error: e.toString()));
+    //   }
+    // });
     on<_Logout>((event, emit) async {
       await _repo.logout();
       emit(const AuthState(status: AuthStatus.unauthenticated));

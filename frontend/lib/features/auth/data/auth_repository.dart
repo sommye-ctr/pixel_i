@@ -1,9 +1,12 @@
 import '../../../core/network/api_client.dart';
+import '../../../core/network/token_storage.dart';
 import '../models/user.dart';
 
 class AuthRepository {
   final ApiClient api;
-  AuthRepository(this.api);
+  final TokenStorage tokenStorage;
+
+  AuthRepository(this.api, this.tokenStorage);
 
   Future<void> signup({
     required String email,
@@ -11,58 +14,38 @@ class AuthRepository {
     required String password,
     required String username,
   }) async {
-    // Replace path/body with your backend contract
-    await api.post('/auth/signup', data: {
-      'email': email,
-      'name': name,
-      'password': password,
-      'username': username,
-    });
-  }
-
-  Future<void> requestOtp(String email) async {
-    await api.post('/auth/request-otp', data: {
-      'email': email,
-    });
-  }
-
-  Future<User> verifyOtp(String email, String otp) async {
-    final res = await api.post<Map<String, dynamic>>(
-      '/auth/verify-otp',
+    await api.post(
+      '/auth/signup/',
       data: {
         'email': email,
-        'otp': otp,
+        'name': name,
+        'password': password,
+        'username': username,
       },
-    );
-    final data = res.data ?? {};
-    return User(
-      id: (data['id'] ?? 'u-1').toString(),
-      name: (data['name'] ?? 'User').toString(),
-      avatarUrl: data['avatarUrl']?.toString(),
-      batch: data['batch']?.toString(),
-      department: data['department']?.toString(),
     );
   }
 
-  Future<User> loginWithOAuth(String providerToken) async {
+  Future<User> verifyEmail(String email, String otp) async {
     final res = await api.post<Map<String, dynamic>>(
-      '/auth/oauth',
-      data: {
-        'token': providerToken,
-      },
+      '/auth/verify-email/',
+      data: {'email': email, 'otp': otp},
     );
     final data = res.data ?? {};
-    return User(
-      id: (data['id'] ?? 'u-1').toString(),
-      name: (data['name'] ?? 'User').toString(),
-      avatarUrl: data['avatarUrl']?.toString(),
-      batch: data['batch']?.toString(),
-      department: data['department']?.toString(),
-    );
-  }
 
-  Future<void> logout() async {
-    await Future<void>.delayed(const Duration(milliseconds: 200));
+    // Extract and store JWT tokens
+    final accessToken = data['access'] as String?;
+    final refreshToken = data['refresh'] as String?;
+
+    if (accessToken != null && refreshToken != null) {
+      await tokenStorage.saveTokens(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      );
+    }
+    final profile = await api.get<Map<String, dynamic>>('/auth/me/');
+    final profileData = profile.data ?? {};
+
+    return User.fromMap(profileData);
   }
 
   Future<User> updateProfile({
@@ -71,7 +54,7 @@ class AuthRepository {
     String? department,
   }) async {
     final res = await api.put<Map<String, dynamic>>(
-      '/user/profile',
+      '/auth/me/',
       data: {
         if (bio != null) 'bio': bio,
         if (batch != null) 'batch': batch,
@@ -79,12 +62,10 @@ class AuthRepository {
       },
     );
     final data = res.data ?? {};
-    return User(
-      id: (data['id'] ?? 'u-1').toString(),
-      name: (data['name'] ?? 'User').toString(),
-      avatarUrl: data['avatarUrl']?.toString(),
-      batch: data['batch']?.toString(),
-      department: data['department']?.toString(),
-    );
+    return User.fromMap(data);
+  }
+
+  Future<void> logout() async {
+    await tokenStorage.clearTokens();
   }
 }

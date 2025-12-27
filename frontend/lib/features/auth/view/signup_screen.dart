@@ -206,7 +206,7 @@ class _EmailOtpBottomSheetState extends State<EmailOtpBottomSheet> {
     setState(() => _verifying = true);
     final repo = RepositoryProvider.of<AuthRepository>(context);
     try {
-      await repo.verifyOtp(widget.email, otp);
+      await repo.verifyEmail(widget.email, otp);
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       ScaffoldMessenger.of(

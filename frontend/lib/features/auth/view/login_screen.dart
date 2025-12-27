@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../resources/strings.dart';
+import '../../../core/widgets/index.dart';
 import '../bloc/auth_bloc.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -24,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(title: const Text(loginTitle)),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: BlocConsumer<AuthBloc, AuthState>(
@@ -33,9 +35,10 @@ class _LoginScreenState extends State<LoginScreen> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextField(
+                CustomTextField(
                   controller: emailController,
-                  decoration: const InputDecoration(labelText: 'Email'),
+                  hint: loginEmailLabel,
+                  keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -46,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           AuthEvent.requestOtp(emailController.text),
                         );
                       },
-                      child: const Text('Request OTP'),
+                      child: const Text(loginRequestOtpBtn),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton(
@@ -55,14 +58,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           AuthEvent.loginWithOAuth('demo-token'),
                         );
                       },
-                      child: const Text('Login via OAuth'),
+                      child: const Text(loginOAuthBtn),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                TextField(
+                CustomTextField(
                   controller: otpController,
-                  decoration: const InputDecoration(labelText: 'Enter OTP'),
+                  hint: loginOtpLabel,
+                  keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 8),
                 ElevatedButton(
@@ -74,10 +78,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     );
                   },
-                  child: const Text('Verify OTP'),
+                  child: const Text(loginVerifyOtpBtn),
                 ),
                 const SizedBox(height: 16),
-                Text('Status: ${state.status.name}'),
+                Text('$loginStatus: ${state.status.name}'),
               ],
             );
           },

@@ -36,12 +36,7 @@ sealed class AuthEvent extends Equatable {
     required String password,
     required String username,
   }) =>
-      _Signup(
-        email: email,
-        name: name,
-        password: password,
-        username: username,
-      );
+      _Signup(email: email, name: name, password: password, username: username);
   factory AuthEvent.requestOtp(String email) => _RequestOtp(email);
   factory AuthEvent.submitOtp(String email, String otp) =>
       _SubmitOtp(email, otp);

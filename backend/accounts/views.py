@@ -44,7 +44,7 @@ class EmailVerifyView(generics.CreateAPIView):
         access = refresh.access_token
 
         return Response(
-            {"access": access, "refresh": refresh.__str__(), "detail": "Email Verified successfully"},
+            {"access": str(access), "refresh": str(refresh), "detail": "Email Verified successfully"},
             status=status.HTTP_200_OK,
         )
 

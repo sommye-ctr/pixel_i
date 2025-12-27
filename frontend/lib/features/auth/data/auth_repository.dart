@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../../core/network/api_client.dart';
 import '../../../core/network/token_storage.dart';
 import '../models/user.dart';
@@ -14,15 +16,20 @@ class AuthRepository {
     required String password,
     required String username,
   }) async {
-    await api.post(
-      '/auth/signup/',
-      data: {
-        'email': email,
-        'name': name,
-        'password': password,
-        'username': username,
-      },
-    );
+    try {
+      await api.post(
+        '/auth/signup/',
+        data: {
+          'email': email,
+          'name': name,
+          'password': password,
+          'username': username,
+        },
+      );
+    } on DioException catch (e) {
+      final backendMsg = e.response?.data ?? e.message;
+      throw Exception(backendMsg);
+    }
   }
 
   Future<void> requestOtp(String email) async {

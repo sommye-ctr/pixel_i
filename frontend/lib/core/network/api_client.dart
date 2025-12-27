@@ -9,11 +9,17 @@ class ApiClient {
   final TokenStorage tokenStorage;
 
   ApiClient({required this.baseUrl, required this.tokenStorage})
-      : _dio = Dio(BaseOptions(
+    : _dio = Dio(
+        BaseOptions(
           baseUrl: baseUrl,
           connectTimeout: const Duration(seconds: 30),
           receiveTimeout: const Duration(seconds: 30),
-        )) {
+          headers: {
+            Headers.contentTypeHeader: Headers.jsonContentType,
+            Headers.acceptHeader: Headers.jsonContentType,
+          },
+        ),
+      ) {
     // Add interceptors
     _dio.interceptors.addAll([
       AuthInterceptor(tokenStorage),
@@ -32,11 +38,19 @@ class ApiClient {
   }
 
   Future<Response<T>> post<T>(String path, {dynamic data}) {
-    return _dio.post<T>(path, data: data);
+    return _dio.post<T>(
+      path,
+      data: data,
+      options: Options(contentType: Headers.jsonContentType),
+    );
   }
 
   Future<Response<T>> put<T>(String path, {dynamic data}) {
-    return _dio.put<T>(path, data: data);
+    return _dio.put<T>(
+      path,
+      data: data,
+      options: Options(contentType: Headers.jsonContentType),
+    );
   }
 
   Future<Response<T>> delete<T>(String path) {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../features/auth/view/login_screen.dart';
 import '../features/auth/view/signup_screen.dart';
-import '../features/auth/view/user_info_screen.dart';
+import '../features/auth/view/fill_profile_screen.dart';
 import '../features/home/view/home_screen.dart';
 
 GoRouter buildRouter({bool isLoggedIn = false}) {
@@ -27,7 +27,7 @@ GoRouter buildRouter({bool isLoggedIn = false}) {
       GoRoute(
         path: '/user-info',
         name: 'user-info',
-        builder: (context, state) => const UserInfoScreen(),
+        builder: (context, state) => const FillProfileScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

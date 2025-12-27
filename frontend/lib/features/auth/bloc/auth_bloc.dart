@@ -42,6 +42,12 @@ sealed class AuthEvent extends Equatable {
     required String password,
   }) =>
       _Login(username: username, password: password);
+  factory AuthEvent.updateProfile({
+    String? bio,
+    String? batch,
+    String? department,
+  }) =>
+      _UpdateProfile(bio: bio, batch: batch, department: department);
   factory AuthEvent.requestOtp(String email) => _RequestOtp(email);
   factory AuthEvent.submitOtp(String email, String otp) =>
       _SubmitOtp(email, otp);
@@ -81,6 +87,17 @@ class _Login extends AuthEvent {
 
   @override
   List<Object?> get props => [username, password];
+}
+
+class _UpdateProfile extends AuthEvent {
+  final String? bio;
+  final String? batch;
+  final String? department;
+
+  const _UpdateProfile({this.bio, this.batch, this.department});
+
+  @override
+  List<Object?> get props => [bio, batch, department];
 }
 
 class _RequestOtp extends AuthEvent {
@@ -158,6 +175,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(const AuthState(status: AuthStatus.loading));
       try {
         final user = await _repo.verifyEmail(event.email, event.otp);
+        emit(AuthState(status: AuthStatus.authenticated, user: user));
+      } catch (e) {
+        emit(AuthState(status: AuthStatus.error, error: e.toString()));
+      }
+    });
+
+    on<_UpdateProfile>((event, emit) async {
+      emit(const AuthState(status: AuthStatus.loading));
+      try {
+        final user = await _repo.updateProfile(
+          bio: event.bio,
+          batch: event.batch,
+          department: event.department,
+        );
         emit(AuthState(status: AuthStatus.authenticated, user: user));
       } catch (e) {
         emit(AuthState(status: AuthStatus.error, error: e.toString()));

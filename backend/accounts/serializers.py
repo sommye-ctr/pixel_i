@@ -12,6 +12,13 @@ from utils.auth_utils import get_otp_max_attempts, get_otp_cooldown, get_otp_ttl
 User = get_user_model()
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'name', 'profile_pic', 'bio', 'department', 'batch']
+        read_only_fields = ['id', 'email', 'username']
+
+
 class MiniUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -89,10 +96,6 @@ class EmailVerifySerializer(serializers.Serializer):
         user.is_active = True
         user.save(update_fields=["is_active"])
 
-        return validated_data
-
-    def save(self, **kwargs):
-        user = self.context['user']
         return user
 
 

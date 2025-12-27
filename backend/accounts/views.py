@@ -2,12 +2,14 @@ from django.db.models import Q
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from accounts.errors import OTPDeliveryError
 from accounts.models import CustomUser, EmailOTP
-from accounts.serializers import SignupSerializer, SearchUserSerializer, EmailVerifySerializer, ResendEmailOTPSerializer
+from accounts.serializers import SignupSerializer, SearchUserSerializer, EmailVerifySerializer, \
+    ResendEmailOTPSerializer, UserSerializer
 from accounts.services import send_otp_email
 from utils.auth_utils import get_otp_ttl
 
@@ -27,6 +29,21 @@ class SignupView(generics.CreateAPIView):
         return user
 
 
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request):
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class LoginView(TokenObtainPairView):
     permission_classes = [AllowAny]
 
@@ -40,6 +57,7 @@ class EmailVerifyView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
+        user.refresh_from_db()
         refresh = RefreshToken.for_user(user)
         access = refresh.access_token
 

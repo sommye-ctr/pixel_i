@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:frontend/resources/strings.dart';
-import 'package:frontend/resources/theme.dart';
+import 'package:frontend/core/resources/strings.dart';
+import 'package:frontend/core/resources/theme.dart';
 
 import '../core/network/api_client.dart';
 import '../core/config.dart';

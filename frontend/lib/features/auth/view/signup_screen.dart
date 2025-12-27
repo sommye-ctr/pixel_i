@@ -2,9 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/core/resources/assets.dart';
+import 'package:frontend/core/resources/style.dart';
+import 'package:frontend/core/utils/screen_utils.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../resources/strings.dart';
+import '../../../core/resources/strings.dart';
 import '../../../core/widgets/index.dart';
 import '../data/auth_repository.dart';
 
@@ -68,7 +72,6 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(signupTitle)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -76,37 +79,46 @@ class _SignupScreenState extends State<SignupScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              SvgAsset(
+                assetPath: AssetPaths.signup,
+                height: context.heightPercent(40),
+              ),
               CustomTextField(
                 controller: _emailController,
+                icon: Icon(LucideIcons.mail),
                 hint: signupEmailLabel,
                 keyboardType: TextInputType.emailAddress,
                 validator: (v) =>
                     (v == null || v.isEmpty) ? signupValidationRequired : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: defaultSpacing),
               CustomTextField(
                 controller: _nameController,
+                icon: Icon(LucideIcons.user),
                 hint: signupNameLabel,
                 validator: (v) =>
                     (v == null || v.isEmpty) ? signupValidationRequired : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: defaultSpacing),
               CustomTextField(
                 controller: _usernameController,
+                icon: Icon(LucideIcons.atSign),
                 hint: signupUsernameLabel,
                 validator: (v) =>
                     (v == null || v.isEmpty) ? signupValidationRequired : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: defaultSpacing),
               CustomTextField(
                 controller: _passwordController,
+                icon: Icon(LucideIcons.lock),
+
                 hint: signupPasswordLabel,
                 obscure: true,
                 validator: (v) => (v == null || v.length < 6)
                     ? signupValidationPassword
                     : null,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: largeSpacing),
               SizedBox(
                 width: double.infinity,
                 child: CustomButton(
@@ -115,7 +127,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   child: const Text(signupCreateBtn),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: defaultSpacing),
               SizedBox(
                 width: double.infinity,
                 child: CustomButton(
@@ -124,7 +136,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   child: const Text(signupOAuthBtn),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: defaultSpacing),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

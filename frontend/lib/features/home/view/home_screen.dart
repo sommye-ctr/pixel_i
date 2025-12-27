@@ -26,7 +26,6 @@ class HomeScreen extends StatelessWidget {
             icon: Icon(LucideIcons.album),
             label: eventsTitle,
           ),
-
           BottomNavigationBarItem(
             icon: Icon(LucideIcons.user),
             label: profileTitle,

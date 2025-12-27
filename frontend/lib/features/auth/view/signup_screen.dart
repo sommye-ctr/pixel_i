@@ -10,6 +10,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../core/resources/strings.dart';
 import '../../../core/widgets/index.dart';
+import '../../../core/utils/validators.dart';
 import '../bloc/auth_bloc.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -93,27 +94,21 @@ class _SignupScreenState extends State<SignupScreen> {
                       icon: Icon(LucideIcons.mail),
                       hint: signupEmailLabel,
                       keyboardType: TextInputType.emailAddress,
-                      validator: (v) => (v == null || v.isEmpty)
-                          ? signupValidationRequired
-                          : null,
+                      validator: Validators.email,
                     ),
                     const SizedBox(height: defaultSpacing),
                     CustomTextField(
                       controller: _nameController,
                       icon: Icon(LucideIcons.user),
                       hint: signupNameLabel,
-                      validator: (v) => (v == null || v.isEmpty)
-                          ? signupValidationRequired
-                          : null,
+                      validator: Validators.name,
                     ),
                     const SizedBox(height: defaultSpacing),
                     CustomTextField(
                       controller: _usernameController,
                       icon: Icon(LucideIcons.atSign),
                       hint: signupUsernameLabel,
-                      validator: (v) => (v == null || v.isEmpty)
-                          ? signupValidationRequired
-                          : null,
+                      validator: Validators.username,
                     ),
                     const SizedBox(height: defaultSpacing),
                     CustomTextField(
@@ -121,9 +116,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       icon: Icon(LucideIcons.lock),
                       hint: signupPasswordLabel,
                       obscure: true,
-                      validator: (v) => (v == null || v.length < 6)
-                          ? signupValidationPassword
-                          : null,
+                      validator: Validators.password,
                     ),
                     const SizedBox(height: largeSpacing),
                     SizedBox(

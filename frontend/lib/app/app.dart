@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/resources/strings.dart';
+import 'package:frontend/resources/theme.dart';
 
 import '../core/network/api_client.dart';
 import '../core/config.dart';
@@ -24,10 +25,9 @@ class App extends StatelessWidget {
         providers: [BlocProvider(create: (_) => AuthBloc(authRepository))],
         child: MaterialApp.router(
           title: appName,
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-            useMaterial3: true,
-          ),
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: ThemeMode.system,
           routerConfig: router,
         ),
       ),

@@ -44,6 +44,7 @@ dependencies:
   web_socket_channel: ^3.0.1
   go_router: ^14.4.1
   timeago: ^3.6.0
+  flex_color_scheme: ^8.4.0
 
 dev_dependencies:
   flutter_test:

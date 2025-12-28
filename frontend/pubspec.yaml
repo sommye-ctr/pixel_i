@@ -49,8 +49,7 @@ dependencies:
   flutter_svg: ^2.0.16
   flutter_secure_storage: ^10.0.0
   google_fonts: ^6.2.1
-
-dev_dependencies:
+  palette_generator: ^0.3.3
   flutter_test:
     sdk: flutter
 

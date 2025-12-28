@@ -39,6 +39,9 @@ class Photo(models.Model):
     photographer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False)
     event = models.ForeignKey(Event, on_delete=models.PROTECT, null=False)
 
+    width = models.IntegerField(null=True, blank=True)
+    height = models.IntegerField(null=True, blank=True)
+
     original_path = models.TextField(default="")
     thumbnail_path = models.TextField(default="")
     watermarked_path = models.TextField(default="")

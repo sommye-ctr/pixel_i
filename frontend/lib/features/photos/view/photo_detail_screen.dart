@@ -7,6 +7,7 @@ import 'package:frontend/features/photos/models/photo.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:frontend/core/resources/style.dart';
 import 'package:palette_generator/palette_generator.dart';
+import 'package:frontend/features/comments/view/comments_bottom_sheet.dart';
 
 import '../../../core/resources/strings.dart';
 import '../bloc/photo_detail_bloc.dart';
@@ -86,6 +87,15 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
     );
   }
 
+  void _openCommentsBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const CommentsBottomSheet(),
+    );
+  }
+
   Widget _getTopActionButton(Icon icon, VoidCallback onPressed) {
     return ClipOval(
       child: BackdropFilter(
@@ -132,7 +142,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                         ),
                         IconButton(
                           icon: const Icon(LucideIcons.messageCircle),
-                          onPressed: () {},
+                          onPressed: _openCommentsBottomSheet,
                         ),
                         IconButton(
                           icon: const Icon(LucideIcons.users),

@@ -45,7 +45,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
                 elevation: 16,
                 backgroundColor: Colors.blueGrey.shade100,
                 currentIndex: _pageIndex,
-                showUnselectedLabels: true,
+                showUnselectedLabels: false,
                 type: BottomNavigationBarType.shifting,
                 onTap: onBottomNavChanged,
                 items: widget.items,

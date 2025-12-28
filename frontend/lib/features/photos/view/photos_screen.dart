@@ -3,6 +3,7 @@ import 'package:frontend/core/resources/style.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:photo_view/photo_view.dart';
 
 import '../../../core/resources/strings.dart';
@@ -148,20 +149,34 @@ class _PhotosScreenState extends State<PhotosScreen> {
                             );
                           },
                         )
-                      : Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          alignment: Alignment.center,
-                          child: Column(
-                            children: [
-                              const Icon(
-                                LucideIcons.layoutGrid,
-                                size: 32,
-                                color: Colors.grey,
+                      : MasonryGridView.count(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 6,
+                          crossAxisSpacing: 6,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: items.length,
+                          itemBuilder: (context, i) {
+                            final photo = items[i];
+                            return GestureDetector(
+                              onTap: () => _openPhoto(photo),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(
+                                  smallRoundEdgeRadius,
+                                ),
+                                child: CachedNetworkImage(
+                                  imageUrl: photo.thumbnailUrl,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(
+                                    color: Colors.grey.shade200,
+                                    height: 120,
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.broken_image),
+                                ),
                               ),
-                              const SizedBox(height: 8),
-                              const Text('Masonry view coming soon'),
-                            ],
-                          ),
+                            );
+                          },
                         ),
                   const SizedBox(height: largeSpacing),
                 ],

@@ -1,7 +1,7 @@
 [
   {
     "id": "1",
-    "thumbnail_url": "https://picsum.photos/id/1015/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo1/600/800",
     "timestamp": 1700000000000,
     "photographer": {
       "id": "u1",
@@ -13,7 +13,7 @@
   },
   {
     "id": "2",
-    "thumbnail_url": "https://picsum.photos/id/1025/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo2/600/500",
     "timestamp": 1700250000000,
     "photographer": {
       "id": "u2",
@@ -25,7 +25,7 @@
   },
   {
     "id": "3",
-    "thumbnail_url": "https://picsum.photos/id/1035/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo3/800/600",
     "timestamp": 1700900000000,
     "photographer": {
       "id": "u3",
@@ -37,7 +37,7 @@
   },
   {
     "id": "4",
-    "thumbnail_url": "https://picsum.photos/id/1045/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo4/400/400",
     "timestamp": 1698000000000,
     "photographer": {
       "id": "u4",
@@ -49,7 +49,7 @@
   },
   {
     "id": "5",
-    "thumbnail_url": "https://picsum.photos/id/1055/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo5/1000/600",
     "timestamp": 1695500000000,
     "photographer": {
       "id": "u5",
@@ -61,7 +61,7 @@
   },
   {
     "id": "6",
-    "thumbnail_url": "https://picsum.photos/id/1065/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo6/500/750",
     "timestamp": 1693000000000,
     "photographer": {
       "id": "u6",
@@ -74,7 +74,7 @@
   ,
   {
     "id": "7",
-    "thumbnail_url": "https://picsum.photos/id/1075/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo7/420/280",
     "timestamp": 1698796800000,
     "photographer": {
       "id": "u7",
@@ -86,7 +86,7 @@
   },
   {
     "id": "8",
-    "thumbnail_url": "https://picsum.photos/id/1085/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo8/350/525",
     "timestamp": 1700428800000,
     "photographer": {
       "id": "u8",
@@ -98,7 +98,7 @@
   },
   {
     "id": "9",
-    "thumbnail_url": "https://picsum.photos/id/1095/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo9/640/427",
     "timestamp": 1696896000000,
     "photographer": {
       "id": "u9",
@@ -110,7 +110,7 @@
   },
   {
     "id": "10",
-    "thumbnail_url": "https://picsum.photos/id/1105/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo10/360/480",
     "timestamp": 1698182400000,
     "photographer": {
       "id": "u10",
@@ -122,7 +122,7 @@
   },
   {
     "id": "11",
-    "thumbnail_url": "https://picsum.photos/id/1115/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo11/1200/800",
     "timestamp": 1641340800000,
     "photographer": {
       "id": "u11",
@@ -134,7 +134,7 @@
   },
   {
     "id": "12",
-    "thumbnail_url": "https://picsum.photos/id/1125/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo12/800/1200",
     "timestamp": 1641772800000,
     "photographer": {
       "id": "u12",
@@ -146,7 +146,7 @@
   },
   {
     "id": "13",
-    "thumbnail_url": "https://picsum.photos/id/1135/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo13/500/333",
     "timestamp": 1642204800000,
     "photographer": {
       "id": "u13",
@@ -158,7 +158,7 @@
   },
   {
     "id": "14",
-    "thumbnail_url": "https://picsum.photos/id/1145/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo14/400/600",
     "timestamp": 1642636800000,
     "photographer": {
       "id": "u14",
@@ -170,7 +170,7 @@
   },
   {
     "id": "15",
-    "thumbnail_url": "https://picsum.photos/id/1155/400/400",
+    "thumbnail_url": "https://picsum.photos/seed/photo15/600/600",
     "timestamp": 1643068800000,
     "photographer": {
       "id": "u15",

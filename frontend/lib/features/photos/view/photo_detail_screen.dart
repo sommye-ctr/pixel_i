@@ -86,6 +86,86 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
     );
   }
 
+  Widget _getTopActionButton(Icon icon, VoidCallback onPressed) {
+    return ClipOval(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          color: Colors.white.withOpacity(0.1),
+          child: IconButton(icon: icon, onPressed: onPressed),
+        ),
+      ),
+    );
+  }
+
+  Widget _getBottomActions() {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: ScreenUtils.safeBottom(context),
+        left: defaultSpacing,
+        right: defaultSpacing,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(largeRoundEdgeRadius),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  color: Colors.white.withOpacity(0.1),
+                  height: kBottomNavigationBarHeight + 8,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          icon: const Icon(LucideIcons.heart),
+                          onPressed: () {},
+                        ),
+                        IconButton(
+                          icon: const Icon(LucideIcons.download),
+                          onPressed: () {},
+                        ),
+                        IconButton(
+                          icon: const Icon(LucideIcons.messageCircle),
+                          onPressed: () {},
+                        ),
+                        IconButton(
+                          icon: const Icon(LucideIcons.users),
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: defaultSpacing),
+          ClipOval(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: SizedBox.square(
+                dimension: kBottomNavigationBarHeight + 8,
+                child: Container(
+                  color: Colors.red.withOpacity(0.8),
+                  child: IconButton(
+                    onPressed: () {},
+                    icon: Icon(LucideIcons.trash),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -221,58 +301,15 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                           ),
                           Row(
                             children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                  largeRoundEdgeRadius,
-                                ),
-                                child: BackdropFilter(
-                                  filter: ImageFilter.blur(
-                                    sigmaX: 10,
-                                    sigmaY: 10,
-                                  ),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(
-                                        largeRoundEdgeRadius,
-                                      ),
-                                    ),
-                                    child: IconButton(
-                                      icon: const Icon(
-                                        LucideIcons.heart,
-                                        color: Colors.white,
-                                      ),
-                                      onPressed: () {},
-                                    ),
-                                  ),
-                                ),
+                              _getTopActionButton(
+                                Icon(LucideIcons.share2),
+                                () {},
                               ),
-                              const SizedBox(width: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                  largeRoundEdgeRadius,
-                                ),
-                                child: BackdropFilter(
-                                  filter: ImageFilter.blur(
-                                    sigmaX: 10,
-                                    sigmaY: 10,
-                                  ),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(
-                                        largeRoundEdgeRadius,
-                                      ),
-                                    ),
-                                    child: IconButton(
-                                      icon: const Icon(
-                                        LucideIcons.share2,
-                                        color: Colors.white,
-                                      ),
-                                      onPressed: () {},
-                                    ),
-                                  ),
-                                ),
+                              const SizedBox(width: defaultSpacing / 2),
+
+                              _getTopActionButton(
+                                Icon(LucideIcons.info),
+                                () {},
                               ),
                             ],
                           ),
@@ -280,6 +317,10 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                       ),
                     ),
                   ),
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: _getBottomActions(),
                 ),
               ],
             ),

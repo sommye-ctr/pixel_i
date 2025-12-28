@@ -15,16 +15,23 @@ class PhotoSerializer(serializers.ModelSerializer):
     original_url = serializers.SerializerMethodField()
     thumbnail_url = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField(read_only=True)
+    is_liked = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Photo
         fields = [
             'id', 'timestamp', 'meta', 'photographer', 'event', 'tagged_users', 'downloads', 'views',
-            'read_perm', 'share_perm', 'original_url', 'thumbnail_url', 'likes_count', 'width', 'height'
+            'read_perm', 'share_perm', 'original_url', 'thumbnail_url', 'likes_count', 'width', 'height', 'is_liked'
         ]
         read_only_fields = fields
 
     SENSITIVE = ['downloads', 'views', 'read_perm', 'share_perm']
+
+    def get_is_liked(self, obj: Photo):
+        user = getattr(self.context.get('request'), 'user', None)
+        if not user or not user.is_authenticated:
+            return False
+        return obj.likes.filter(user=user).exists()
 
     def get_likes_count(self, obj: Photo):
         return obj.likes.count()

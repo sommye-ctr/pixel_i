@@ -8,6 +8,8 @@ import '../core/network/token_storage.dart';
 import '../core/config.dart';
 import '../features/auth/data/auth_repository.dart';
 import '../features/auth/bloc/auth_bloc.dart';
+import '../features/photos/data/photos_repository.dart';
+import '../features/photos/bloc/photos_bloc.dart';
 import 'router.dart';
 
 class App extends StatelessWidget {
@@ -23,12 +25,19 @@ class App extends StatelessWidget {
     );
 
     final authRepository = AuthRepository(apiClient, tokenStorage);
+    final photosRepository = PhotosRepository(apiClient);
     final router = buildRouter(isLoggedIn: isLoggedIn);
 
     return MultiRepositoryProvider(
-      providers: [RepositoryProvider.value(value: authRepository)],
+      providers: [
+        RepositoryProvider.value(value: authRepository),
+        RepositoryProvider.value(value: photosRepository),
+      ],
       child: MultiBlocProvider(
-        providers: [BlocProvider(create: (_) => AuthBloc(authRepository))],
+        providers: [
+          BlocProvider(create: (_) => AuthBloc(authRepository)),
+          BlocProvider(create: (_) => PhotosBloc(photosRepository)),
+        ],
         child: MaterialApp.router(
           title: appName,
           theme: AppTheme.light,

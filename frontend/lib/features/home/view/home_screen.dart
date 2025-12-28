@@ -25,29 +25,36 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: CustomBottomNavBar(
-        (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.image),
-            label: photosTitle,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.search),
-            label: searchTitle,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.album),
-            label: eventsTitle,
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.user),
-            label: profileTitle,
+      body: Stack(
+        children: [
+          _screens[_selectedIndex],
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: CustomBottomNavBar(
+              (index) {
+                setState(() {
+                  _selectedIndex = index;
+                });
+              },
+              items: [
+                BottomNavigationBarItem(
+                  icon: Icon(LucideIcons.image),
+                  label: photosTitle,
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(LucideIcons.search),
+                  label: searchTitle,
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(LucideIcons.album),
+                  label: eventsTitle,
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(LucideIcons.user),
+                  label: profileTitle,
+                ),
+              ],
+            ),
           ),
         ],
       ),

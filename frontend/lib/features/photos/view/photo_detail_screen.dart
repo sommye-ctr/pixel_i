@@ -221,9 +221,13 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
           return Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [_dominantColor, _accentColor],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  _dominantColor.withOpacity(0.8),
+                  _accentColor,
+                  _dominantColor.withOpacity(0.8),
+                ],
               ),
             ),
             width: context.widthPercent(100),

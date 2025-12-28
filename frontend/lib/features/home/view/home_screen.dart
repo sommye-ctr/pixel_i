@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          _screens[_selectedIndex],
+          IndexedStack(index: _selectedIndex, children: _screens),
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomBottomNavBar(

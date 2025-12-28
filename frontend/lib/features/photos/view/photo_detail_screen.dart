@@ -67,6 +67,25 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
     super.dispose();
   }
 
+  Widget _getUserAvatar(Photo? photo) {
+    if ((photo?.photographer.profilePicture ?? '').isNotEmpty) {
+      return CircleAvatar(
+        backgroundImage: CachedNetworkImageProvider(
+          photo!.photographer.profilePicture!,
+        ),
+      );
+    }
+    String initial = (photo?.photographer.name ?? "?")[0];
+    return CircleAvatar(
+      child: Text(
+        initial,
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -178,11 +197,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              CircleAvatar(
-                                backgroundImage: CachedNetworkImageProvider(
-                                  photo?.photographer.profilePicture ?? '',
-                                ),
-                              ),
+                              _getUserAvatar(photo),
                               SizedBox(width: defaultSpacing),
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.center,

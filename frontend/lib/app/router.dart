@@ -4,6 +4,7 @@ import '../features/auth/view/login_screen.dart';
 import '../features/auth/view/signup_screen.dart';
 import '../features/auth/view/fill_profile_screen.dart';
 import '../features/home/view/home_screen.dart';
+import '../features/photos/view/photo_detail_screen.dart';
 
 GoRouter buildRouter({bool isLoggedIn = false}) {
   return GoRouter(
@@ -28,6 +29,20 @@ GoRouter buildRouter({bool isLoggedIn = false}) {
         path: '/user-info',
         name: 'user-info',
         builder: (context, state) => const FillProfileScreen(),
+      ),
+      GoRoute(
+        path: '/photo/:id',
+        name: 'photo-detail',
+        builder: (context, state) {
+          final photoId = state.pathParameters['id']!;
+          final heroTag = state.uri.queryParameters['heroTag'] ?? 'photo-$photoId';
+          final thumbnailUrl = state.uri.queryParameters['thumbnailUrl'];
+          return PhotoDetailScreen(
+            photoId: photoId,
+            heroTag: heroTag,
+            thumbnailUrl: thumbnailUrl,
+          );
+        },
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

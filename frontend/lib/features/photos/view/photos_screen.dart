@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/core/resources/style.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:photo_view/photo_view.dart';
 
 import '../../../core/resources/strings.dart';
 import '../models/photo.dart';
@@ -56,19 +56,8 @@ class _PhotosScreenState extends State<PhotosScreen> {
   }
 
   void _openPhoto(Photo photo) {
-    showDialog(
-      context: context,
-      builder: (_) => Dialog(
-        child: SizedBox(
-          width: double.infinity,
-          height: MediaQuery.of(context).size.height * 0.75,
-          child: PhotoView(
-            imageProvider: CachedNetworkImageProvider(
-              photo.originalUrl ?? photo.thumbnailUrl,
-            ),
-          ),
-        ),
-      ),
+    context.push(
+      '/photo/${photo.id}?heroTag=photo-${photo.id}&thumbnailUrl=${Uri.encodeComponent(photo.thumbnailUrl)}',
     );
   }
 
@@ -80,15 +69,18 @@ class _PhotosScreenState extends State<PhotosScreen> {
       onTap: () => _openPhoto(photo),
       child: AspectRatio(
         aspectRatio: aspectRatio,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(smallRoundEdgeRadius),
-          child: CachedNetworkImage(
-            imageUrl: photo.thumbnailUrl,
-            fit: BoxFit.cover,
-            placeholder: (context, url) =>
-                Container(color: Colors.grey.shade200),
-            errorWidget: (context, url, error) =>
-                const Icon(Icons.broken_image),
+        child: Hero(
+          tag: 'photo-${photo.id}',
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(smallRoundEdgeRadius),
+            child: CachedNetworkImage(
+              imageUrl: photo.thumbnailUrl,
+              fit: BoxFit.cover,
+              placeholder: (context, url) =>
+                  Container(color: Colors.grey.shade200),
+              errorWidget: (context, url, error) =>
+                  const Icon(Icons.broken_image),
+            ),
           ),
         ),
       ),

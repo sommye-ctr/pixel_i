@@ -10,6 +10,7 @@ import '../features/auth/data/auth_repository.dart';
 import '../features/auth/bloc/auth_bloc.dart';
 import '../features/photos/data/photos_repository.dart';
 import '../features/photos/bloc/photos_bloc.dart';
+import '../features/photos/bloc/photo_detail_bloc.dart';
 import 'router.dart';
 
 class App extends StatelessWidget {
@@ -37,6 +38,7 @@ class App extends StatelessWidget {
         providers: [
           BlocProvider(create: (_) => AuthBloc(authRepository)),
           BlocProvider(create: (_) => PhotosBloc(photosRepository)),
+          BlocProvider(create: (_) => PhotoDetailBloc(photosRepository)),
         ],
         child: MaterialApp.router(
           title: appName,

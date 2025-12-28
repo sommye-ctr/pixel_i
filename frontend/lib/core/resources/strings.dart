@@ -52,3 +52,10 @@ const String errorSignupFailed = 'Signup failed: ';
 const String errorOtpVerificationFailed = 'OTP verification failed: ';
 const String errorResendOtpFailed = 'Failed to resend OTP: ';
 const String errorSaveInfoFailed = 'Failed to save info: ';
+
+// Photos
+const String photosFailedToLoad = 'Failed to load photos';
+const String photosNoPhotos = 'No photos yet';
+const String photosRetry = 'Retry';
+const String photosGridView = 'Grid view';
+const String photosMasonryView = 'Masonry view';

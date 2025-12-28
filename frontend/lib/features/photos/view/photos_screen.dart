@@ -134,20 +134,20 @@ class _PhotosScreenState extends State<PhotosScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Failed to load photos'),
+                const Text(photosFailedToLoad),
                 const SizedBox(height: defaultSpacing),
                 Text(state.error),
                 const SizedBox(height: defaultSpacing),
                 ElevatedButton(
                   onPressed: () =>
                       context.read<PhotosBloc>().add(PhotosRequested()),
-                  child: const Text('Retry'),
+                  child: const Text(photosRetry),
                 ),
               ],
             ),
           );
         } else if (state is PhotosLoadSuccess && state.photos.isEmpty) {
-          body = const Center(child: Text('No photos yet'));
+          body = const Center(child: Text(photosNoPhotos));
         } else if (state is PhotosLoadSuccess) {
           final groups = _groupByMonthYear(state.photos);
           body = ListView.builder(
@@ -192,7 +192,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
                       ? LucideIcons.layoutGrid
                       : LucideIcons.layoutDashboard,
                 ),
-                tooltip: _isGrid ? 'Grid view' : 'Masonry view',
+                tooltip: _isGrid ? photosGridView : photosMasonryView,
                 onPressed: () => setState(() => _isGrid = !_isGrid),
               ),
               IconButton(onPressed: () {}, icon: Icon(LucideIcons.heart)),

@@ -3,6 +3,8 @@
     "id": "1",
     "thumbnail_url": "https://picsum.photos/seed/photo1/600/800",
     "timestamp": 1700000000000,
+    "width": 600,
+    "height": 800,
     "photographer": {
       "id": "u1",
       "name": "Alice Park",
@@ -15,6 +17,8 @@
     "id": "2",
     "thumbnail_url": "https://picsum.photos/seed/photo2/600/500",
     "timestamp": 1700250000000,
+    "width": 600,
+    "height": 500,
     "photographer": {
       "id": "u2",
       "name": "Bob Chen",
@@ -27,6 +31,8 @@
     "id": "3",
     "thumbnail_url": "https://picsum.photos/seed/photo3/800/600",
     "timestamp": 1700900000000,
+    "width": 800,
+    "height": 600,
     "photographer": {
       "id": "u3",
       "name": "Cara Singh",
@@ -39,6 +45,8 @@
     "id": "4",
     "thumbnail_url": "https://picsum.photos/seed/photo4/400/400",
     "timestamp": 1698000000000,
+    "width": 400,
+    "height": 400,
     "photographer": {
       "id": "u4",
       "name": "Daniel Kim",
@@ -51,6 +59,8 @@
     "id": "5",
     "thumbnail_url": "https://picsum.photos/seed/photo5/1000/600",
     "timestamp": 1695500000000,
+    "width": 1000,
+    "height": 600,
     "photographer": {
       "id": "u5",
       "name": "Eve Martinez",
@@ -63,6 +73,8 @@
     "id": "6",
     "thumbnail_url": "https://picsum.photos/seed/photo6/500/750",
     "timestamp": 1693000000000,
+    "width": 500,
+    "height": 750,
     "photographer": {
       "id": "u6",
       "name": "Frank Li",
@@ -76,6 +88,8 @@
     "id": "7",
     "thumbnail_url": "https://picsum.photos/seed/photo7/420/280",
     "timestamp": 1698796800000,
+    "width": 420,
+    "height": 280,
     "photographer": {
       "id": "u7",
       "name": "Grace Park",
@@ -88,6 +102,8 @@
     "id": "8",
     "thumbnail_url": "https://picsum.photos/seed/photo8/350/525",
     "timestamp": 1700428800000,
+    "width": 350,
+    "height": 525,
     "photographer": {
       "id": "u8",
       "name": "Henry Zhao",
@@ -100,6 +116,8 @@
     "id": "9",
     "thumbnail_url": "https://picsum.photos/seed/photo9/640/427",
     "timestamp": 1696896000000,
+    "width": 640,
+    "height": 427,
     "photographer": {
       "id": "u9",
       "name": "Isha Patel",
@@ -112,6 +130,8 @@
     "id": "10",
     "thumbnail_url": "https://picsum.photos/seed/photo10/360/480",
     "timestamp": 1698182400000,
+    "width": 360,
+    "height": 480,
     "photographer": {
       "id": "u10",
       "name": "Jamal Rivera",
@@ -124,6 +144,8 @@
     "id": "11",
     "thumbnail_url": "https://picsum.photos/seed/photo11/1200/800",
     "timestamp": 1641340800000,
+    "width": 1200,
+    "height": 800,
     "photographer": {
       "id": "u11",
       "name": "Karen O'Neil",
@@ -136,6 +158,8 @@
     "id": "12",
     "thumbnail_url": "https://picsum.photos/seed/photo12/800/1200",
     "timestamp": 1641772800000,
+    "width": 800,
+    "height": 1200,
     "photographer": {
       "id": "u12",
       "name": "Liam Walker",
@@ -148,6 +172,8 @@
     "id": "13",
     "thumbnail_url": "https://picsum.photos/seed/photo13/500/333",
     "timestamp": 1642204800000,
+    "width": 500,
+    "height": 333,
     "photographer": {
       "id": "u13",
       "name": "Maya Singh",
@@ -160,6 +186,8 @@
     "id": "14",
     "thumbnail_url": "https://picsum.photos/seed/photo14/400/600",
     "timestamp": 1642636800000,
+    "width": 400,
+    "height": 600,
     "photographer": {
       "id": "u14",
       "name": "Noah Brown",
@@ -172,6 +200,8 @@
     "id": "15",
     "thumbnail_url": "https://picsum.photos/seed/photo15/600/600",
     "timestamp": 1643068800000,
+    "width": 600,
+    "height": 600,
     "photographer": {
       "id": "u15",
       "name": "Olivia Green",

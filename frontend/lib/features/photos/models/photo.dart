@@ -9,6 +9,8 @@ class Photo {
   final String thumbnailUrl;
   final DateTime timestamp;
   final User photographer;
+  final int? width;
+  final int? height;
 
   final Map<String, dynamic>? meta;
   //final Event? event
@@ -24,6 +26,8 @@ class Photo {
     required this.thumbnailUrl,
     required this.timestamp,
     required this.photographer,
+    this.width,
+    this.height,
     this.meta,
     this.taggedUsers,
     this.downloads,
@@ -39,6 +43,8 @@ class Photo {
     String? thumbnailUrl,
     DateTime? timestamp,
     User? photographer,
+    ValueGetter<int?>? width,
+    ValueGetter<int?>? height,
     ValueGetter<Map<String, dynamic>?>? meta,
     ValueGetter<List<User>?>? taggedUsers,
     ValueGetter<int?>? downloads,
@@ -53,6 +59,8 @@ class Photo {
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       timestamp: timestamp ?? this.timestamp,
       photographer: photographer ?? this.photographer,
+      width: width != null ? width() : this.width,
+      height: height != null ? height() : this.height,
       meta: meta != null ? meta() : this.meta,
       taggedUsers: taggedUsers != null ? taggedUsers() : this.taggedUsers,
       downloads: downloads != null ? downloads() : this.downloads,
@@ -70,6 +78,8 @@ class Photo {
       'thumbnail_url': thumbnailUrl,
       'timestamp': timestamp.millisecondsSinceEpoch,
       'photographer': photographer.toMap(),
+      'width': width,
+      'height': height,
       'meta': meta,
       'tagged_users': taggedUsers?.map((x) => x.toMap()).toList(),
       'downloads': downloads,
@@ -87,6 +97,8 @@ class Photo {
       thumbnailUrl: map['thumbnail_url'] ?? '',
       timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp']),
       photographer: User.fromMap(map['photographer']),
+      width: map['width'] != null ? (map['width'] as num).toInt() : null,
+      height: map['height'] != null ? (map['height'] as num).toInt() : null,
       meta: Map<String, dynamic>.from(map['meta'] ?? {}),
       taggedUsers: map['tagged_users'] != null
           ? List<User>.from(map['tagged_users']?.map((x) => User.fromMap(x)))
@@ -106,7 +118,7 @@ class Photo {
 
   @override
   String toString() {
-    return 'Photo(id: $id, thumbnailUrl: $thumbnailUrl, timestamp: $timestamp, photographer: $photographer, meta: $meta, taggedUsers: $taggedUsers, downloads: $downloads, views: $views, readPerm: $readPerm, sharePerm: $sharePerm, originalUrl: $originalUrl, likesCount: $likesCount)';
+    return 'Photo(id: $id, thumbnailUrl: $thumbnailUrl, timestamp: $timestamp, photographer: $photographer, width: $width, height: $height, meta: $meta, taggedUsers: $taggedUsers, downloads: $downloads, views: $views, readPerm: $readPerm, sharePerm: $sharePerm, originalUrl: $originalUrl, likesCount: $likesCount)';
   }
 
   @override
@@ -118,6 +130,8 @@ class Photo {
         other.thumbnailUrl == thumbnailUrl &&
         other.timestamp == timestamp &&
         other.photographer == photographer &&
+        other.width == width &&
+        other.height == height &&
         mapEquals(other.meta, meta) &&
         listEquals(other.taggedUsers, taggedUsers) &&
         other.downloads == downloads &&
@@ -134,6 +148,8 @@ class Photo {
         thumbnailUrl.hashCode ^
         timestamp.hashCode ^
         photographer.hashCode ^
+        width.hashCode ^
+        height.hashCode ^
         meta.hashCode ^
         taggedUsers.hashCode ^
         downloads.hashCode ^

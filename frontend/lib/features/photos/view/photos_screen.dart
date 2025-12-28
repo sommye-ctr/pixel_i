@@ -20,8 +20,7 @@ class PhotosScreen extends StatefulWidget {
 }
 
 class _PhotosScreenState extends State<PhotosScreen> {
-  bool _isGrid =
-      true; // toggle between grid and masonry (masonry not implemented yet)
+  bool _isGrid = true;
 
   @override
   void initState() {
@@ -73,6 +72,56 @@ class _PhotosScreenState extends State<PhotosScreen> {
     );
   }
 
+  Widget _buildPhotoTile(Photo photo) {
+    final aspectRatio = photo.width != null && photo.height != null
+        ? photo.width! / photo.height!
+        : 1.0;
+    return GestureDetector(
+      onTap: () => _openPhoto(photo),
+      child: AspectRatio(
+        aspectRatio: aspectRatio,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(smallRoundEdgeRadius),
+          child: CachedNetworkImage(
+            imageUrl: photo.thumbnailUrl,
+            fit: BoxFit.cover,
+            placeholder: (context, url) =>
+                Container(color: Colors.grey.shade200),
+            errorWidget: (context, url, error) =>
+                const Icon(Icons.broken_image),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhotoGrid(List<Photo> items) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: defaultSpacing,
+        mainAxisSpacing: defaultSpacing,
+        childAspectRatio: 1,
+      ),
+      itemCount: items.length,
+      itemBuilder: (context, i) => _buildPhotoTile(items[i]),
+    );
+  }
+
+  Widget _buildPhotoMasonry(List<Photo> items) {
+    return MasonryGridView.count(
+      crossAxisCount: 2,
+      mainAxisSpacing: defaultSpacing,
+      crossAxisSpacing: defaultSpacing,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: items.length,
+      itemBuilder: (context, i) => _buildPhotoTile(items[i]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<PhotosBloc, PhotosState>(
@@ -117,67 +166,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
                     ),
                   ),
                   const SizedBox(height: defaultSpacing),
-                  _isGrid
-                      ? GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                crossAxisSpacing: 6,
-                                mainAxisSpacing: 6,
-                                childAspectRatio: 1,
-                              ),
-                          itemCount: items.length,
-                          itemBuilder: (context, i) {
-                            final photo = items[i];
-                            return GestureDetector(
-                              onTap: () => _openPhoto(photo),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                  smallRoundEdgeRadius,
-                                ),
-                                child: CachedNetworkImage(
-                                  imageUrl: photo.thumbnailUrl,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) =>
-                                      Container(color: Colors.grey.shade200),
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(Icons.broken_image),
-                                ),
-                              ),
-                            );
-                          },
-                        )
-                      : MasonryGridView.count(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 6,
-                          crossAxisSpacing: 6,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: items.length,
-                          itemBuilder: (context, i) {
-                            final photo = items[i];
-                            return GestureDetector(
-                              onTap: () => _openPhoto(photo),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                  smallRoundEdgeRadius,
-                                ),
-                                child: CachedNetworkImage(
-                                  imageUrl: photo.thumbnailUrl,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(
-                                    color: Colors.grey.shade200,
-                                    height: 120,
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(Icons.broken_image),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                  _isGrid ? _buildPhotoGrid(items) : _buildPhotoMasonry(items),
                   const SizedBox(height: largeSpacing),
                 ],
               );

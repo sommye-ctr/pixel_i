@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:frontend/features/photos/models/photo.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:frontend/core/resources/style.dart';
 
 import '../../../core/resources/strings.dart';
@@ -47,10 +50,12 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
       body: BlocBuilder<PhotoDetailBloc, PhotoDetailState>(
         builder: (context, state) {
           String imageUrl = widget.thumbnailUrl ?? '';
+          Photo? photo;
 
           if (state is PhotoDetailLoadSuccess &&
               state.photo.id == widget.photoId) {
             imageUrl = state.photo.originalUrl ?? state.photo.thumbnailUrl;
+            photo = state.photo;
           } else if (state is PhotoDetailLoadFailure &&
               widget.thumbnailUrl != null) {
             imageUrl = widget.thumbnailUrl!;
@@ -82,32 +87,135 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
             );
           }
 
-          return InteractiveViewer(
-            transformationController: _transformationController,
-            minScale: 0.5,
-            maxScale: 4.0,
-            child: Center(
-              child: Hero(
-                tag: widget.heroTag,
-                child: CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.contain,
-                  placeholder: (context, url) => widget.thumbnailUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: widget.thumbnailUrl!,
-                          fit: BoxFit.contain,
-                        )
-                      : const Center(
-                          child: CircularProgressIndicator(color: Colors.white),
-                        ),
-                  errorWidget: (context, url, error) => const Icon(
-                    Icons.broken_image,
-                    color: Colors.white,
-                    size: 64,
+          return Stack(
+            children: [
+              InteractiveViewer(
+                transformationController: _transformationController,
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Center(
+                  child: Hero(
+                    tag: widget.heroTag,
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.contain,
+                      placeholder: (context, url) => widget.thumbnailUrl != null
+                          ? CachedNetworkImage(
+                              imageUrl: widget.thumbnailUrl!,
+                              fit: BoxFit.contain,
+                            )
+                          : const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            ),
+                      errorWidget: (context, url, error) => const Icon(
+                        Icons.broken_image,
+                        color: Colors.white,
+                        size: 64,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              backgroundImage: CachedNetworkImageProvider(
+                                photo?.photographer.profilePicture ?? '',
+                              ),
+                            ),
+                            SizedBox(width: defaultSpacing),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  photo?.photographer.username ?? '',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text("Event"),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(
+                                largeRoundEdgeRadius,
+                              ),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(
+                                  sigmaX: 10,
+                                  sigmaY: 10,
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(
+                                      largeRoundEdgeRadius,
+                                    ),
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(
+                                      LucideIcons.heart,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () {},
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(
+                                largeRoundEdgeRadius,
+                              ),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(
+                                  sigmaX: 10,
+                                  sigmaY: 10,
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(
+                                      largeRoundEdgeRadius,
+                                    ),
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(
+                                      LucideIcons.share2,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () {},
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           );
         },
       ),

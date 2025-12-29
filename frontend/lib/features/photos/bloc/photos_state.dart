@@ -14,11 +14,12 @@ class PhotosLoadInProgress extends PhotosState {}
 
 class PhotosLoadSuccess extends PhotosState {
   final List<Photo> photos;
+  final bool showingFavorites;
 
-  const PhotosLoadSuccess(this.photos);
+  const PhotosLoadSuccess(this.photos, {this.showingFavorites = false});
 
   @override
-  List<Object?> get props => [photos];
+  List<Object?> get props => [photos, showingFavorites];
 }
 
 class PhotosLoadFailure extends PhotosState {

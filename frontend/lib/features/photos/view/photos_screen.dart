@@ -116,9 +116,17 @@ class _PhotosScreenState extends State<PhotosScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PhotosBloc, PhotosState>(
+    return BlocConsumer<PhotosBloc, PhotosState>(
+      listener: (context, state) {
+        if (state is PhotosLoadSuccess && state.showingFavorites) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Showing only your favorite photos.')),
+          );
+        }
+      },
       builder: (context, state) {
         Widget body;
+        bool showingFavorites = false;
         if (state is PhotosLoadInProgress || state is PhotosInitial) {
           body = const Center(child: CircularProgressIndicator());
         } else if (state is PhotosLoadFailure) {
@@ -139,8 +147,14 @@ class _PhotosScreenState extends State<PhotosScreen> {
             ),
           );
         } else if (state is PhotosLoadSuccess && state.photos.isEmpty) {
-          body = const Center(child: Text(photosNoPhotos));
+          showingFavorites = state.showingFavorites;
+          body = Center(
+            child: Text(
+              showingFavorites ? 'No favorite photos yet.' : photosNoPhotos,
+            ),
+          );
         } else if (state is PhotosLoadSuccess) {
+          showingFavorites = state.showingFavorites;
           final groups = _groupByMonthYear(state.photos);
           body = ListView.builder(
             padding: const EdgeInsets.all(12),
@@ -187,7 +201,17 @@ class _PhotosScreenState extends State<PhotosScreen> {
                 tooltip: _isGrid ? photosGridView : photosMasonryView,
                 onPressed: () => setState(() => _isGrid = !_isGrid),
               ),
-              IconButton(onPressed: () {}, icon: Icon(LucideIcons.heart)),
+              IconButton(
+                onPressed: () =>
+                    context.read<PhotosBloc>().add(PhotosFavoritesToggled()),
+                icon: Icon(
+                  showingFavorites ? LucideIcons.heart : LucideIcons.heart,
+                  color: showingFavorites ? Colors.redAccent : null,
+                ),
+                tooltip: showingFavorites
+                    ? 'Showing favorites'
+                    : 'Show only favorites',
+              ),
               IconButton(onPressed: () {}, icon: Icon(LucideIcons.bell)),
             ],
           ),

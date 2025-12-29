@@ -8,3 +8,5 @@ abstract class PhotosEvent extends Equatable {
 }
 
 class PhotosRequested extends PhotosEvent {}
+
+class PhotosFavoritesToggled extends PhotosEvent {}

@@ -208,15 +208,46 @@ class _PhotosScreenState extends State<PhotosScreen> {
               IconButton(
                 onPressed: () =>
                     context.read<PhotosBloc>().add(PhotosFavoritesToggled()),
-                icon: Icon(
-                  showingFavorites ? LucideIcons.heart : LucideIcons.heart,
-                  color: showingFavorites ? Colors.redAccent : null,
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
+                  transitionBuilder: (child, animation) => ScaleTransition(
+                    scale: CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutBack,
+                    ),
+                    child: child,
+                  ),
+                  child: Icon(
+                    showingFavorites ? Icons.favorite : Icons.favorite_border,
+                    key: ValueKey<bool>(showingFavorites),
+                    color: showingFavorites ? Colors.redAccent : null,
+                  ),
                 ),
+                tooltip: showingFavorites
+                    ? 'Showing favorites'
+                    : 'Show only favorites',
               ),
               IconButton(onPressed: () {}, icon: Icon(LucideIcons.bell)),
             ],
           ),
-          body: body,
+          body: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 0.98, end: 1.0).animate(animation),
+                child: child,
+              ),
+            ),
+            child: KeyedSubtree(
+              key: ValueKey<String>(
+                'gallery_${showingFavorites}_${_isGrid}_${state is PhotosLoadSuccess ? state.photos.length : -1}',
+              ),
+              child: body,
+            ),
+          ),
         );
       },
     );

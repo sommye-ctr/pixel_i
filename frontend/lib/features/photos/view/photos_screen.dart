@@ -11,6 +11,7 @@ import '../models/photo.dart';
 import '../bloc/photos_bloc.dart';
 import '../bloc/photos_event.dart';
 import '../bloc/photos_state.dart';
+import '../../../core/utils/toast_utils.dart';
 
 class PhotosScreen extends StatefulWidget {
   const PhotosScreen({super.key});
@@ -119,9 +120,7 @@ class _PhotosScreenState extends State<PhotosScreen> {
     return BlocConsumer<PhotosBloc, PhotosState>(
       listener: (context, state) {
         if (state is PhotosLoadSuccess && state.showingFavorites) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Showing only your favorite photos.')),
-          );
+          ToastUtils.showShort('Showing only your favorite photos.');
         }
       },
       builder: (context, state) {
@@ -199,7 +198,12 @@ class _PhotosScreenState extends State<PhotosScreen> {
                       : LucideIcons.layoutDashboard,
                 ),
                 tooltip: _isGrid ? photosGridView : photosMasonryView,
-                onPressed: () => setState(() => _isGrid = !_isGrid),
+                onPressed: () {
+                  setState(() => _isGrid = !_isGrid);
+                  ToastUtils.showShort(
+                    _isGrid ? photosGridView : photosMasonryView,
+                  );
+                },
               ),
               IconButton(
                 onPressed: () =>
@@ -208,9 +212,6 @@ class _PhotosScreenState extends State<PhotosScreen> {
                   showingFavorites ? LucideIcons.heart : LucideIcons.heart,
                   color: showingFavorites ? Colors.redAccent : null,
                 ),
-                tooltip: showingFavorites
-                    ? 'Showing favorites'
-                    : 'Show only favorites',
               ),
               IconButton(onPressed: () {}, icon: Icon(LucideIcons.bell)),
             ],

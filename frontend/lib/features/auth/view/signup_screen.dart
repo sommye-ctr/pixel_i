@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/core/resources/assets.dart';
 import 'package:frontend/core/resources/style.dart';
 import 'package:frontend/core/utils/screen_utils.dart';
+import 'package:frontend/core/utils/toast_utils.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -65,9 +66,7 @@ class _SignupScreenState extends State<SignupScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$errorSignupFailed${state.error}')),
-          );
+          ToastUtils.showLong('$errorSignupFailed${state.error}');
         } else if (state.status == AuthStatus.unauthenticated) {
           // Signup successful, show OTP sheet
           _showOtpBottomSheet(email: _emailController.text.trim());
@@ -233,17 +232,11 @@ class _EmailOtpBottomSheetState extends State<EmailOtpBottomSheet> {
           // OTP verified successfully
           Navigator.of(context).pop(true);
         } else if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$errorOtpVerificationFailed${state.error}'),
-            ),
-          );
+          ToastUtils.showLong('$errorOtpVerificationFailed${state.error}');
         } else if (state.status == AuthStatus.unauthenticated &&
             _canResend == false) {
           // OTP resent successfully
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text(otpResendSuccess)));
+          ToastUtils.showShort(otpResendSuccess);
         }
       },
       child: BlocBuilder<AuthBloc, AuthState>(

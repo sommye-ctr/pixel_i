@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/core/resources/assets.dart';
 import 'package:frontend/core/resources/style.dart';
 import 'package:frontend/core/utils/screen_utils.dart';
+import 'package:frontend/core/utils/toast_utils.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -46,9 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Login failed: ${state.error}')),
-          );
+          ToastUtils.showLong('Login failed: ${state.error}');
         } else if (state.status == AuthStatus.authenticated) {
           // Login successful, navigate to home
           context.go('/');

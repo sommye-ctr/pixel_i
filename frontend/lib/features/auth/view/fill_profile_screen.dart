@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/core/resources/assets.dart';
 import 'package:frontend/core/resources/style.dart';
 import 'package:frontend/core/utils/screen_utils.dart';
+import 'package:frontend/core/utils/toast_utils.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/resources/strings.dart';
@@ -44,9 +45,7 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state.status == AuthStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$errorSaveInfoFailed${state.error ?? ''}')),
-          );
+          ToastUtils.showLong('$errorSaveInfoFailed${state.error ?? ''}');
         } else if (state.status == AuthStatus.authenticated) {
           context.go('/');
         }

@@ -8,6 +8,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:frontend/core/resources/style.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:frontend/features/comments/view/comments_bottom_sheet.dart';
+import 'package:frontend/core/utils/toast_utils.dart';
 
 import '../../../core/resources/strings.dart';
 import '../bloc/photo_detail_bloc.dart';
@@ -204,10 +205,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
               state.photo.id == widget.photoId) {
             imageUrl = state.photo.originalUrl ?? state.photo.thumbnailUrl;
             photo = state.photo;
-
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('Error: ${state.error}')));
+            ToastUtils.showLong('Error: ${state.error}');
           } else if (state is PhotoDetailLoadFailure &&
               widget.thumbnailUrl != null) {
             imageUrl = widget.thumbnailUrl!;

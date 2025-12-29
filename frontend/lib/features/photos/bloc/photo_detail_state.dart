@@ -29,3 +29,31 @@ class PhotoDetailLoadFailure extends PhotoDetailState {
   @override
   List<Object?> get props => [error];
 }
+
+class PhotoLikeInProgress extends PhotoDetailState {
+  final Photo photo;
+
+  const PhotoLikeInProgress(this.photo);
+
+  @override
+  List<Object?> get props => [photo];
+}
+
+class PhotoLikeSuccess extends PhotoDetailState {
+  final Photo photo;
+
+  const PhotoLikeSuccess(this.photo);
+
+  @override
+  List<Object?> get props => [photo];
+}
+
+class PhotoLikeFailure extends PhotoDetailState {
+  final Photo photo;
+  final String error;
+
+  const PhotoLikeFailure(this.photo, this.error);
+
+  @override
+  List<Object?> get props => [photo, error];
+}

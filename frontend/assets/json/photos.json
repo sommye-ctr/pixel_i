@@ -6,6 +6,7 @@
     "timestamp": 1700000000000,
     "width": 600,
     "height": 800,
+    "is_liked": true,
     "photographer": {
       "id": "u1",
       "name": "Alice Park",
@@ -21,6 +22,7 @@
     "timestamp": 1700250000000,
     "width": 600,
     "height": 500,
+    "is_liked": false,
     "photographer": {
       "id": "u2",
       "name": "Bob Chen",
@@ -36,6 +38,7 @@
     "timestamp": 1700900000000,
     "width": 800,
     "height": 600,
+    "is_liked": true,
     "photographer": {
       "id": "u3",
       "name": "Cara Singh",
@@ -51,6 +54,7 @@
     "timestamp": 1698000000000,
     "width": 400,
     "height": 400,
+    "is_liked": false,
     "photographer": {
       "id": "u4",
       "name": "Daniel Kim",
@@ -66,6 +70,7 @@
     "timestamp": 1695500000000,
     "width": 1000,
     "height": 600,
+    "is_liked": true,
     "photographer": {
       "id": "u5",
       "name": "Eve Martinez",
@@ -81,6 +86,7 @@
     "timestamp": 1693000000000,
     "width": 500,
     "height": 750,
+    "is_liked": false,
     "photographer": {
       "id": "u6",
       "name": "Frank Li",
@@ -97,6 +103,7 @@
     "timestamp": 1698796800000,
     "width": 420,
     "height": 280,
+    "is_liked": true,
     "photographer": {
       "id": "u7",
       "name": "Grace Park",
@@ -112,6 +119,7 @@
     "timestamp": 1700428800000,
     "width": 350,
     "height": 525,
+    "is_liked": false,
     "photographer": {
       "id": "u8",
       "name": "Henry Zhao",
@@ -127,6 +135,7 @@
     "timestamp": 1696896000000,
     "width": 640,
     "height": 427,
+    "is_liked": true,
     "photographer": {
       "id": "u9",
       "name": "Isha Patel",
@@ -142,6 +151,7 @@
     "timestamp": 1698182400000,
     "width": 360,
     "height": 480,
+    "is_liked": false,
     "photographer": {
       "id": "u10",
       "name": "Jamal Rivera",
@@ -157,6 +167,7 @@
     "timestamp": 1641340800000,
     "width": 1200,
     "height": 800,
+    "is_liked": true,
     "photographer": {
       "id": "u11",
       "name": "Karen O'Neil",
@@ -172,6 +183,7 @@
     "timestamp": 1641772800000,
     "width": 800,
     "height": 1200,
+    "is_liked": false,
     "photographer": {
       "id": "u12",
       "name": "Liam Walker",
@@ -187,6 +199,7 @@
     "timestamp": 1642204800000,
     "width": 500,
     "height": 333,
+    "is_liked": true,
     "photographer": {
       "id": "u13",
       "name": "Maya Singh",
@@ -202,6 +215,7 @@
     "timestamp": 1642636800000,
     "width": 400,
     "height": 600,
+    "is_liked": false,
     "photographer": {
       "id": "u14",
       "name": "Noah Brown",
@@ -217,6 +231,7 @@
     "timestamp": 1643068800000,
     "width": 600,
     "height": 600,
+    "is_liked": true,
     "photographer": {
       "id": "u15",
       "name": "Olivia Green",

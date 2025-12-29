@@ -21,6 +21,7 @@ class Photo {
   final String? sharePerm;
   final String? originalUrl;
   final int? likesCount;
+  final bool? isLiked;
   Photo({
     required this.id,
     required this.thumbnailUrl,
@@ -36,6 +37,7 @@ class Photo {
     this.sharePerm,
     this.originalUrl,
     this.likesCount,
+    this.isLiked,
   });
 
   Photo copyWith({
@@ -53,6 +55,7 @@ class Photo {
     ValueGetter<String?>? sharePerm,
     ValueGetter<String?>? originalUrl,
     ValueGetter<int?>? likesCount,
+    ValueGetter<bool?>? isLiked,
   }) {
     return Photo(
       id: id ?? this.id,
@@ -69,6 +72,7 @@ class Photo {
       sharePerm: sharePerm != null ? sharePerm() : this.sharePerm,
       originalUrl: originalUrl != null ? originalUrl() : this.originalUrl,
       likesCount: likesCount != null ? likesCount() : this.likesCount,
+      isLiked: isLiked != null ? isLiked() : this.isLiked,
     );
   }
 
@@ -88,6 +92,7 @@ class Photo {
       'share_perm': sharePerm,
       'original_url': originalUrl,
       'likes_count': likesCount,
+      'is_liked': isLiked,
     };
   }
 
@@ -109,6 +114,7 @@ class Photo {
       sharePerm: map['share_perm'],
       originalUrl: map['original_url'],
       likesCount: map['likes_count']?.toInt(),
+      isLiked: map['is_liked'] == null ? null : map['is_liked'] as bool,
     );
   }
 
@@ -118,7 +124,7 @@ class Photo {
 
   @override
   String toString() {
-    return 'Photo(id: $id, thumbnailUrl: $thumbnailUrl, timestamp: $timestamp, photographer: $photographer, width: $width, height: $height, meta: $meta, taggedUsers: $taggedUsers, downloads: $downloads, views: $views, readPerm: $readPerm, sharePerm: $sharePerm, originalUrl: $originalUrl, likesCount: $likesCount)';
+    return 'Photo(id: $id, thumbnailUrl: $thumbnailUrl, timestamp: $timestamp, photographer: $photographer, width: $width, height: $height, meta: $meta, taggedUsers: $taggedUsers, downloads: $downloads, views: $views, readPerm: $readPerm, sharePerm: $sharePerm, originalUrl: $originalUrl, likesCount: $likesCount, isLiked: $isLiked)';
   }
 
   @override
@@ -139,7 +145,8 @@ class Photo {
         other.readPerm == readPerm &&
         other.sharePerm == sharePerm &&
         other.originalUrl == originalUrl &&
-        other.likesCount == likesCount;
+        other.likesCount == likesCount &&
+        other.isLiked == isLiked;
   }
 
   @override
@@ -157,6 +164,7 @@ class Photo {
         readPerm.hashCode ^
         sharePerm.hashCode ^
         originalUrl.hashCode ^
-        likesCount.hashCode;
+        likesCount.hashCode ^
+        isLiked.hashCode;
   }
 }

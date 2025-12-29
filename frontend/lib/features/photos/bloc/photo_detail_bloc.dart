@@ -9,6 +9,7 @@ class PhotoDetailBloc extends Bloc<PhotoDetailEvent, PhotoDetailState> {
 
   PhotoDetailBloc(this.repository) : super(PhotoDetailInitial()) {
     on<PhotoDetailRequested>(_onRequested);
+    on<PhotoLikeToggleRequested>(_onLikeToggleRequested);
   }
 
   Future<void> _onRequested(
@@ -21,6 +22,21 @@ class PhotoDetailBloc extends Bloc<PhotoDetailEvent, PhotoDetailState> {
       emit(PhotoDetailLoadSuccess(photo));
     } catch (e) {
       emit(PhotoDetailLoadFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onLikeToggleRequested(
+    PhotoLikeToggleRequested event,
+    Emitter<PhotoDetailState> emit,
+  ) async {
+    final photo = event.photo;
+    emit(PhotoLikeInProgress(photo));
+
+    try {
+      final updatedPhoto = await repository.toggleLikePhoto(photo);
+      emit(PhotoLikeSuccess(updatedPhoto));
+    } catch (e) {
+      emit(PhotoLikeFailure(photo, e.toString()));
     }
   }
 }

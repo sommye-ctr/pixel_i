@@ -43,4 +43,16 @@ class PhotosRepository {
     );
     return Photo.fromMap(Map<String, dynamic>.from(photoMap as Map));
   }
+
+  Future<Photo> toggleLikePhoto(Photo photo) async {
+    // final res = await api.post<Map<String, dynamic>>('/photos/$photoId/toggle-like/');
+    // final data = res.data;
+    // if (data != null) {
+    //   return Photo.fromMap(data);
+    // }
+    // throw Exception('Failed to toggle like on photo');
+
+    // Development: update local state (fetch and toggle isLiked)
+    return photo.copyWith(isLiked: () => !(photo.isLiked ?? false));
+  }
 }

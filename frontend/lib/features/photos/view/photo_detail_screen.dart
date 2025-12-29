@@ -108,7 +108,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
     );
   }
 
-  Widget _getBottomActions() {
+  Widget _getBottomActions(Photo? photo) {
     return Padding(
       padding: EdgeInsets.only(
         bottom: ScreenUtils.safeBottom(context),
@@ -133,8 +133,17 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         IconButton(
-                          icon: const Icon(LucideIcons.heart),
-                          onPressed: () {},
+                          icon: Icon(LucideIcons.heart),
+                          color: (photo?.isLiked ?? false)
+                              ? Colors.redAccent
+                              : Colors.white,
+                          onPressed: () {
+                            if (photo != null) {
+                              context.read<PhotoDetailBloc>().add(
+                                PhotoLikeToggleRequested(photo),
+                              );
+                            }
+                          },
                         ),
                         IconButton(
                           icon: const Icon(LucideIcons.download),
@@ -186,8 +195,19 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
 
           if (state is PhotoDetailLoadSuccess &&
               state.photo.id == widget.photoId) {
+            photo = state.photo;
+          } else if (state is PhotoLikeSuccess &&
+              state.photo.id == widget.photoId) {
             imageUrl = state.photo.originalUrl ?? state.photo.thumbnailUrl;
             photo = state.photo;
+          } else if (state is PhotoLikeFailure &&
+              state.photo.id == widget.photoId) {
+            imageUrl = state.photo.originalUrl ?? state.photo.thumbnailUrl;
+            photo = state.photo;
+
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Error: ${state.error}')));
           } else if (state is PhotoDetailLoadFailure &&
               widget.thumbnailUrl != null) {
             imageUrl = widget.thumbnailUrl!;
@@ -334,7 +354,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                 ),
                 Align(
                   alignment: Alignment.bottomCenter,
-                  child: _getBottomActions(),
+                  child: _getBottomActions(photo),
                 ),
               ],
             ),

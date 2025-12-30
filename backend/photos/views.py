@@ -1,9 +1,11 @@
 from django.db.models import Q
 from django.utils import timezone
-from rest_framework import viewsets, parsers, generics
+from rest_framework import viewsets, parsers, generics, permissions
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
+from events.models import Event
+from events.permissions import EventPermission
 from notifications.models import Notification
 from notifications.services import create_notification
 from photos.models import Photo, PhotoShare
@@ -69,6 +71,27 @@ class PhotoView(viewsets.ModelViewSet):
         if user_is_img(user):
             return qs.filter(q_photographer | q_img | q_public).distinct()
         return qs.filter(q_photographer | q_public).distinct()
+
+
+class EventPhotosView(generics.ListAPIView):
+    serializer_class = PhotoListSerializer
+    permissions_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        event = get_object_or_404(Event, id=self.kwargs["event_id"])
+        user = self.request.user
+        qs = event.photos.all()
+
+        if user_is_admin(user):
+            return qs
+
+        q_coord = Q(event__coordinator_id=user.id)
+        q_public = Q(read_perm=EventPermission.PUBLIC)
+
+        if user_is_img(user):
+            q_img = Q(read_perm=EventPermission.IMG)
+            return qs.filter(q_coord | q_img | q_public).distinct()
+        return qs.filter(q_coord | q_public).distinct()
 
 
 class PhotoShareCreateView(generics.CreateAPIView):

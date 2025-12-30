@@ -9,6 +9,20 @@ from photos.permissions import is_admin_or_photographer
 from photos.services import upload_to_storage, generate_signed_url, create_photo_tags
 
 
+class PhotoMiniSerializer(serializers.ModelSerializer):
+    thumbnail_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Photo
+        fields = [
+            'id', 'thumbnail_url', 'width', 'height'
+        ]
+        read_only_fields = fields
+
+    def get_thumbnail_url(self, obj):
+        return generate_signed_url(obj.thumbnail_path)
+
+
 # downloads and views only for photographer
 class PhotoReadSerializer(serializers.ModelSerializer):
     tagged_users = MiniUserSerializer(many=True, read_only=True)

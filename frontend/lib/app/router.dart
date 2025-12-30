@@ -35,7 +35,8 @@ GoRouter buildRouter({bool isLoggedIn = false}) {
         name: 'photo-detail',
         builder: (context, state) {
           final photoId = state.pathParameters['id']!;
-          final heroTag = state.uri.queryParameters['heroTag'] ?? 'photo-$photoId';
+          final heroTag =
+              state.uri.queryParameters['heroTag'] ?? 'photo-$photoId';
           final thumbnailUrl = state.uri.queryParameters['thumbnailUrl'];
           return PhotoDetailScreen(
             photoId: photoId,

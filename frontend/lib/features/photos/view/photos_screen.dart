@@ -185,10 +185,9 @@ class _PhotosScreenState extends State<PhotosScreen> {
           appBar: AppBar(
             title: Text(
               photosTitle,
-              style: TextStyle(
-                fontSize: Theme.of(context).textTheme.headlineSmall?.fontSize,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             actions: [
               IconButton(

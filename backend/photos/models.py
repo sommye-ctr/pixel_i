@@ -37,7 +37,7 @@ class Photo(models.Model):
     views = models.BigIntegerField(default=0)
 
     photographer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False)
-    event = models.ForeignKey(Event, on_delete=models.PROTECT, null=False)
+    event = models.ForeignKey(Event, on_delete=models.PROTECT, null=False, related_name="photos")
 
     width = models.IntegerField(null=True, blank=True)
     height = models.IntegerField(null=True, blank=True)

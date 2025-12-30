@@ -76,6 +76,7 @@ flutter:
   assets:
     - assets/svg/
     - assets/json/photos.json
+    - assets/json/events.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

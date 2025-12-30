@@ -1,0 +1,80 @@
+[
+  {
+    "id": "4435ac6f-e1ec-4020-adf9-87ab52915d63",
+    "title": "Freshers 25",
+    "read_perm": "PUB",
+    "coordinator": {
+      "id": "8b6f14f4-31b5-4ac7-b9ba-2daa604f1d17",
+      "username": "mahajansomye",
+      "name": "Somye",
+      "profile_pic": null
+    },
+    "images_count": 3,
+    "image_url": "https://picsum.photos/500/700?random=1"
+  },
+  {
+    "id": "5546bc7g-f2fd-5131-beg0-98bc63026e74",
+    "title": "Tech Fest 2025",
+    "read_perm": "PUB",
+    "coordinator": {
+      "id": "9c7g25g5-42c6-5bc8-c0cb-3ebb715f2d18",
+      "username": "techcoord",
+      "name": "Rahul Kumar",
+      "profile_pic": "https://i.pravatar.cc/100?img=12"
+    },
+    "images_count": 45,
+    "image_url": "https://picsum.photos/600/400?random=2"
+  },
+  {
+    "id": "6657cd8h-g3ge-6242-cfg1-09cd74137f85",
+    "title": "Annual Sports Day",
+    "read_perm": "PRI",
+    "coordinator": {
+      "id": "0d8h36h6-53d7-6cd9-d1dc-4fcc826g3e29",
+      "username": "sportshead",
+      "name": "Priya Sharma",
+      "profile_pic": "https://i.pravatar.cc/100?img=5"
+    },
+    "images_count": 128,
+    "image_url": "https://picsum.photos/450/600?random=3"
+  },
+  {
+    "id": "7768de9i-h4hf-7353-dgh2-10de85248g96",
+    "title": "Cultural Night",
+    "read_perm": "PUB",
+    "coordinator": {
+      "id": "1e9i47i7-64e8-7de0-e2ed-5gdd937h4f30",
+      "username": "culturehead",
+      "name": "Anjali Verma",
+      "profile_pic": "https://i.pravatar.cc/100?img=9"
+    },
+    "images_count": 67,
+    "image_url": "https://picsum.photos/700/500?random=4"
+  },
+  {
+    "id": "8879ef0j-i5ig-8464-ehi3-21ef96359h07",
+    "title": "Hackathon 2025",
+    "read_perm": "PUB",
+    "coordinator": {
+      "id": "2f0j58j8-75f9-8ef1-f3fe-6hee048i5g41",
+      "username": "hackmaster",
+      "name": "Vikram Singh",
+      "profile_pic": "https://i.pravatar.cc/100?img=15"
+    },
+    "images_count": 89,
+    "image_url": "https://picsum.photos/550/750?random=5"
+  },
+  {
+    "id": "9980fg1k-j6jh-9575-fij4-32fg07460i18",
+    "title": "Alumni Meet 2025",
+    "read_perm": "PRI",
+    "coordinator": {
+      "id": "3g1k69k9-86g0-9fg2-g4gf-7iff159j6h52",
+      "username": "alumniteam",
+      "name": "Neha Reddy",
+      "profile_pic": null
+    },
+    "images_count": 156,
+    "image_url": "https://picsum.photos/800/450?random=6"
+  }
+]

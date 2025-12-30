@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/core/resources/strings.dart';
 import 'package:frontend/core/resources/theme.dart';
+import 'package:frontend/features/events/bloc/events_bloc.dart';
+import 'package:frontend/features/events/data/events_repository.dart';
 
 import '../core/network/api_client.dart';
 import '../core/network/token_storage.dart';
@@ -27,6 +29,7 @@ class App extends StatelessWidget {
 
     final authRepository = AuthRepository(apiClient, tokenStorage);
     final photosRepository = PhotosRepository(apiClient);
+    final eventsRepository = EventsRepository(apiClient);
     final router = buildRouter(isLoggedIn: isLoggedIn);
 
     return MultiRepositoryProvider(
@@ -39,6 +42,7 @@ class App extends StatelessWidget {
           BlocProvider(create: (_) => AuthBloc(authRepository)),
           BlocProvider(create: (_) => PhotosBloc(photosRepository)),
           BlocProvider(create: (_) => PhotoDetailBloc(photosRepository)),
+          BlocProvider(create: (_) => EventsBloc(eventsRepository)),
         ],
         child: MaterialApp.router(
           title: appName,

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
 import 'package:frontend/features/auth/models/user.dart';
+import 'package:frontend/features/photos/models/photo.dart';
 
 class Event extends Equatable {
   final String id;
@@ -9,7 +10,7 @@ class Event extends Equatable {
   final String readPerm;
   final User coordinator;
   final int imagesCount;
-  final String imageUrl;
+  final Photo? coverPhoto;
 
   const Event({
     required this.id,
@@ -17,12 +18,12 @@ class Event extends Equatable {
     required this.readPerm,
     required this.coordinator,
     required this.imagesCount,
-    required this.imageUrl,
+    this.coverPhoto,
   });
 
   @override
   List<Object?> get props {
-    return [id, title, readPerm, coordinator, imagesCount, imageUrl];
+    return [id, title, readPerm, coordinator, imagesCount, coverPhoto];
   }
 
   Event copyWith({
@@ -31,7 +32,7 @@ class Event extends Equatable {
     String? readPerm,
     User? coordinator,
     int? imagesCount,
-    String? imageUrl,
+    Photo? coverPhoto,
   }) {
     return Event(
       id: id ?? this.id,
@@ -39,7 +40,7 @@ class Event extends Equatable {
       readPerm: readPerm ?? this.readPerm,
       coordinator: coordinator ?? this.coordinator,
       imagesCount: imagesCount ?? this.imagesCount,
-      imageUrl: imageUrl ?? this.imageUrl,
+      coverPhoto: coverPhoto ?? this.coverPhoto,
     );
   }
 
@@ -50,7 +51,7 @@ class Event extends Equatable {
       'read_perm': readPerm,
       'coordinator': coordinator.toMap(),
       'images_count': imagesCount,
-      'image_url': imageUrl,
+      'cover_photo': coverPhoto?.toMap(),
     };
   }
 
@@ -61,7 +62,9 @@ class Event extends Equatable {
       readPerm: map['read_perm'] ?? 'PUB',
       coordinator: User.fromMap(map['coordinator']),
       imagesCount: map['images_count']?.toInt() ?? 0,
-      imageUrl: map['image_url'] ?? '',
+      coverPhoto: map['cover_photo'] != null
+          ? Photo.fromCoverMap(map['cover_photo'])
+          : null,
     );
   }
 
@@ -71,6 +74,6 @@ class Event extends Equatable {
 
   @override
   String toString() {
-    return 'Event(id: $id, title: $title, readPerm: $readPerm, coordinator: $coordinator, imagesCount: $imagesCount, imageUrl: $imageUrl)';
+    return 'Event(id: $id, title: $title, readPerm: $readPerm, coordinator: $coordinator, imagesCount: $imagesCount, coverPhoto: $coverPhoto)';
   }
 }

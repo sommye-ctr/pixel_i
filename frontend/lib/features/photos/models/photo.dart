@@ -40,6 +40,20 @@ class Photo {
     this.isLiked,
   });
 
+  Photo.cover({
+    required String id,
+    required String thumbnailUrl,
+    int? width,
+    int? height,
+  }) : this(
+         id: id,
+         thumbnailUrl: thumbnailUrl,
+         timestamp: DateTime.fromMillisecondsSinceEpoch(0),
+         photographer: const User(id: '', name: '', email: '', username: ''),
+         width: width,
+         height: height,
+       );
+
   Photo copyWith({
     String? id,
     String? thumbnailUrl,
@@ -115,6 +129,15 @@ class Photo {
       originalUrl: map['original_url'],
       likesCount: map['likes_count']?.toInt(),
       isLiked: map['is_liked'] == null ? null : map['is_liked'] as bool,
+    );
+  }
+
+  factory Photo.fromCoverMap(Map<String, dynamic> map) {
+    return Photo.cover(
+      id: map['id'] ?? '',
+      thumbnailUrl: map['thumbnail_url'] ?? '',
+      width: map['width'] != null ? (map['width'] as num).toInt() : null,
+      height: map['height'] != null ? (map['height'] as num).toInt() : null,
     );
   }
 

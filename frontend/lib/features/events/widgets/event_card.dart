@@ -10,6 +10,77 @@ class EventCard extends StatelessWidget {
 
   const EventCard({super.key, required this.event, this.onTap});
 
+  Widget _buildImage() {
+    final cover = event.coverPhoto;
+    final imageUrl = cover?.thumbnailUrl ?? '';
+    final double? aspectRatio = (cover?.width != null && cover?.height != null)
+        ? (cover!.width! > 0 && cover.height! > 0)
+              ? cover.width! / cover.height!
+              : null
+        : null;
+
+    final image = CachedNetworkImage(
+      imageUrl: imageUrl,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      placeholder: (context, url) => Container(
+        color: Colors.grey[300],
+        height: 200,
+        child: const Center(child: CircularProgressIndicator()),
+      ),
+      errorWidget: (context, url, error) => Container(
+        color: Colors.grey[300],
+        height: 200,
+        child: const Icon(Icons.broken_image, size: 48, color: Colors.grey),
+      ),
+    );
+
+    final stack = Stack(
+      children: [
+        image,
+        Positioned(
+          top: defaultSpacing,
+          right: defaultSpacing,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: defaultSpacing,
+              vertical: defaultSpacing / 2,
+            ),
+            decoration: BoxDecoration(
+              color: event.readPerm == 'PUB'
+                  ? Colors.green.withOpacity(0.9)
+                  : Colors.orange.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(smallRoundEdgeRadius),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  event.readPerm == 'PUB'
+                      ? LucideIcons.globe
+                      : LucideIcons.lock,
+                  size: 12,
+                  color: Colors.white,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  event.readPerm == 'PUB' ? 'Public' : 'Private',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+
+    if (aspectRatio != null) {
+      return AspectRatio(aspectRatio: aspectRatio, child: stack);
+    }
+
+    return SizedBox(width: double.infinity, child: stack);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -24,68 +95,7 @@ class EventCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Event Image - Dynamic height based on image
-            Stack(
-              children: [
-                CachedNetworkImage(
-                  imageUrl: event.imageUrl,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  placeholder: (context, url) => Container(
-                    color: Colors.grey[300],
-                    height: 200,
-                    child: const Center(child: CircularProgressIndicator()),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: Colors.grey[300],
-                    height: 200,
-                    child: const Icon(
-                      Icons.broken_image,
-                      size: 48,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-                // Privacy badge
-                Positioned(
-                  top: defaultSpacing,
-                  right: defaultSpacing,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: defaultSpacing,
-                      vertical: defaultSpacing / 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: event.readPerm == 'PUB'
-                          ? Colors.green.withOpacity(0.9)
-                          : Colors.orange.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(smallRoundEdgeRadius),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          event.readPerm == 'PUB'
-                              ? LucideIcons.globe
-                              : LucideIcons.lock,
-                          size: 12,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          event.readPerm == 'PUB' ? 'Public' : 'Private',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            _buildImage(),
             // Event Details
             Padding(
               padding: const EdgeInsets.all(defaultSpacing),

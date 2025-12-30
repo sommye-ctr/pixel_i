@@ -7,17 +7,17 @@ from photos.serializers import PhotoMiniSerializer
 
 class EventReadSerializer(serializers.ModelSerializer):
     images_count = serializers.SerializerMethodField()
-    cover_image = serializers.SerializerMethodField()
+    cover_photo = serializers.SerializerMethodField()
     coordinator = MiniUserSerializer(read_only=True)
 
     class Meta:
         model = Event
-        fields = ['id', 'title', 'read_perm', 'coordinator', 'images_count', 'cover_image']
+        fields = ['id', 'title', 'read_perm', 'coordinator', 'images_count', 'cover_photo']
 
     def get_images_count(self, obj: Event):
         return obj.photos.count()
 
-    def get_cover_image(self, obj: Event):
+    def get_cover_photo(self, obj: Event):
         first_photo = obj.photos.order_by('timestamp').first()
         if not first_photo:
             return None

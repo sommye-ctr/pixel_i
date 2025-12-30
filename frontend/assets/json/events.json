@@ -10,7 +10,12 @@
       "profile_pic": null
     },
     "images_count": 3,
-    "image_url": "https://picsum.photos/500/700?random=1"
+    "cover_photo": {
+      "id": "9e0177c5-54d0-42e8-8a3a-09250316385d",
+      "thumbnail_url": "https://picsum.photos/id/1015/500/700",
+      "width": 500,
+      "height": 700
+    }
   },
   {
     "id": "5546bc7g-f2fd-5131-beg0-98bc63026e74",
@@ -23,7 +28,12 @@
       "profile_pic": "https://i.pravatar.cc/100?img=12"
     },
     "images_count": 45,
-    "image_url": "https://picsum.photos/600/400?random=2"
+    "cover_photo": {
+      "id": "b2c82a1f-1111-4b22-9a43-123456789001",
+      "thumbnail_url": "https://picsum.photos/id/1024/900/500",
+      "width": 900,
+      "height": 500
+    }
   },
   {
     "id": "6657cd8h-g3ge-6242-cfg1-09cd74137f85",
@@ -36,7 +46,12 @@
       "profile_pic": "https://i.pravatar.cc/100?img=5"
     },
     "images_count": 128,
-    "image_url": "https://picsum.photos/450/600?random=3"
+    "cover_photo": {
+      "id": "c3d93b2f-2222-4c33-8b54-223456789002",
+      "thumbnail_url": "https://picsum.photos/id/1035/720/960",
+      "width": 720,
+      "height": 960
+    }
   },
   {
     "id": "7768de9i-h4hf-7353-dgh2-10de85248g96",
@@ -49,7 +64,12 @@
       "profile_pic": "https://i.pravatar.cc/100?img=9"
     },
     "images_count": 67,
-    "image_url": "https://picsum.photos/700/500?random=4"
+    "cover_photo": {
+      "id": "d4ea4c3f-3333-4d44-9c65-323456789003",
+      "thumbnail_url": "https://picsum.photos/id/1043/640/480",
+      "width": 640,
+      "height": 480
+    }
   },
   {
     "id": "8879ef0j-i5ig-8464-ehi3-21ef96359h07",
@@ -62,7 +82,12 @@
       "profile_pic": "https://i.pravatar.cc/100?img=15"
     },
     "images_count": 89,
-    "image_url": "https://picsum.photos/550/750?random=5"
+    "cover_photo": {
+      "id": "e5fb5d4f-4444-4e55-ad76-423456789004",
+      "thumbnail_url": "https://picsum.photos/id/1050/800/1200",
+      "width": 800,
+      "height": 1200
+    }
   },
   {
     "id": "9980fg1k-j6jh-9575-fij4-32fg07460i18",
@@ -75,6 +100,11 @@
       "profile_pic": null
     },
     "images_count": 156,
-    "image_url": "https://picsum.photos/800/450?random=6"
+    "cover_photo": {
+      "id": "f60c6e5f-5555-4f66-be87-523456789005",
+      "thumbnail_url": "https://picsum.photos/id/1069/1200/720",
+      "width": 1200,
+      "height": 720
+    }
   }
 ]

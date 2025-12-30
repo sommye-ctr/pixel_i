@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:frontend/core/widgets/animated_heart.dart';
 
 import '../../../core/resources/strings.dart';
 import '../models/photo.dart';
@@ -204,27 +205,16 @@ class _PhotosScreenState extends State<PhotosScreen> {
                   );
                 },
               ),
-              IconButton(
-                onPressed: () =>
-                    context.read<PhotosBloc>().add(PhotosFavoritesToggled()),
-                icon: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 220),
-                  transitionBuilder: (child, animation) => ScaleTransition(
-                    scale: CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutBack,
-                    ),
-                    child: child,
-                  ),
-                  child: Icon(
-                    showingFavorites ? Icons.favorite : Icons.favorite_border,
-                    key: ValueKey<bool>(showingFavorites),
-                    color: showingFavorites ? Colors.redAccent : null,
-                  ),
-                ),
-                tooltip: showingFavorites
+              Tooltip(
+                message: showingFavorites
                     ? 'Showing favorites'
                     : 'Show only favorites',
+                child: AnimatedHeart(
+                  isActive: showingFavorites,
+                  onChanged: (_) =>
+                      context.read<PhotosBloc>().add(PhotosFavoritesToggled()),
+                  activeColor: Colors.redAccent,
+                ),
               ),
               IconButton(onPressed: () {}, icon: Icon(LucideIcons.bell)),
             ],

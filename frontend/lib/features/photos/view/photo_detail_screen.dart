@@ -6,6 +6,7 @@ import 'package:frontend/core/utils/screen_utils.dart';
 import 'package:frontend/features/photos/models/photo.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:frontend/core/resources/style.dart';
+import 'package:frontend/core/widgets/animated_heart.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:frontend/features/comments/view/comments_bottom_sheet.dart';
 import 'package:frontend/core/utils/toast_utils.dart';
@@ -133,18 +134,17 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        IconButton(
-                          icon: Icon(LucideIcons.heart),
-                          color: (photo?.isLiked ?? false)
-                              ? Colors.redAccent
-                              : Colors.white,
-                          onPressed: () {
+                        AnimatedHeart(
+                          isActive: photo?.isLiked ?? false,
+                          onChanged: (_) {
                             if (photo != null) {
                               context.read<PhotoDetailBloc>().add(
                                 PhotoLikeToggleRequested(photo),
                               );
                             }
                           },
+                          activeColor: Colors.redAccent,
+                          padding: const EdgeInsets.all(8),
                         ),
                         IconButton(
                           icon: const Icon(LucideIcons.download),

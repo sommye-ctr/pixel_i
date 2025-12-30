@@ -10,12 +10,13 @@ from photos.services import upload_to_storage, generate_signed_url, create_photo
 
 
 # downloads and views only for photographer
-class PhotoSerializer(serializers.ModelSerializer):
+class PhotoReadSerializer(serializers.ModelSerializer):
     tagged_users = MiniUserSerializer(many=True, read_only=True)
     original_url = serializers.SerializerMethodField()
     thumbnail_url = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField(read_only=True)
     is_liked = serializers.SerializerMethodField(read_only=True)
+    photographer = MiniUserSerializer(read_only=True)
 
     class Meta:
         model = Photo

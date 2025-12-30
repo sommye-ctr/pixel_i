@@ -5,7 +5,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from accounts.errors import OTPDeliveryError
-from accounts.models import EmailOTP
+from accounts.models import EmailOTP, CustomUser
 from accounts.services import send_otp_email
 from utils.auth_utils import get_otp_max_attempts, get_otp_cooldown, get_otp_ttl
 
@@ -20,9 +20,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class MiniUserSerializer(serializers.ModelSerializer):
+    profile_pic = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'username']
+        fields = ['id', 'username', 'name', 'profile_pic']
+
+    def get_profile_pic(self, obj:CustomUser):
+        return obj.profile_pic #TODO generate_signed_url(obj.profile_pic)
 
 
 class SignupSerializer(serializers.ModelSerializer):

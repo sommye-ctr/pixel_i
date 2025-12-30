@@ -9,7 +9,7 @@ from notifications.services import create_notification
 from photos.models import Photo, PhotoShare
 from photos.permissions import PhotoReadPermission, ReadPerm, IsPhotographer, IsEventCoordinator, \
     PhotoShareCreatePermission, PhotoShareRevokePermission
-from photos.serializers import PhotoSerializer, PhotoListSerializer, PhotoWriteSerializer, PhotoShareSerializer
+from photos.serializers import PhotoReadSerializer, PhotoListSerializer, PhotoWriteSerializer, PhotoShareSerializer
 from photos.tasks import generate_image_variants_task
 from utils.user_utils import user_is_admin, user_is_img
 
@@ -34,7 +34,7 @@ class PhotoView(viewsets.ModelViewSet):
         if self.action == 'list':
             return PhotoListSerializer
         elif self.action == 'retrieve':
-            return PhotoSerializer
+            return PhotoReadSerializer
         return PhotoWriteSerializer
 
     def get_permissions(self):

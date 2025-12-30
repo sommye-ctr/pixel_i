@@ -12,7 +12,7 @@ class EventReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ['id', 'title', 'read_perm', 'coordinator', 'images_count', 'cover_photo']
+        fields = ['id', 'title', 'read_perm', 'coordinator', 'images_count', 'cover_photo', 'created_at']
 
     def get_images_count(self, obj: Event):
         return obj.photos.count()

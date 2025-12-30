@@ -27,8 +27,8 @@ def create_notification(
         ).first()
 
         if existing:
-            existing.timestamp = timezone.now()
-            existing.save(update_fields=['timestamp'])
+            existing.created_at = timezone.now()
+            existing.save(update_fields=['created_at', 'updated_at'])
             return existing
 
     with transaction.atomic():
@@ -62,7 +62,7 @@ def create_notification(
                     "id": str(target_id),
                 },
                 "data": {},
-                "timestamp": str(notif.timestamp),
+                "timestamp": str(notif.created_at),
                 "read": notif.read
             }
         }

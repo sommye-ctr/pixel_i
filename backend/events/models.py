@@ -12,3 +12,5 @@ class Event(models.Model):
     coordinator = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
     read_perm = models.CharField(choices=EventPermission, max_length=3, default=EventPermission.PUBLIC)
     write_perm = models.CharField(choices=EventPermission, max_length=3, default=EventPermission.PUBLIC)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

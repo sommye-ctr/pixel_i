@@ -26,17 +26,16 @@ class Notification(models.Model):
     data = models.JSONField(default=dict, blank=True)
 
     read = models.BooleanField(default=False)
-    timestamp = models.DateTimeField(auto_now_add=True)
     deleted = models.BooleanField(default=False)
     dedupe_key = models.CharField(max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [
             models.Index(fields=["recipient", "read"]),
-            models.Index(fields=["recipient", "-timestamp"]),
-            models.Index(fields=["recipient", "dedupe_key"])
+            models.Index(fields=["recipient", "-created_at"]),
         ]
-        ordering = ["-timestamp"]
-
+        ordering = ["-created_at"]
     def __str__(self):
         return f"Notification from {self.actor_id} to {self.recipient_id}"

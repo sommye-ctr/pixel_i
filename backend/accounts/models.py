@@ -82,6 +82,9 @@ class CustomUser(AbstractUser):
     bio = models.TextField(blank=True, null=True)
     role = models.ForeignKey(Role, on_delete=models.PROTECT, null=False)  # roles cannot be deleted
 
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
     def save(self, *args, **kwargs, ):
         if not self.role_id:
             self.role = Role.objects.get(title="public")
@@ -103,7 +106,8 @@ class EmailOTP(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="email_otps")
     code = models.CharField(max_length=6)
     purpose = models.CharField(max_length=32, choices=PURPOSE_CHOICES, default=PURPOSE_EMAIL_VERIFICATION)
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     expires_at = models.DateTimeField()
     is_used = models.BooleanField(default=False)
     attempts = models.PositiveIntegerField(default=0)

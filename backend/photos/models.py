@@ -48,11 +48,15 @@ class Photo(models.Model):
     tagged_users = models.ManyToManyField(
         CustomUser, through="PhotoTag", related_name="tagged_photos"
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class PhotoTag(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False)
     photo = models.ForeignKey(Photo, on_delete=models.CASCADE, null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         constraints = [
@@ -70,4 +74,5 @@ class PhotoShare(models.Model):
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=False)
     variant_key = models.CharField(choices=PhotoVariant, default=PhotoVariant.ORIGINAL)
     expires_at = models.DateTimeField(null=False, blank=False)
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

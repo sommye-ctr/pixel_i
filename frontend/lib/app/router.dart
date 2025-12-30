@@ -5,6 +5,7 @@ import '../features/auth/view/signup_screen.dart';
 import '../features/auth/view/fill_profile_screen.dart';
 import '../features/home/view/home_screen.dart';
 import '../features/photos/view/photo_detail_screen.dart';
+import '../features/events/views/event_detail_screen.dart';
 
 GoRouter buildRouter({bool isLoggedIn = false}) {
   return GoRouter(
@@ -43,6 +44,15 @@ GoRouter buildRouter({bool isLoggedIn = false}) {
             heroTag: heroTag,
             thumbnailUrl: thumbnailUrl,
           );
+        },
+      ),
+      GoRoute(
+        path: '/event/:id',
+        name: 'event-detail',
+        builder: (context, state) {
+          final eventId = state.pathParameters['id']!;
+          final title = state.uri.queryParameters['title'] ?? 'Event';
+          return EventDetailScreen(eventId: eventId, title: title);
         },
       ),
     ],

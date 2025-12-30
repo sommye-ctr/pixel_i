@@ -3,12 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:frontend/core/resources/strings.dart';
 import 'package:frontend/core/resources/style.dart';
-import 'package:frontend/core/utils/toast_utils.dart';
 import 'package:frontend/features/events/bloc/events_bloc.dart';
 import 'package:frontend/features/events/bloc/events_event.dart';
 import 'package:frontend/features/events/bloc/events_state.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:frontend/features/events/widgets/event_card.dart';
+import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});
@@ -52,7 +52,10 @@ class _EventsScreenState extends State<EventsScreen> {
                   return EventCard(
                     event: events[index],
                     onTap: () {
-                      ToastUtils.showShort('Tapped on ${events[index].title}');
+                      final event = events[index];
+                      context.push(
+                        '/event/${event.id}?title=${Uri.encodeComponent(event.title)}',
+                      );
                     },
                   );
                 },

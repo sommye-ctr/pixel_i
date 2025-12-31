@@ -2,6 +2,8 @@ import os
 from datetime import timedelta
 from io import BytesIO
 
+import clip
+import torch
 from PIL import Image, ImageFilter, ImageOps
 from django.core.files.base import ContentFile
 from django.core.files.images import ImageFile
@@ -18,6 +20,72 @@ from photos.models import PhotoTag
 
 load_dotenv()
 image_ttl = int(os.getenv("DEFAULT_IMAGE_TTL"))
+
+CLIP_TAGS = [
+    # People & composition
+    "single person", "two people", "group photo", "large group", "crowd",
+    "audience", "people posing", "candid photo", "selfie", "portrait",
+    "side profile", "people walking", "people talking", "people clapping",
+
+    # Stage & structure
+    "speaker on stage", "person at podium", "panel discussion",
+    "presentation slide", "panel seating", "microphone on stage",
+    "stage performance", "award presentation",
+    "certificate handover", "trophy presentation",
+
+    # Activities
+    "speech", "performance", "dance performance", "music performance",
+    "live concert", "question and answer session", "discussion",
+    "celebration", "inauguration ceremony", "closing ceremony",
+
+    # Environment
+    "indoor event", "outdoor event", "auditorium", "conference hall",
+    "classroom", "open ground", "stage lighting",
+    "decorated stage", "banner backdrop", "projection screen",
+
+    # Time & lighting
+    "daytime event", "night event", "low light", "bright lighting",
+    "spotlight on stage", "artificial lighting", "natural lighting",
+
+    # Camera / shot
+    "wide angle shot", "close up shot", "medium shot",
+    "overhead shot", "side angle shot", "front view", "back view",
+
+    # Mood
+    "formal event", "informal gathering", "serious mood",
+    "celebratory mood", "energetic atmosphere",
+    "crowded atmosphere", "focused audience",
+
+    # College-specific
+    "college event", "technical event", "cultural event", "seminar",
+    "workshop", "guest lecture", "orientation session",
+    "convocation ceremony",
+
+    # Misc
+    "people holding certificates", "people holding microphones",
+    "people using laptops", "people using mobile phones",
+    "applause moment", "group applause"
+]
+
+
+def generate_auto_tag_photo(image_bytes: BytesIO, threshold=0.3):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model, preprocess = clip.load("ViT-B/32", device=device)
+
+    image = Image.open(image_bytes).convert("RGB")
+    image_tensor = preprocess(image).unsqueeze(0).to(device)
+    tokens = clip.tokenize(CLIP_TAGS).to(device)
+    with torch.no_grad():
+        image_features = model.encode_image(image_tensor)
+        text_features = model.encode_text(tokens)
+
+        image_features = image_features / image_features.norm(dim=-1, keepdim=True)
+        text_features = text_features / text_features.norm(dim=-1, keepdim=True)
+
+        similarity = (image_features @ text_features.T)
+
+    scores = similarity[0].cpu().tolist()
+    return [CLIP_TAGS[i] for i, score in enumerate(scores) if score >= threshold]
 
 
 def create_photo_tags(photo, usernames, actor):

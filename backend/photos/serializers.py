@@ -35,8 +35,8 @@ class PhotoReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photo
         fields = [
-            'id', 'timestamp', 'meta', 'photographer', 'event', 'tagged_users', 'downloads', 'views',
-            'read_perm', 'share_perm', 'original_url', 'thumbnail_url', 'likes_count', 'width', 'height', 'is_liked'
+            'id', 'timestamp', 'meta', 'photographer', 'event', 'tagged_users', 'downloads', 'views', 'auto_tags',
+            'user_tags', 'share_perm', 'original_url', 'thumbnail_url', 'likes_count', 'width', 'height', 'is_liked'
         ]
         read_only_fields = fields
 
@@ -101,7 +101,7 @@ class PhotoWriteSerializer(serializers.ModelSerializer):
         model = Photo
         fields = [
             'id', 'timestamp', 'meta', 'read_perm', 'share_perm', 'event',
-            'tagged_usernames', 'tagged_users', 'image', 'width', 'height'
+            'tagged_usernames', 'tagged_users', 'image', 'width', 'height', 'user_tags'
         ]
 
     def create(self, validated_data):

@@ -12,7 +12,7 @@ from photos.models import Photo, PhotoShare
 from photos.permissions import PhotoReadPermission, ReadPerm, IsPhotographer, IsEventCoordinator, \
     PhotoShareCreatePermission, PhotoShareRevokePermission
 from photos.serializers import PhotoReadSerializer, PhotoListSerializer, PhotoWriteSerializer, PhotoShareSerializer
-from photos.tasks import generate_image_variants_task
+from photos.tasks import generate_image_variants_task, tag_image_task
 from utils.user_utils import user_is_admin, user_is_img
 
 
@@ -31,6 +31,7 @@ class PhotoView(viewsets.ModelViewSet):
             dedupe_key=f"event_add:{photo.event.id}:actor:{self.request.user.id}"
         )
         generate_image_variants_task.delay(photo.id)
+        tag_image_task.delay(photo.id)
 
     def get_serializer_class(self):
         if self.action == 'list':

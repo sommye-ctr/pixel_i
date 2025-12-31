@@ -2,7 +2,7 @@ from celery import shared_task
 
 from photos.models import Photo
 from photos.services import generate_watermarked_image, generate_thumbnail_image, upload_to_storage, \
-    download_image_from_firebase
+    download_image_from_firebase, generate_auto_tag_photo
 
 
 @shared_task
@@ -33,3 +33,13 @@ def generate_image_variants_task(photo_id):
         photo.thumbnail_path = tp
         photo.status = Photo.PhotoStatus.COMPLETED
         photo.save(update_fields=["watermarked_path", "thumbnail_path", "status"])
+
+
+@shared_task
+def tag_image_task(photo_id):
+    photo = Photo.objects.get(id=photo_id)
+    original_img = download_image_from_firebase(photo.original_path)
+
+    tags = generate_auto_tag_photo(original_img)
+    photo.auto_tags = tags
+    photo.save(update_fields=["auto_tags"])

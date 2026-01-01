@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/core/resources/strings.dart';
 import 'package:frontend/core/resources/theme.dart';
 import 'package:frontend/features/events/bloc/events_bloc.dart';
+import 'package:frontend/features/events/bloc/event_create_bloc.dart';
 import 'package:frontend/features/events/data/events_repository.dart';
 
 import '../core/network/api_client.dart';
@@ -48,6 +49,7 @@ class _AppState extends State<App> {
           BlocProvider(create: (_) => PhotosBloc(photosRepository)),
           BlocProvider(create: (_) => PhotoDetailBloc(photosRepository)),
           BlocProvider(create: (_) => EventsBloc(eventsRepository, authRepository)),
+          BlocProvider(create: (_) => EventCreateBloc(eventsRepository)),
         ],
         child: MaterialApp.router(
           title: appName,

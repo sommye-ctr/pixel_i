@@ -6,6 +6,7 @@ import '../features/auth/view/fill_profile_screen.dart';
 import '../features/home/view/home_screen.dart';
 import '../features/photos/view/photo_detail_screen.dart';
 import '../features/events/views/event_detail_screen.dart';
+import '../features/events/views/event_create_screen.dart';
 
 GoRouter buildRouter({bool isLoggedIn = false}) {
   return GoRouter(
@@ -45,6 +46,11 @@ GoRouter buildRouter({bool isLoggedIn = false}) {
             thumbnailUrl: thumbnailUrl,
           );
         },
+      ),
+      GoRoute(
+        path: '/event/create',
+        name: 'event-create',
+        builder: (context, state) => const EventCreateScreen(),
       ),
       GoRoute(
         path: '/event/:id',

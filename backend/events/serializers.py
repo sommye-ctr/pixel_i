@@ -25,9 +25,11 @@ class EventReadSerializer(serializers.ModelSerializer):
 
 
 class EventWriteSerializer(serializers.ModelSerializer):
+    coordinator = MiniUserSerializer(read_only=True)
+
     class Meta:
         model = Event
-        fields = ['title', 'read_perm', 'write_perm']
+        fields = ['id', 'title', 'read_perm', 'write_perm', 'coordinator']
 
     def create(self, validated_data):
         user = self.context['request'].user

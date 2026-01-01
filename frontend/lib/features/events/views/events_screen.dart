@@ -90,7 +90,17 @@ class _EventsScreenState extends State<EventsScreen> {
                   }
                 },
               ),
-              IconButton(icon: const Icon(LucideIcons.plus), onPressed: () {}),
+              IconButton(
+                icon: const Icon(LucideIcons.plus),
+                onPressed: () async {
+                  final result = await context.push<bool>('/event/create');
+                  if (result == true) {
+                    if (context.mounted) {
+                      context.read<EventsBloc>().add(EventsRequested());
+                    }
+                  }
+                },
+              ),
             ],
           ),
           body: body,

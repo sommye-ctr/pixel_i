@@ -32,6 +32,7 @@ class Photo(models.Model):
     user_tags = models.JSONField(default=list)
     meta = models.JSONField(default=dict)
     status = models.CharField(choices=PhotoStatus, default=PhotoStatus.PENDING)
+    processing_errors = models.JSONField(default=dict, blank=True)
     read_perm = models.CharField(choices=ReadPerm, default=ReadPerm.PUBLIC)
     share_perm = models.CharField(choices=SharePerm, default=SharePerm.OWNER_ROLES)
     downloads = models.BigIntegerField(default=0)

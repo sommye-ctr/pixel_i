@@ -5,6 +5,7 @@ from io import BytesIO
 import clip
 import torch
 from PIL import Image, ImageFilter, ImageOps
+from PIL.ExifTags import TAGS
 from django.core.files.base import ContentFile
 from django.core.files.images import ImageFile
 from django.utils import timezone
@@ -225,3 +226,37 @@ def generate_watermarked_image(base_image_file):
         base.paste(logo_rgba, (x, y), logo_rgba)
         base = base.convert("RGB")
         return pillow_to_content_file(base, f"watermarked.{format.lower()}", format.upper())
+
+
+def extract_exif_data(image_bytes: BytesIO):
+    exif_data = {}
+
+    try:
+        image_bytes.seek(0)
+        image = Image.open(image_bytes)
+        width, height = image.size
+
+        try:
+            exif = image.getexif()
+            if exif:
+                for tag_id, value in exif.items():
+                    tag_name = TAGS.get(tag_id, str(tag_id))
+                    if isinstance(value, bytes):
+                        try:
+                            value = value.decode('utf-8', errors='ignore')
+                        except:
+                            value = str(value)
+                    exif_data[tag_name] = str(value)
+        except (AttributeError, KeyError):
+            pass
+
+        return width, height, exif_data
+    except Exception as e:
+        # If EXIF extraction fails, still try to get dimensions
+        try:
+            image_bytes.seek(0)
+            image = Image.open(image_bytes)
+            width, height = image.size
+            return width, height, {}
+        except:
+            raise APIException(f"Error extracting image metadata: {e}")

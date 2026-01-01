@@ -15,7 +15,7 @@ from photos.permissions import PhotoReadPermission, ReadPerm, IsPhotographer, Is
     PhotoShareCreatePermission, PhotoShareRevokePermission, PhotoUploadPermission
 from photos.serializers import PhotoReadSerializer, PhotoListSerializer, PhotoWriteSerializer, PhotoShareSerializer, \
     PhotoBulkUploadSerializer
-from photos.tasks import generate_image_variants_task, tag_image_task
+from photos.tasks import process_photo_task
 from utils.user_utils import user_is_admin, user_is_img
 
 
@@ -33,8 +33,7 @@ class PhotoView(viewsets.ModelViewSet):
             actor=self.request.user,
             dedupe_key=f"event_add:{photo.event.id}:actor:{self.request.user.id}"
         )
-        generate_image_variants_task.delay(photo.id)
-        tag_image_task.delay(photo.id)
+        process_photo_task.delay(photo.id)
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -124,8 +123,7 @@ class PhotoBulkUploadView(generics.CreateAPIView):
             if r.get("status") != "created":
                 continue
             count += 1
-            generate_image_variants_task.delay(r['photo_id'])
-            tag_image_task.delay(r['photo_id'])
+            process_photo_task.delay(r['photo_id'])
 
         if count > 0:
             create_notification(

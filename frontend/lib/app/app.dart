@@ -15,10 +15,15 @@ import '../features/photos/bloc/photos_bloc.dart';
 import '../features/photos/bloc/photo_detail_bloc.dart';
 import 'router.dart';
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   final bool isLoggedIn;
   const App({super.key, this.isLoggedIn = false});
 
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     final tokenStorage = TokenStorage();
@@ -30,7 +35,7 @@ class App extends StatelessWidget {
     final authRepository = AuthRepository(apiClient, tokenStorage);
     final photosRepository = PhotosRepository(apiClient);
     final eventsRepository = EventsRepository(apiClient);
-    final router = buildRouter(isLoggedIn: isLoggedIn);
+    final router = buildRouter(isLoggedIn: widget.isLoggedIn);
 
     return MultiRepositoryProvider(
       providers: [
@@ -42,7 +47,7 @@ class App extends StatelessWidget {
           BlocProvider(create: (_) => AuthBloc(authRepository)),
           BlocProvider(create: (_) => PhotosBloc(photosRepository)),
           BlocProvider(create: (_) => PhotoDetailBloc(photosRepository)),
-          BlocProvider(create: (_) => EventsBloc(eventsRepository)),
+          BlocProvider(create: (_) => EventsBloc(eventsRepository, authRepository)),
         ],
         child: MaterialApp.router(
           title: appName,

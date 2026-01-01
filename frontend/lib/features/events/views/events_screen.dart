@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:frontend/core/resources/strings.dart';
 import 'package:frontend/core/resources/style.dart';
+import 'package:frontend/core/utils/toast_utils.dart';
 import 'package:frontend/features/events/bloc/events_bloc.dart';
 import 'package:frontend/features/events/bloc/events_event.dart';
 import 'package:frontend/features/events/bloc/events_state.dart';
@@ -75,6 +76,20 @@ class _EventsScreenState extends State<EventsScreen> {
               ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             actions: [
+              IconButton(
+                icon: Icon(
+                  state.showOnlyMyEvents ? LucideIcons.x : LucideIcons.user,
+                ),
+                onPressed: () {
+                  if (state.showOnlyMyEvents) {
+                    context.read<EventsBloc>().add(EventsRequested());
+                    ToastUtils.showShort('Showing all events');
+                  } else {
+                    context.read<EventsBloc>().add(const MyEventsRequested());
+                    ToastUtils.showShort('Showing your events');
+                  }
+                },
+              ),
               IconButton(icon: const Icon(LucideIcons.plus), onPressed: () {}),
             ],
           ),

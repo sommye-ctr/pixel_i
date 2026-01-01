@@ -6,7 +6,28 @@ class AuthRepository {
   final ApiClient api;
   final TokenStorage tokenStorage;
 
+  User? _currentUser;
+
   AuthRepository(this.api, this.tokenStorage);
+
+  User? get currentUser => _currentUser;
+
+  void _setCurrentUser(User user) {
+    _currentUser = user;
+  }
+
+  void _clearCurrentUser() {
+    _currentUser = null;
+  }
+
+  Future<User> fetchCurrentUserProfile() async {
+    final profile = await api.get<Map<String, dynamic>>('/auth/me/');
+    final profileData = profile.data ?? {};
+
+    final user = User.fromMap(profileData);
+    _setCurrentUser(user);
+    return user;
+  }
 
   Future<void> signup({
     required String email,
@@ -31,10 +52,7 @@ class AuthRepository {
   }) async {
     final res = await api.post<Map<String, dynamic>>(
       '/auth/login/',
-      data: {
-        'username': username,
-        'password': password,
-      },
+      data: {'username': username, 'password': password},
     );
     final data = res.data ?? {};
 
@@ -52,7 +70,9 @@ class AuthRepository {
     final profile = await api.get<Map<String, dynamic>>('/auth/me/');
     final profileData = profile.data ?? {};
 
-    return User.fromMap(profileData);
+    final user = User.fromMap(profileData);
+    _setCurrentUser(user);
+    return user;
   }
 
   Future<void> requestOtp(String email) async {
@@ -79,7 +99,9 @@ class AuthRepository {
     final profile = await api.get<Map<String, dynamic>>('/auth/me/');
     final profileData = profile.data ?? {};
 
-    return User.fromMap(profileData);
+    final user = User.fromMap(profileData);
+    _setCurrentUser(user);
+    return user;
   }
 
   Future<User> updateProfile({
@@ -96,10 +118,13 @@ class AuthRepository {
       },
     );
     final data = res.data ?? {};
-    return User.fromMap(data);
+    final user = User.fromMap(data);
+    _setCurrentUser(user);
+    return user;
   }
 
   Future<void> logout() async {
     await tokenStorage.clearTokens();
+    _clearCurrentUser();
   }
 }

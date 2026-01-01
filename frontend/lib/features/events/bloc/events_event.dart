@@ -8,3 +8,7 @@ abstract class EventsEvent extends Equatable {
 }
 
 class EventsRequested extends EventsEvent {}
+
+class MyEventsRequested extends EventsEvent {
+  const MyEventsRequested();
+}

@@ -106,5 +106,59 @@
       "width": 1200,
       "height": 720
     }
+  },
+  {
+    "id": "aa91gh2l-k7ki-0686-gik5-43gh18571j29",
+    "title": "Winter Fest 2025",
+    "read_perm": "PUB",
+    "coordinator": {
+      "id": "c042df96-57d0-4517-9e84-780d366c3ba8",
+      "username": "somye-mahajan",
+      "name": "Somye Mahajan",
+      "profile_pic": "https://i.pravatar.cc/100?img=33"
+    },
+    "images_count": 42,
+    "cover_photo": {
+      "id": "g61d7f6g-6666-5g77-cf98-634567890006",
+      "thumbnail_url": "https://picsum.photos/id/1074/850/600",
+      "width": 850,
+      "height": 600
+    }
+  },
+  {
+    "id": "bb02hi3m-l8lj-1797-hjl6-54hi29682k30",
+    "title": "Photography Workshop",
+    "read_perm": "PUB",
+    "coordinator": {
+      "id": "c042df96-57d0-4517-9e84-780d366c3ba8",
+      "username": "somye-mahajan",
+      "name": "Somye Mahajan",
+      "profile_pic": "https://i.pravatar.cc/100?img=33"
+    },
+    "images_count": 28,
+    "cover_photo": {
+      "id": "h72e8g7h-7777-6h88-dg09-745678901007",
+      "thumbnail_url": "https://picsum.photos/id/1025/700/500",
+      "width": 700,
+      "height": 500
+    }
+  },
+  {
+    "id": "cc13ij4n-m9mk-2808-ikm7-65ij30793l41",
+    "title": "Leadership Summit",
+    "read_perm": "PRI",
+    "coordinator": {
+      "id": "c042df96-57d0-4517-9e84-780d366c3ba8",
+      "username": "somye-mahajan",
+      "name": "Somye Mahajan",
+      "profile_pic": "https://i.pravatar.cc/100?img=33"
+    },
+    "images_count": 35,
+    "cover_photo": {
+      "id": "i83f9h8i-8888-7i99-eh10-856789012108",
+      "thumbnail_url": "https://picsum.photos/id/1030/600/800",
+      "width": 600,
+      "height": 800
+    }
   }
 ]

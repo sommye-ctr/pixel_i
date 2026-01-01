@@ -40,19 +40,19 @@ sealed class AuthEvent extends Equatable {
   factory AuthEvent.login({
     required String username,
     required String password,
-  }) =>
-      _Login(username: username, password: password);
+  }) => _Login(username: username, password: password);
   factory AuthEvent.updateProfile({
     String? bio,
     String? batch,
     String? department,
-  }) =>
-      _UpdateProfile(bio: bio, batch: batch, department: department);
+  }) => _UpdateProfile(bio: bio, batch: batch, department: department);
   factory AuthEvent.requestOtp(String email) => _RequestOtp(email);
   factory AuthEvent.submitOtp(String email, String otp) =>
       _SubmitOtp(email, otp);
   factory AuthEvent.loginWithOAuth(String token) => _LoginWithOAuth(token);
   factory AuthEvent.logout() => const _Logout();
+  factory AuthEvent.fetchCurrentUserProfile() =>
+      const _FetchCurrentUserProfile();
 }
 
 class _Started extends AuthEvent {
@@ -80,10 +80,7 @@ class _Login extends AuthEvent {
   final String username;
   final String password;
 
-  const _Login({
-    required this.username,
-    required this.password,
-  });
+  const _Login({required this.username, required this.password});
 
   @override
   List<Object?> get props => [username, password];
@@ -126,11 +123,26 @@ class _LoginWithOAuth extends AuthEvent {
   List<Object?> get props => [token];
 }
 
+class _FetchCurrentUserProfile extends AuthEvent {
+  const _FetchCurrentUserProfile();
+}
+
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _repo;
   AuthBloc(this._repo) : super(const AuthState()) {
     on<_Started>((event, emit) async {
       emit(const AuthState(status: AuthStatus.unauthenticated));
+    });
+
+    on<_FetchCurrentUserProfile>((event, emit) async {
+      emit(const AuthState(status: AuthStatus.loading));
+      try {
+        final user = await _repo.fetchCurrentUserProfile();
+        emit(AuthState(status: AuthStatus.authenticated, user: user));
+      } catch (e) {
+        await _repo.logout();
+        emit(AuthState(status: AuthStatus.error, error: e.toString()));
+      }
     });
 
     on<_Signup>((event, emit) async {

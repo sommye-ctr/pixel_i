@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/core/widgets/custom_nav_bar.dart';
+import 'package:frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:frontend/features/events/views/events_screen.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -22,6 +24,14 @@ class _HomeScreenState extends State<HomeScreen> {
     const EventsScreen(),
     const Center(child: Text('Profile')),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AuthBloc>().add(AuthEvent.fetchCurrentUserProfile());
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

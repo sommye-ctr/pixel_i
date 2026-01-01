@@ -2,7 +2,9 @@ from django.db.models import Q
 from django.utils import timezone
 from rest_framework import viewsets, parsers, generics, permissions
 from rest_framework.generics import get_object_or_404
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from events.models import Event
 from events.permissions import EventPermission
@@ -10,8 +12,9 @@ from notifications.models import Notification
 from notifications.services import create_notification
 from photos.models import Photo, PhotoShare
 from photos.permissions import PhotoReadPermission, ReadPerm, IsPhotographer, IsEventCoordinator, \
-    PhotoShareCreatePermission, PhotoShareRevokePermission
-from photos.serializers import PhotoReadSerializer, PhotoListSerializer, PhotoWriteSerializer, PhotoShareSerializer
+    PhotoShareCreatePermission, PhotoShareRevokePermission, PhotoUploadPermission
+from photos.serializers import PhotoReadSerializer, PhotoListSerializer, PhotoWriteSerializer, PhotoShareSerializer, \
+    PhotoBulkUploadSerializer
 from photos.tasks import generate_image_variants_task, tag_image_task
 from utils.user_utils import user_is_admin, user_is_img
 
@@ -93,6 +96,49 @@ class EventPhotosView(generics.ListAPIView):
             q_img = Q(read_perm=EventPermission.IMG)
             return qs.filter(q_coord | q_img | q_public).distinct()
         return qs.filter(q_coord | q_public).distinct()
+
+
+class PhotoBulkUploadView(generics.CreateAPIView):
+    _event = None
+    serializer_class = PhotoBulkUploadSerializer
+    permission_classes = [PhotoUploadPermission]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_event(self):
+        if not self._event:
+            self._event = get_object_or_404(Event, pk=self.kwargs["event_id"])
+        return self._event
+
+    def create(self, request, *args, **kwargs):
+        event_id = self.kwargs['event_id']
+        event = get_object_or_404(Event, pk=event_id)
+        serializer = self.get_serializer(
+            data=request.data,
+            context={'event': event, 'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        results = serializer.save()
+
+        count = 0
+        for r in results:
+            if r.get("status") != "created":
+                continue
+            count += 1
+            generate_image_variants_task.delay(r['photo_id'])
+            tag_image_task.delay(r['photo_id'])
+
+        if count > 0:
+            create_notification(
+                recipient=event.coordinator,
+                verb=Notification.NotificationVerb.EVENT_PHOTO_ADDED,
+                target_type=Notification.NotificationTarget.EVENT,
+                target_id=event.id,
+                actor=self.request.user,
+                dedupe_key=f"event_add:{event.id}:actor:{self.request.user.id}",
+                data={"photo_count": count}
+            )
+
+        return Response({"results": results}, status=207)
 
 
 class PhotoShareCreateView(generics.CreateAPIView):

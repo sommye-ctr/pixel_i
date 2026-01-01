@@ -2,6 +2,7 @@ from rest_framework import permissions
 from rest_framework.generics import get_object_or_404
 
 from accounts.models import CustomUser
+from events.permissions import EventPermission
 from photos.models import Photo, ReadPerm, SharePerm
 from utils.user_utils import user_is_admin, user_is_img
 
@@ -48,6 +49,28 @@ def can_share_photo(user: CustomUser, photo: Photo):
     if perm == SharePerm.ANYONE:
         return True
     return is_admin_or_photographer(user, photo) or photo.event.coordinator.id == user.id
+
+
+class PhotoUploadPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+
+        event = view.get_event()
+        if not event:
+            return False
+
+        if user_is_admin(user) or event.coordinator_id == user.id:
+            return True
+
+        perm = event.write_perm
+        if perm == EventPermission.PUBLIC:
+            return True
+        elif perm == EventPermission.IMG:
+            return user_is_img(user)
+
+        return False
 
 
 class PhotoReadPermission(permissions.BasePermission):

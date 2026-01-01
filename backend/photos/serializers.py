@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 from accounts.serializers import MiniUserSerializer
 from photos.models import Photo, PhotoShare
 from photos.permissions import is_admin_or_photographer
-from photos.services import upload_to_storage, generate_signed_url, create_photo_tags
+from photos.services import generate_signed_url, create_photo_tags, upload_to_storage
 
 
 class PhotoMiniSerializer(serializers.ModelSerializer):
@@ -21,6 +21,91 @@ class PhotoMiniSerializer(serializers.ModelSerializer):
 
     def get_thumbnail_url(self, obj):
         return generate_signed_url(obj.thumbnail_path)
+
+
+class PhotoBulkUploadSerializer(serializers.Serializer):
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=True,
+        min_length=1,
+        max_length=20,
+    )
+    metadata = serializers.JSONField(write_only=True, required=True)
+
+    def validate(self, attrs):
+        images = attrs.get('images', [])
+        metadata = attrs.get('metadata', [])
+        if not isinstance(metadata, list):
+            raise ValidationError("Metadata must be a list of objects")
+        if len(metadata) != len(images):
+            raise ValidationError("Metadata length must match images length")
+
+        meta_map = {}
+        for meta in metadata:
+            if not isinstance(meta, dict) or "client_id" not in meta:
+                raise ValidationError("Each metadata entry must have a client_id field")
+            meta_map[meta["client_id"]] = meta
+
+        attrs['meta_map'] = meta_map
+        return attrs
+
+    def create(self, validated_data):
+        req = self.context.get("request")
+        event = self.context.get("event")
+
+        images = validated_data.get('images', [])
+        meta_map = validated_data.get('meta_map')
+        res = []
+
+        for image in images:
+            client_id = image.name
+            meta = meta_map.get(client_id)
+            if not meta:
+                res.append({
+                    "client_id": client_id,
+                    "status": "error",
+                    "error": "Missing metadata"
+                })
+                continue
+
+            serializer = PhotoWriteSerializer(
+                data={
+                    "event": event.id,
+                    "image": image,
+                    **meta,
+                },
+                context={"request": req},
+            )
+            if not serializer.is_valid():
+                res.append({
+                    "client_id": client_id,
+                    "status": "error",
+                    "error": serializer.errors
+                })
+                continue
+
+            try:
+                photo = serializer.save()
+                res.append({
+                    "client_id": client_id,
+                    "photo_id": photo.id,
+                    "status": "created"
+                })
+            except ValidationError as e:
+                res.append({
+                    "client_id": client_id,
+                    "status": "error",
+                    "error": e.detail
+                })
+            except Exception as e:
+                res.append({
+                    "client_id": client_id,
+                    "status": "error",
+                    "error": str(e)
+                })
+
+        return res
 
 
 # downloads and views only for photographer
@@ -115,9 +200,17 @@ class PhotoWriteSerializer(serializers.ModelSerializer):
                 photographer=photographer,
                 **validated_data,
             )
+            create_photo_tags(photo, usernames=tagged_usernames, actor=photographer)
+
+        try:
             photo.original_path = upload_to_storage(photo.id, image_file)
             photo.save(update_fields=['original_path'])
-            create_photo_tags(photo, usernames=tagged_usernames, actor=photographer)
+        except Exception:
+            photo.delete()
+            raise serializers.ValidationError(
+                "Image upload failed"
+            )
+
         return photo
 
     def update(self, instance, validated_data):

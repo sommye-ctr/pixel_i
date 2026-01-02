@@ -54,9 +54,19 @@ class _EventsScreenState extends State<EventsScreen> {
                     event: events[index],
                     onTap: () {
                       final event = events[index];
-                      context.push(
-                        '/event/${event.id}?title=${Uri.encodeComponent(event.title)}',
+                      final uri = Uri(
+                        path: '/event/${event.id}',
+                        queryParameters: {
+                          'title': event.title,
+                          'files': event.imagesCount.toString(),
+                          if (event.createdAt != null)
+                            'createdAt': event.createdAt!.toIso8601String(),
+                          if (event.coverPhoto?.thumbnailUrl != null)
+                            'cover': event.coverPhoto!.thumbnailUrl,
+                        },
                       );
+
+                      context.push(uri.toString());
                     },
                   );
                 },

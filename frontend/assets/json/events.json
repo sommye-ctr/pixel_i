@@ -2,6 +2,7 @@
   {
     "id": "4435ac6f-e1ec-4020-adf9-87ab52915d63",
     "title": "Freshers 25",
+    "created_at": "2025-07-01T09:00:00Z",
     "read_perm": "PUB",
     "coordinator": {
       "id": "8b6f14f4-31b5-4ac7-b9ba-2daa604f1d17",
@@ -20,6 +21,7 @@
   {
     "id": "5546bc7g-f2fd-5131-beg0-98bc63026e74",
     "title": "Tech Fest 2025",
+    "created_at": "2025-02-10T12:00:00Z",
     "read_perm": "PUB",
     "coordinator": {
       "id": "9c7g25g5-42c6-5bc8-c0cb-3ebb715f2d18",
@@ -38,6 +40,7 @@
   {
     "id": "6657cd8h-g3ge-6242-cfg1-09cd74137f85",
     "title": "Annual Sports Day",
+    "created_at": "2024-11-05T15:30:00Z",
     "read_perm": "PRI",
     "coordinator": {
       "id": "0d8h36h6-53d7-6cd9-d1dc-4fcc826g3e29",
@@ -56,6 +59,7 @@
   {
     "id": "7768de9i-h4hf-7353-dgh2-10de85248g96",
     "title": "Cultural Night",
+    "created_at": "2025-08-22T18:45:00Z",
     "read_perm": "PUB",
     "coordinator": {
       "id": "1e9i47i7-64e8-7de0-e2ed-5gdd937h4f30",
@@ -74,6 +78,7 @@
   {
     "id": "8879ef0j-i5ig-8464-ehi3-21ef96359h07",
     "title": "Hackathon 2025",
+    "created_at": "2025-03-18T10:15:00Z",
     "read_perm": "PUB",
     "coordinator": {
       "id": "2f0j58j8-75f9-8ef1-f3fe-6hee048i5g41",
@@ -92,6 +97,7 @@
   {
     "id": "9980fg1k-j6jh-9575-fij4-32fg07460i18",
     "title": "Alumni Meet 2025",
+    "created_at": "2025-04-25T14:20:00Z",
     "read_perm": "PRI",
     "coordinator": {
       "id": "3g1k69k9-86g0-9fg2-g4gf-7iff159j6h52",
@@ -110,6 +116,7 @@
   {
     "id": "aa91gh2l-k7ki-0686-gik5-43gh18571j29",
     "title": "Winter Fest 2025",
+    "created_at": "2025-12-01T08:05:00Z",
     "read_perm": "PUB",
     "coordinator": {
       "id": "c042df96-57d0-4517-9e84-780d366c3ba8",
@@ -128,6 +135,7 @@
   {
     "id": "bb02hi3m-l8lj-1797-hjl6-54hi29682k30",
     "title": "Photography Workshop",
+    "created_at": "2025-06-12T11:00:00Z",
     "read_perm": "PUB",
     "coordinator": {
       "id": "c042df96-57d0-4517-9e84-780d366c3ba8",
@@ -146,6 +154,7 @@
   {
     "id": "cc13ij4n-m9mk-2808-ikm7-65ij30793l41",
     "title": "Leadership Summit",
+    "created_at": "2024-09-30T09:40:00Z",
     "read_perm": "PRI",
     "coordinator": {
       "id": "c042df96-57d0-4517-9e84-780d366c3ba8",

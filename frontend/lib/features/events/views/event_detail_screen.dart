@@ -6,17 +6,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:frontend/core/resources/style.dart';
+import 'package:frontend/core/utils/index.dart';
 import 'package:frontend/features/photos/models/photo.dart';
 import 'package:go_router/go_router.dart';
 
 class EventDetailScreen extends StatefulWidget {
   final String eventId;
   final String title;
+  final int? fileCount;
+  final DateTime? createdAt;
+  final String? coverPhotoUrl;
 
   const EventDetailScreen({
     super.key,
     required this.eventId,
     required this.title,
+    this.fileCount,
+    this.createdAt,
+    this.coverPhotoUrl,
   });
 
   @override
@@ -27,6 +34,96 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   bool _loading = true;
   String? _error;
   List<Photo> _photos = [];
+
+  int get _displayFileCount => widget.fileCount ?? _photos.length;
+
+  String? get _formattedCreatedAt {
+    return formatShortDate(widget.createdAt);
+  }
+
+  Widget _buildHeader() {
+    final coverUrl = widget.coverPhotoUrl;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: defaultSpacing),
+      constraints: BoxConstraints(
+        minWidth: context.widthPercent(100),
+        maxHeight: context.heightPercent(25),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(largeRoundEdgeRadius),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (coverUrl != null)
+              Positioned.fill(
+                child: CachedNetworkImage(
+                  imageUrl: coverUrl,
+                  fit: BoxFit.cover,
+                  imageBuilder: (context, imageProvider) => ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: imageProvider,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+                  placeholder: (context, url) =>
+                      Container(color: Colors.grey.shade300),
+                  errorWidget: (context, url, error) =>
+                      Container(color: Colors.grey.shade400),
+                ),
+              ),
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      Colors.black.withOpacity(0.8),
+                      Colors.black.withOpacity(0.5),
+                      Colors.black.withOpacity(0.2),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: Container(
+                padding: const EdgeInsets.all(defaultSpacing),
+                alignment: Alignment.topLeft,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.title,
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: defaultSpacing / 2),
+                    Text(
+                      '$_displayFileCount files • Created ${_formattedCreatedAt ?? '—'}',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -162,21 +259,35 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
         ),
       );
     } else {
-      body = Padding(
-        padding: const EdgeInsets.all(defaultSpacing),
-        child: MasonryGridView.count(
-          crossAxisCount: 2,
-          mainAxisSpacing: defaultSpacing,
-          crossAxisSpacing: defaultSpacing,
-          itemCount: _photos.length,
-          itemBuilder: (context, index) => _buildTile(_photos[index]),
+      body = SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
+            SizedBox(height: largeSpacing),
+            Padding(
+              padding: const EdgeInsets.all(defaultSpacing),
+              child: MasonryGridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: defaultSpacing,
+                crossAxisSpacing: defaultSpacing,
+                itemCount: _photos.length,
+                itemBuilder: (context, index) => _buildTile(_photos[index]),
+              ),
+            ),
+          ],
         ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-      body: body,
+      body: SafeArea(child: body),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

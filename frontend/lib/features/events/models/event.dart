@@ -12,6 +12,7 @@ class Event extends Equatable {
   final User coordinator;
   final int imagesCount;
   final Photo? coverPhoto;
+  final DateTime? createdAt;
 
   const Event({
     required this.id,
@@ -21,11 +22,21 @@ class Event extends Equatable {
     required this.coordinator,
     required this.imagesCount,
     this.coverPhoto,
+    this.createdAt,
   });
 
   @override
   List<Object?> get props {
-    return [id, title, readPerm, writePerm, coordinator, imagesCount, coverPhoto];
+    return [
+      id,
+      title,
+      readPerm,
+      writePerm,
+      coordinator,
+      imagesCount,
+      coverPhoto,
+      createdAt,
+    ];
   }
 
   Event copyWith({
@@ -36,6 +47,7 @@ class Event extends Equatable {
     User? coordinator,
     int? imagesCount,
     Photo? coverPhoto,
+    DateTime? createdAt,
   }) {
     return Event(
       id: id ?? this.id,
@@ -45,6 +57,7 @@ class Event extends Equatable {
       coordinator: coordinator ?? this.coordinator,
       imagesCount: imagesCount ?? this.imagesCount,
       coverPhoto: coverPhoto ?? this.coverPhoto,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -57,6 +70,7 @@ class Event extends Equatable {
       'coordinator': coordinator.toMap(),
       'images_count': imagesCount,
       'cover_photo': coverPhoto?.toMap(),
+      'created_at': createdAt?.toIso8601String(),
     };
   }
 
@@ -71,6 +85,9 @@ class Event extends Equatable {
       coverPhoto: map['cover_photo'] != null
           ? Photo.fromCoverMap(map['cover_photo'])
           : null,
+      createdAt: map['created_at'] != null
+          ? DateTime.tryParse(map['created_at'])
+          : null,
     );
   }
 
@@ -80,6 +97,6 @@ class Event extends Equatable {
 
   @override
   String toString() {
-    return 'Event(id: $id, title: $title, readPerm: $readPerm, writePerm: $writePerm, coordinator: $coordinator, imagesCount: $imagesCount, coverPhoto: $coverPhoto)';
+    return 'Event(id: $id, title: $title, readPerm: $readPerm, writePerm: $writePerm, coordinator: $coordinator, imagesCount: $imagesCount, coverPhoto: $coverPhoto, createdAt: $createdAt)';
   }
 }

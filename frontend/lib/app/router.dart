@@ -58,7 +58,23 @@ GoRouter buildRouter({bool isLoggedIn = false}) {
         builder: (context, state) {
           final eventId = state.pathParameters['id']!;
           final title = state.uri.queryParameters['title'] ?? 'Event';
-          return EventDetailScreen(eventId: eventId, title: title);
+          final fileCountParam = state.uri.queryParameters['files'];
+          final fileCount = fileCountParam != null
+              ? int.tryParse(fileCountParam)
+              : null;
+          final createdAtParam = state.uri.queryParameters['createdAt'];
+          final createdAt = createdAtParam != null
+              ? DateTime.tryParse(createdAtParam)
+              : null;
+          final coverUrl = state.uri.queryParameters['cover'];
+
+          return EventDetailScreen(
+            eventId: eventId,
+            title: title,
+            fileCount: fileCount,
+            createdAt: createdAt,
+            coverPhotoUrl: coverUrl,
+          );
         },
       ),
     ],

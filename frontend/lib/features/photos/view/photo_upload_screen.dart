@@ -7,6 +7,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/core/resources/strings.dart';
 import 'package:frontend/core/resources/style.dart';
 import 'package:frontend/core/utils/screen_utils.dart';
+import 'package:frontend/core/utils/toast_utils.dart';
+import 'package:frontend/core/widgets/index.dart';
 import 'package:frontend/features/auth/data/auth_repository.dart';
 import 'package:frontend/features/photos/bloc/photo_upload_bloc.dart';
 import 'package:frontend/features/photos/bloc/photo_upload_event.dart';
@@ -145,16 +147,205 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
           LucideIcons.layoutGrid,
           !_isCarouselView ? Colors.white : Colors.transparent,
           !_isCarouselView ? Colors.black : null,
-          () => setState(() => _isCarouselView = false),
+          () {
+            ToastUtils.showShort(optionsAll);
+            setState(() => _isCarouselView = false);
+          },
         ),
         const SizedBox(width: defaultSpacing / 2),
         _buildIconActionButton(
           LucideIcons.galleryHorizontal,
           _isCarouselView ? Colors.white : Colors.transparent,
           _isCarouselView ? Colors.black : null,
-          () => setState(() => _isCarouselView = true),
+          () {
+            ToastUtils.showShort(optionsPerImage);
+            setState(() => _isCarouselView = true);
+          },
         ),
       ],
+    );
+  }
+
+  Widget _buildPhotoOptions(BuildContext context, PhotoUploadState state) {
+    final metadata = state.selectedMetadata;
+    final readPermLabel = metadata?.readPerm ?? PhotoReadPermission.pub;
+    final sharePermLabel = metadata?.sharePerm ?? PhotoSharePermission.anyone;
+    final taggedUsers = metadata?.taggedUsernames ?? const [];
+    final imageTags = metadata?.userTags ?? const [];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: defaultSpacing),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _buildBlurCard(
+                  title: photoUploadReadPermission,
+                  icon: Icon(LucideIcons.shield),
+                  onTap: () => showPermissionSheet<PhotoReadPermission>(
+                    context: context,
+                    title: photoUploadSelectReadPermission,
+                    values: PhotoReadPermission.values,
+                    selected: readPermLabel,
+                    onSelected: (option) => context.read<PhotoUploadBloc>().add(
+                      PhotoUploadMetadataUpdated(
+                        index: state.currentIndex,
+                        readPerm: option,
+                        applyToAll: !_isCarouselView,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: defaultSpacing / 2),
+                      Expanded(
+                        child: Text(
+                          readPermLabel.label,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: defaultSpacing),
+              Expanded(
+                child: _buildBlurCard(
+                  title: photoUploadSharePermission,
+                  icon: Icon(LucideIcons.share2),
+                  onTap: () => showPermissionSheet<PhotoSharePermission>(
+                    context: context,
+                    title: photoUploadSelectSharePermission,
+                    values: PhotoSharePermission.values,
+                    selected: sharePermLabel,
+                    onSelected: (option) => context.read<PhotoUploadBloc>().add(
+                      PhotoUploadMetadataUpdated(
+                        index: state.currentIndex,
+                        sharePerm: option,
+                        applyToAll: !_isCarouselView,
+                      ),
+                    ),
+                  ),
+                  child: Text(
+                    sharePermLabel.label,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: defaultSpacing),
+          _buildBlurCard(
+            title: photoUploadTagUsers,
+            icon: Icon(LucideIcons.userPen),
+            onTap: () => showTagUsersSheet(
+              context: context,
+              authRepository: context.read<AuthRepository>(),
+              initialUsernames: taggedUsers,
+              onSubmit: (usernames) => context.read<PhotoUploadBloc>().add(
+                PhotoUploadMetadataUpdated(
+                  index: state.currentIndex,
+                  taggedUsernames: usernames,
+                  applyToAll: !_isCarouselView,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    taggedUsers.isEmpty
+                        ? photoUploadNoTaggedUsers
+                        : taggedUsers.join(', '),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.white),
+                  ),
+                ),
+                Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
+          const SizedBox(height: defaultSpacing),
+          _buildBlurCard(
+            title: photoUploadImageTags,
+            icon: Icon(LucideIcons.hash),
+            onTap: () => showImageTagsSheet(
+              context: context,
+              initialTags: imageTags,
+              onSubmit: (tags) => context.read<PhotoUploadBloc>().add(
+                PhotoUploadMetadataUpdated(
+                  index: state.currentIndex,
+                  userTags: tags,
+                  applyToAll: !_isCarouselView,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    imageTags.isEmpty
+                        ? photoUploadNoTags
+                        : imageTags.join(', '),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.white),
+                  ),
+                ),
+                Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCarousel(BuildContext context, PhotoUploadState state) {
+    return Container(
+      constraints: BoxConstraints(maxHeight: context.heightPercent(45)),
+      child: PageView.builder(
+        itemCount: state.files.length,
+        controller: _pageController,
+        onPageChanged: (index) =>
+            context.read<PhotoUploadBloc>().add(PhotoUploadPageChanged(index)),
+        itemBuilder: (context, index) {
+          final file = state.files[index];
+          return Padding(
+            padding: const EdgeInsets.only(right: defaultSpacing),
+            child: _buildPickedImage(file),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildGrid(PhotoUploadState state) {
+    return Container(
+      constraints: BoxConstraints(maxHeight: context.heightPercent(45)),
+      margin: EdgeInsets.symmetric(horizontal: defaultSpacing),
+      child: GridView.builder(
+        shrinkWrap: true,
+        scrollDirection: Axis.horizontal,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: defaultSpacing,
+          mainAxisSpacing: defaultSpacing,
+          childAspectRatio: 1,
+        ),
+        itemCount: state.files.length,
+        itemBuilder: (context, index) {
+          final file = state.files[index];
+          return _buildPickedImage(file);
+        },
+      ),
     );
   }
 
@@ -173,12 +364,6 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
       child: BlocBuilder<PhotoUploadBloc, PhotoUploadState>(
         builder: (context, state) {
           final hasFiles = state.files.isNotEmpty;
-          final metadata = state.selectedMetadata;
-          final readPermLabel = metadata?.readPerm ?? PhotoReadPermission.pub;
-          final sharePermLabel =
-              metadata?.sharePerm ?? PhotoSharePermission.anyone;
-          final taggedUsers = metadata?.taggedUsernames ?? const [];
-          final imageTags = metadata?.userTags ?? const [];
 
           return Scaffold(
             body: AnimatedContainer(
@@ -208,177 +393,23 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                         child: _buildHeader(hasFiles, state),
                       ),
                       SizedBox(height: largeSpacing * 3),
-                      Container(
-                        constraints: BoxConstraints(
-                          maxHeight: context.heightPercent(45),
-                        ),
-                        child: PageView.builder(
-                          itemCount: state.files.length,
-                          controller: _pageController,
-                          onPageChanged: (index) => context
-                              .read<PhotoUploadBloc>()
-                              .add(PhotoUploadPageChanged(index)),
-                          itemBuilder: (context, index) {
-                            final file = state.files[index];
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: defaultSpacing,
-                              ),
-                              child: _buildPickedImage(file),
-                            );
-                          },
-                        ),
-                      ),
+                      _isCarouselView
+                          ? _buildCarousel(context, state)
+                          : _buildGrid(state),
                       const SizedBox(height: largeSpacing * 2),
+                      _buildPhotoOptions(context, state),
+                      const SizedBox(height: largeSpacing),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: defaultSpacing,
                         ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildBlurCard(
-                                    title: photoUploadReadPermission,
-                                    icon: Icon(LucideIcons.shield),
-                                    onTap: () =>
-                                        showPermissionSheet<
-                                          PhotoReadPermission
-                                        >(
-                                          context: context,
-                                          title:
-                                              photoUploadSelectReadPermission,
-                                          values: PhotoReadPermission.values,
-                                          selected: readPermLabel,
-                                          onSelected: (option) => context
-                                              .read<PhotoUploadBloc>()
-                                              .add(
-                                                PhotoUploadMetadataUpdated(
-                                                  index: state.currentIndex,
-                                                  readPerm: option,
-                                                ),
-                                              ),
-                                        ),
-                                    child: Row(
-                                      children: [
-                                        const SizedBox(
-                                          width: defaultSpacing / 2,
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            readPermLabel.label,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(color: Colors.white),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: defaultSpacing),
-                                Expanded(
-                                  child: _buildBlurCard(
-                                    title: photoUploadSharePermission,
-                                    icon: Icon(LucideIcons.share2),
-                                    onTap: () =>
-                                        showPermissionSheet<
-                                          PhotoSharePermission
-                                        >(
-                                          context: context,
-                                          title:
-                                              photoUploadSelectSharePermission,
-                                          values: PhotoSharePermission.values,
-                                          selected: sharePermLabel,
-                                          onSelected: (option) => context
-                                              .read<PhotoUploadBloc>()
-                                              .add(
-                                                PhotoUploadMetadataUpdated(
-                                                  index: state.currentIndex,
-                                                  sharePerm: option,
-                                                ),
-                                              ),
-                                        ),
-                                    child: Text(
-                                      sharePermLabel.label,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: defaultSpacing),
-                            _buildBlurCard(
-                              title: photoUploadTagUsers,
-                              icon: Icon(LucideIcons.userPen),
-                              onTap: () => showTagUsersSheet(
-                                context: context,
-                                authRepository: context.read<AuthRepository>(),
-                                initialUsernames: taggedUsers,
-                                onSubmit: (usernames) =>
-                                    context.read<PhotoUploadBloc>().add(
-                                      PhotoUploadMetadataUpdated(
-                                        index: state.currentIndex,
-                                        taggedUsernames: usernames,
-                                      ),
-                                    ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      taggedUsers.isEmpty
-                                          ? photoUploadNoTaggedUsers
-                                          : taggedUsers.join(', '),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(color: Colors.white),
-                                    ),
-                                  ),
-                                  Icon(Icons.chevron_right),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: defaultSpacing),
-                            _buildBlurCard(
-                              title: photoUploadImageTags,
-                              icon: Icon(LucideIcons.hash),
-                              onTap: () => showImageTagsSheet(
-                                context: context,
-                                initialTags: imageTags,
-                                onSubmit: (tags) =>
-                                    context.read<PhotoUploadBloc>().add(
-                                      PhotoUploadMetadataUpdated(
-                                        index: state.currentIndex,
-                                        userTags: tags,
-                                      ),
-                                    ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      imageTags.isEmpty
-                                          ? photoUploadNoTags
-                                          : imageTags.join(', '),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(color: Colors.white),
-                                    ),
-                                  ),
-                                  Icon(Icons.chevron_right),
-                                ],
-                              ),
-                            ),
-                          ],
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: CustomButton(
+                            onPressed: () {},
+                            type: RoundedButtonType.filled,
+                            child: Text("Add Photos"),
+                          ),
                         ),
                       ),
                     ],

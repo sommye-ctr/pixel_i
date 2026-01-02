@@ -53,7 +53,20 @@ class PhotoUploadBloc extends Bloc<PhotoUploadEvent, PhotoUploadState> {
     );
 
     final next = List<PhotoUploadMetadata>.from(state.metadata);
-    next[index] = updated;
+    if (event.applyToAll) {
+      // Apply to all photos
+      for (int i = 0; i < next.length; i++) {
+        next[i] = next[i].copyWith(
+          readPerm: event.readPerm ?? next[i].readPerm,
+          sharePerm: event.sharePerm ?? next[i].sharePerm,
+          userTags: event.userTags ?? next[i].userTags,
+          taggedUsernames: event.taggedUsernames ?? next[i].taggedUsernames,
+        );
+      }
+    } else {
+      // Apply to current photo only
+      next[index] = updated;
+    }
 
     emit(state.copyWith(metadata: next));
   }

@@ -102,3 +102,5 @@ const String photoUploadDone = 'Done';
 const String photoUploadSearchUsers = 'Search Users';
 const String photoUploadNoUsersFound = 'No users found';
 const String photoUploadUnableToSearch = 'Unable to search users';
+const String optionsAll = "Options will be applied to all images";
+const String optionsPerImage = "Options will be applied per-image";

@@ -33,6 +33,7 @@ class PhotoUploadMetadataUpdated extends PhotoUploadEvent {
   final PhotoSharePermission? sharePerm;
   final List<String>? userTags;
   final List<String>? taggedUsernames;
+  final bool applyToAll;
 
   const PhotoUploadMetadataUpdated({
     required this.index,
@@ -40,8 +41,9 @@ class PhotoUploadMetadataUpdated extends PhotoUploadEvent {
     this.sharePerm,
     this.userTags,
     this.taggedUsernames,
+    this.applyToAll = false,
   });
 
   @override
-  List<Object?> get props => [index, readPerm, sharePerm, userTags, taggedUsernames];
+  List<Object?> get props => [index, readPerm, sharePerm, userTags, taggedUsernames, applyToAll];
 }

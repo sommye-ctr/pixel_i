@@ -1,29 +1,35 @@
 import 'package:equatable/equatable.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:frontend/features/photos/models/photo_upload_metadata.dart';
 
 class PhotoUploadState extends Equatable {
-  final bool picking;
   final List<PlatformFile> files;
-  final String? error;
+  final List<PhotoUploadMetadata> metadata;
+  final int currentIndex;
 
   const PhotoUploadState({
-    this.picking = false,
     this.files = const [],
-    this.error,
+    this.metadata = const [],
+    this.currentIndex = 0,
   });
 
   PhotoUploadState copyWith({
-    bool? picking,
     List<PlatformFile>? files,
-    String? error,
+    List<PhotoUploadMetadata>? metadata,
+    int? currentIndex,
   }) {
     return PhotoUploadState(
-      picking: picking ?? this.picking,
       files: files ?? this.files,
-      error: error,
+      metadata: metadata ?? this.metadata,
+      currentIndex: currentIndex ?? this.currentIndex,
     );
   }
 
+  PhotoUploadMetadata? get selectedMetadata {
+    if (metadata.isEmpty || currentIndex >= metadata.length) return null;
+    return metadata[currentIndex];
+  }
+
   @override
-  List<Object?> get props => [picking, files, error];
+  List<Object?> get props => [files, metadata, currentIndex];
 }

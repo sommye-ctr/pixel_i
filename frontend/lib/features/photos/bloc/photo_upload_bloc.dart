@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:frontend/core/resources/strings.dart';
+import 'package:frontend/features/photos/models/photo_upload_metadata.dart';
 import 'photo_upload_event.dart';
 import 'photo_upload_state.dart';
 
@@ -8,48 +8,52 @@ class PhotoUploadBloc extends Bloc<PhotoUploadEvent, PhotoUploadState> {
   static const int maxFiles = 20;
 
   PhotoUploadBloc() : super(const PhotoUploadState()) {
-    on<PhotoUploadPickRequested>(_onPickRequested);
-    on<PhotoUploadCleared>(_onCleared);
     on<PhotoUploadHydrate>(_onHydrate);
+    on<PhotoUploadPageChanged>(_onPageChanged);
+    on<PhotoUploadMetadataUpdated>(_onMetadataUpdated);
   }
 
-  Future<void> _onPickRequested(
-    PhotoUploadPickRequested event,
-    Emitter<PhotoUploadState> emit,
-  ) async {
-    if (state.picking) return;
-    emit(state.copyWith(picking: true, error: null));
-
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: true,
-      withData: true,
-    );
-
-    if (result == null) {
-      emit(state.copyWith(picking: false));
-      return;
-    }
-
-    final files = result.files;
-    if (files.length > maxFiles) {
-      emit(state.copyWith(picking: false, error: photoUploadTooMany));
-      return;
-    }
-
-    emit(state.copyWith(picking: false, files: files, error: null));
-  }
-
-  void _onCleared(PhotoUploadCleared event, Emitter<PhotoUploadState> emit) {
-    emit(state.copyWith(files: const [], error: null));
+  List<PhotoUploadMetadata> _buildMetadata(List<PlatformFile> files) {
+    return files.map(PhotoUploadMetadata.fromPlatformFile).toList();
   }
 
   void _onHydrate(PhotoUploadHydrate event, Emitter<PhotoUploadState> emit) {
     final files = event.files;
-    if (files.length > maxFiles) {
-      emit(state.copyWith(error: photoUploadTooMany));
-    } else {
-      emit(state.copyWith(files: files, error: null));
-    }
+    emit(
+      state.copyWith(
+        files: files,
+        metadata: _buildMetadata(files),
+        currentIndex: 0,
+      ),
+    );
+  }
+
+  void _onPageChanged(
+    PhotoUploadPageChanged event,
+    Emitter<PhotoUploadState> emit,
+  ) {
+    if (state.files.isEmpty) return;
+    final clampedIndex = event.index.clamp(0, state.files.length - 1);
+    emit(state.copyWith(currentIndex: clampedIndex));
+  }
+
+  void _onMetadataUpdated(
+    PhotoUploadMetadataUpdated event,
+    Emitter<PhotoUploadState> emit,
+  ) {
+    final index = event.index;
+    if (index < 0 || index >= state.metadata.length) return;
+
+    final current = state.metadata[index];
+    final updated = current.copyWith(
+      readPerm: event.readPerm ?? current.readPerm,
+      sharePerm: event.sharePerm ?? current.sharePerm,
+      userTags: event.userTags ?? current.userTags,
+    );
+
+    final next = List<PhotoUploadMetadata>.from(state.metadata);
+    next[index] = updated;
+
+    emit(state.copyWith(metadata: next));
   }
 }

@@ -20,11 +20,16 @@ enum PhotoReadPermission {
       orElse: () => PhotoReadPermission.pub,
     );
   }
+
+  @override
+  String toString() {
+    return label;
+  }
 }
 
 enum PhotoSharePermission {
-  ownerRoles('OR', 'Owner or Roles'),
   anyone('AN', 'Anyone'),
+  ownerRoles('OR', 'Owner or Roles'),
   disabled('DI', 'Disabled');
 
   final String value;
@@ -37,6 +42,11 @@ enum PhotoSharePermission {
       (perm) => perm.value == value,
       orElse: () => PhotoSharePermission.disabled,
     );
+  }
+
+  @override
+  String toString() {
+    return label;
   }
 }
 
@@ -160,10 +170,10 @@ class Photo {
           : null,
       downloads: map['downloads']?.toInt(),
       views: map['views']?.toInt(),
-        readPerm: map['read_perm'] != null
+      readPerm: map['read_perm'] != null
           ? PhotoReadPermission.fromValue(map['read_perm'])
           : null,
-        sharePerm: map['share_perm'] != null
+      sharePerm: map['share_perm'] != null
           ? PhotoSharePermission.fromValue(map['share_perm'])
           : null,
       originalUrl: map['original_url'],

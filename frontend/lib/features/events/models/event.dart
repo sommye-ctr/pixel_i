@@ -20,6 +20,11 @@ enum EventPermission {
       orElse: () => EventPermission.pub,
     );
   }
+
+  @override
+  String toString() {
+    return label;
+  }
 }
 
 class Event extends Equatable {

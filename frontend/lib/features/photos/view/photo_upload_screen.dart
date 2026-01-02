@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/core/resources/strings.dart';
 import 'package:frontend/core/resources/style.dart';
 import 'package:frontend/core/utils/screen_utils.dart';
-import 'package:frontend/core/utils/toast_utils.dart';
 import 'package:frontend/features/photos/bloc/photo_upload_bloc.dart';
 import 'package:frontend/features/photos/bloc/photo_upload_event.dart';
 import 'package:frontend/features/photos/bloc/photo_upload_state.dart';
@@ -71,42 +70,200 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     required String title,
     required Icon icon,
     Widget? child,
+    VoidCallback? onTap,
   }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(smallRoundEdgeRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          padding: const EdgeInsets.all(defaultSpacing),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(smallRoundEdgeRadius),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  icon,
-                  SizedBox(width: defaultSpacing / 2),
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(smallRoundEdgeRadius),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            padding: const EdgeInsets.all(defaultSpacing),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(smallRoundEdgeRadius),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    icon,
+                    SizedBox(width: defaultSpacing / 2),
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
+                  ],
+                ),
+                if (child != null) ...[
+                  const SizedBox(height: defaultSpacing / 2),
+                  child,
                 ],
-              ),
-              if (child != null) ...[
-                const SizedBox(height: defaultSpacing / 2),
-                child,
               ],
-            ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _showSettingsBottomSheet<T>(
+    BuildContext context,
+    PhotoUploadState state,
+    String title,
+    List<T> values,
+    Function(T option) callback,
+  ) async {
+    final meta = state.selectedMetadata;
+    if (meta == null) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(largeRoundEdgeRadius),
+        ),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.all(defaultSpacing),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: defaultSpacing),
+              Wrap(
+                spacing: defaultSpacing / 2,
+                runSpacing: defaultSpacing / 2,
+                children: [
+                  for (final option in values)
+                    ChoiceChip(
+                      label: Text(option.toString()),
+                      selected: option == meta.sharePerm,
+                      onSelected: (_) {
+                        callback.call(option);
+                        Navigator.of(sheetContext).pop();
+                      },
+                    ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showImageTagsSheet(
+    BuildContext context,
+    PhotoUploadState state,
+    Function(List<String> tags) callback,
+  ) async {
+    final meta = state.selectedMetadata;
+    if (meta == null) return;
+
+    final controller = TextEditingController();
+    final tags = [...meta.userTags];
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(largeRoundEdgeRadius),
+        ),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: defaultSpacing,
+            right: defaultSpacing,
+            top: defaultSpacing,
+            bottom: ScreenUtils.safeBottom(sheetContext) + defaultSpacing,
+          ),
+          child: StatefulBuilder(
+            builder: (context, setSheetState) {
+              void addTag() {
+                final text = controller.text.trim();
+                if (text.isEmpty) return;
+                if (!tags.contains(text)) {
+                  setSheetState(() => tags.add(text));
+                }
+                controller.clear();
+              }
+
+              void removeTag(String tag) {
+                setSheetState(() => tags.remove(tag));
+              }
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Add Image Tags',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: defaultSpacing),
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => addTag(),
+                    decoration: InputDecoration(
+                      labelText: 'Tag',
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.add),
+                        onPressed: addTag,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: defaultSpacing),
+                  Wrap(
+                    spacing: defaultSpacing / 2,
+                    runSpacing: defaultSpacing / 2,
+                    children: tags.isEmpty
+                        ? [
+                            Text(
+                              'No tags yet',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ]
+                        : tags
+                              .map(
+                                (tag) => Chip(
+                                  label: Text(tag),
+                                  onDeleted: () => removeTag(tag),
+                                ),
+                              )
+                              .toList(),
+                  ),
+                  const SizedBox(height: defaultSpacing * 1.5),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        callback(List<String>.from(tags));
+                        Navigator.of(sheetContext).pop();
+                      },
+                      child: const Text('Done'),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -163,19 +320,15 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
 
     return BlocProvider(
       create: (_) => PhotoUploadBloc()..add(PhotoUploadHydrate(initial)),
-      child: BlocConsumer<PhotoUploadBloc, PhotoUploadState>(
-        listener: (context, state) {
-          if (state.error != null) {
-            ToastUtils.showLong(state.error!);
-          }
-          if (state.files.isNotEmpty) {
-            ToastUtils.showShort(
-              '$photoUploadPickedPrefix${state.files.length}',
-            );
-          }
-        },
+      child: BlocBuilder<PhotoUploadBloc, PhotoUploadState>(
         builder: (context, state) {
           final hasFiles = state.files.isNotEmpty;
+          final metadata = state.selectedMetadata;
+          final readPermLabel = metadata?.readPerm ?? PhotoReadPermission.pub;
+          final sharePermLabel =
+              metadata?.sharePerm ?? PhotoSharePermission.anyone;
+          final taggedUsers = metadata?.taggedUsernames ?? const [];
+          final imageTags = metadata?.userTags ?? const [];
 
           return Scaffold(
             body: AnimatedContainer(
@@ -212,6 +365,9 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                         child: PageView.builder(
                           itemCount: state.files.length,
                           controller: _pageController,
+                          onPageChanged: (index) => context
+                              .read<PhotoUploadBloc>()
+                              .add(PhotoUploadPageChanged(index)),
                           itemBuilder: (context, index) {
                             final file = state.files[index];
                             return Padding(
@@ -237,6 +393,19 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                                   child: _buildBlurCard(
                                     title: 'Read Permission',
                                     icon: Icon(LucideIcons.shield),
+                                    onTap: () => _showSettingsBottomSheet(
+                                      context,
+                                      state,
+                                      "Select read permission",
+                                      PhotoReadPermission.values,
+                                      (option) =>
+                                          context.read<PhotoUploadBloc>().add(
+                                            PhotoUploadMetadataUpdated(
+                                              index: state.currentIndex,
+                                              readPerm: option,
+                                            ),
+                                          ),
+                                    ),
                                     child: Row(
                                       children: [
                                         const SizedBox(
@@ -244,7 +413,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                                         ),
                                         Expanded(
                                           child: Text(
-                                            PhotoReadPermission.pub.label,
+                                            readPermLabel.label,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyMedium
@@ -260,8 +429,21 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                                   child: _buildBlurCard(
                                     title: 'Share Permission',
                                     icon: Icon(LucideIcons.share2),
+                                    onTap: () => _showSettingsBottomSheet(
+                                      context,
+                                      state,
+                                      "Select share permission",
+                                      PhotoSharePermission.values,
+                                      (option) =>
+                                          context.read<PhotoUploadBloc>().add(
+                                            PhotoUploadMetadataUpdated(
+                                              index: state.currentIndex,
+                                              sharePerm: option,
+                                            ),
+                                          ),
+                                    ),
                                     child: Text(
-                                      PhotoSharePermission.anyone.label,
+                                      sharePermLabel.label,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium
@@ -279,7 +461,9 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      'Add tagged users',
+                                      taggedUsers.isEmpty
+                                          ? 'No tagged users'
+                                          : taggedUsers.join(', '),
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium
@@ -294,11 +478,22 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                             _buildBlurCard(
                               title: 'Image Tags',
                               icon: Icon(LucideIcons.hash),
+                              onTap: () =>
+                                  _showImageTagsSheet(context, state, (tags) {
+                                    context.read<PhotoUploadBloc>().add(
+                                      PhotoUploadMetadataUpdated(
+                                        index: state.currentIndex,
+                                        userTags: tags,
+                                      ),
+                                    );
+                                  }),
                               child: Row(
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      'Add tags',
+                                      imageTags.isEmpty
+                                          ? 'No tags added'
+                                          : imageTags.join(', '),
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium

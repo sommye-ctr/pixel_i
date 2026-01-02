@@ -4,6 +4,42 @@ import 'package:flutter/foundation.dart';
 
 import 'package:frontend/features/auth/models/user.dart';
 
+enum PhotoReadPermission {
+  pub('PUB', 'Public'),
+  img('IMG', 'IMG Member'),
+  prv('PRV', 'Private');
+
+  final String value;
+  final String label;
+
+  const PhotoReadPermission(this.value, this.label);
+
+  factory PhotoReadPermission.fromValue(String value) {
+    return PhotoReadPermission.values.firstWhere(
+      (perm) => perm.value == value,
+      orElse: () => PhotoReadPermission.pub,
+    );
+  }
+}
+
+enum PhotoSharePermission {
+  ownerRoles('OR', 'Owner or Roles'),
+  anyone('AN', 'Anyone'),
+  disabled('DI', 'Disabled');
+
+  final String value;
+  final String label;
+
+  const PhotoSharePermission(this.value, this.label);
+
+  factory PhotoSharePermission.fromValue(String value) {
+    return PhotoSharePermission.values.firstWhere(
+      (perm) => perm.value == value,
+      orElse: () => PhotoSharePermission.disabled,
+    );
+  }
+}
+
 class Photo {
   final String id;
   final String thumbnailUrl;
@@ -17,8 +53,8 @@ class Photo {
   final List<User>? taggedUsers;
   final int? downloads;
   final int? views;
-  final String? readPerm;
-  final String? sharePerm;
+  final PhotoReadPermission? readPerm;
+  final PhotoSharePermission? sharePerm;
   final String? originalUrl;
   final int? likesCount;
   final bool? isLiked;
@@ -65,8 +101,8 @@ class Photo {
     ValueGetter<List<User>?>? taggedUsers,
     ValueGetter<int?>? downloads,
     ValueGetter<int?>? views,
-    ValueGetter<String?>? readPerm,
-    ValueGetter<String?>? sharePerm,
+    ValueGetter<PhotoReadPermission?>? readPerm,
+    ValueGetter<PhotoSharePermission?>? sharePerm,
     ValueGetter<String?>? originalUrl,
     ValueGetter<int?>? likesCount,
     ValueGetter<bool?>? isLiked,
@@ -102,8 +138,8 @@ class Photo {
       'tagged_users': taggedUsers?.map((x) => x.toMap()).toList(),
       'downloads': downloads,
       'views': views,
-      'read_perm': readPerm,
-      'share_perm': sharePerm,
+      'read_perm': readPerm?.value,
+      'share_perm': sharePerm?.value,
       'original_url': originalUrl,
       'likes_count': likesCount,
       'is_liked': isLiked,
@@ -124,8 +160,12 @@ class Photo {
           : null,
       downloads: map['downloads']?.toInt(),
       views: map['views']?.toInt(),
-      readPerm: map['read_perm'],
-      sharePerm: map['share_perm'],
+        readPerm: map['read_perm'] != null
+          ? PhotoReadPermission.fromValue(map['read_perm'])
+          : null,
+        sharePerm: map['share_perm'] != null
+          ? PhotoSharePermission.fromValue(map['share_perm'])
+          : null,
       originalUrl: map['original_url'],
       likesCount: map['likes_count']?.toInt(),
       isLiked: map['is_liked'] == null ? null : map['is_liked'] as bool,

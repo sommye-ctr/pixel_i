@@ -8,8 +8,11 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:frontend/core/resources/style.dart';
 import 'package:frontend/core/resources/strings.dart';
 import 'package:frontend/core/utils/index.dart';
+import 'package:frontend/core/utils/toast_utils.dart';
+import 'package:frontend/features/photos/bloc/photo_upload_bloc.dart';
 import 'package:frontend/features/photos/models/photo.dart';
 import 'package:go_router/go_router.dart';
+import 'package:file_picker/file_picker.dart';
 
 class EventDetailScreen extends StatefulWidget {
   final String eventId;
@@ -161,6 +164,31 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     );
   }
 
+  Future<void> _pickAndUpload() async {
+    ToastUtils.showShort(photoUploadCardText);
+
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: true,
+      withData: true,
+    );
+
+    if (result == null) return;
+
+    final files = result.files;
+    if (files.length > PhotoUploadBloc.maxFiles) {
+      ToastUtils.showShort(photoUploadTooMany);
+      return;
+    }
+
+    if (!mounted) return;
+    await context.push('/photos/upload', extra: {
+      'files': files,
+      'eventId': widget.eventId,
+      'eventName': widget.title,
+    });
+  }
+
   Widget _buildTile(Photo photo) {
     final aspect =
         (photo.width != null && photo.height != null && photo.height != 0)
@@ -289,7 +317,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     return Scaffold(
       body: SafeArea(child: body),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: _pickAndUpload,
         child: const Icon(Icons.add),
       ),
     );

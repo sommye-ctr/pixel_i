@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../features/auth/view/login_screen.dart';
@@ -5,6 +6,7 @@ import '../features/auth/view/signup_screen.dart';
 import '../features/auth/view/fill_profile_screen.dart';
 import '../features/home/view/home_screen.dart';
 import '../features/photos/view/photo_detail_screen.dart';
+import '../features/photos/view/photo_upload_screen.dart';
 import '../features/events/views/event_detail_screen.dart';
 import '../features/events/views/event_create_screen.dart';
 
@@ -44,6 +46,21 @@ GoRouter buildRouter({bool isLoggedIn = false}) {
             photoId: photoId,
             heroTag: heroTag,
             thumbnailUrl: thumbnailUrl,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/photos/upload',
+        name: 'photo-upload',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final files = extra?['files'] as List<PlatformFile>?;
+          final eventId = extra?['eventId'] as String?;
+          final eventName = extra?['eventName'] as String?;
+          return PhotoUploadScreen(
+            initialFiles: files,
+            eventId: eventId,
+            eventName: eventName,
           );
         },
       ),

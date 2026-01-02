@@ -79,6 +79,10 @@ const String eventCreateWritePermission = 'Write Permission';
 const String eventCreateToastEmptyTitle = 'Please enter event title';
 const String eventCreateToastSuccess = 'Event created successfully';
 const String eventCreateToastFailedPrefix = 'Failed to create event: ';
-const String eventPermissionPublic = 'Public';
-const String eventPermissionImgMember = 'IMG Member';
-const String eventPermissionPrivate = 'Private';
+
+// Photo Upload
+const String photoUploadTitle = 'Upload Photos';
+const String photoUploadCardText = 'Pick up to 20 images at a time for uploading';
+const String photoUploadButtonText = 'Pick images';
+const String photoUploadTooMany = 'You can pick up to 20 images only';
+const String photoUploadPickedPrefix = 'Selected ';

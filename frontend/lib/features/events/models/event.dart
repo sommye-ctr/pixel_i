@@ -4,11 +4,29 @@ import 'package:equatable/equatable.dart';
 import 'package:frontend/features/auth/models/user.dart';
 import 'package:frontend/features/photos/models/photo.dart';
 
+enum EventPermission {
+  pub('PUB', 'Public'),
+  img('IMG', 'IMG Member'),
+  prv('PRV', 'Private');
+
+  final String value;
+  final String label;
+
+  const EventPermission(this.value, this.label);
+
+  factory EventPermission.fromValue(String value) {
+    return EventPermission.values.firstWhere(
+      (perm) => perm.value == value,
+      orElse: () => EventPermission.pub,
+    );
+  }
+}
+
 class Event extends Equatable {
   final String id;
   final String title;
-  final String readPerm;
-  final String writePerm;
+  final EventPermission readPerm;
+  final EventPermission writePerm;
   final User coordinator;
   final int imagesCount;
   final Photo? coverPhoto;
@@ -42,8 +60,8 @@ class Event extends Equatable {
   Event copyWith({
     String? id,
     String? title,
-    String? readPerm,
-    String? writePerm,
+    EventPermission? readPerm,
+    EventPermission? writePerm,
     User? coordinator,
     int? imagesCount,
     Photo? coverPhoto,
@@ -65,8 +83,8 @@ class Event extends Equatable {
     return {
       'id': id,
       'title': title,
-      'read_perm': readPerm,
-      'write_perm': writePerm,
+      'read_perm': readPerm.value,
+      'write_perm': writePerm.value,
       'coordinator': coordinator.toMap(),
       'images_count': imagesCount,
       'cover_photo': coverPhoto?.toMap(),
@@ -78,8 +96,8 @@ class Event extends Equatable {
     return Event(
       id: map['id'] ?? '',
       title: map['title'] ?? '',
-      readPerm: map['read_perm'] ?? 'PUB',
-      writePerm: map['write_perm'] ?? 'PUB',
+      readPerm: EventPermission.fromValue(map['read_perm'] ?? 'PUB'),
+      writePerm: EventPermission.fromValue(map['write_perm'] ?? 'PUB'),
       coordinator: User.fromMap(map['coordinator']),
       imagesCount: map['images_count']?.toInt() ?? 0,
       coverPhoto: map['cover_photo'] != null

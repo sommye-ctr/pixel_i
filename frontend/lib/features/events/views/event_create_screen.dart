@@ -7,18 +7,8 @@ import 'package:frontend/core/widgets/index.dart';
 import 'package:frontend/features/events/bloc/event_create_bloc.dart';
 import 'package:frontend/features/events/bloc/event_create_event.dart';
 import 'package:frontend/features/events/bloc/event_create_state.dart';
+import 'package:frontend/features/events/models/event.dart';
 import 'package:go_router/go_router.dart';
-
-enum EventPermission {
-  pub('PUB', eventPermissionPublic),
-  img('IMG', eventPermissionImgMember),
-  prv('PRV', eventPermissionPrivate);
-
-  final String value;
-  final String label;
-
-  const EventPermission(this.value, this.label);
-}
 
 class EventCreateScreen extends StatefulWidget {
   const EventCreateScreen({super.key});

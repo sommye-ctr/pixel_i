@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/core/resources/strings.dart';
 import 'package:frontend/core/resources/style.dart';
 import 'package:frontend/core/utils/toast_utils.dart';
 import 'package:frontend/core/widgets/index.dart';
@@ -9,9 +10,9 @@ import 'package:frontend/features/events/bloc/event_create_state.dart';
 import 'package:go_router/go_router.dart';
 
 enum EventPermission {
-  pub('PUB', 'Public'),
-  img('IMG', 'IMG Member'),
-  prv('PRV', 'Private');
+  pub('PUB', eventPermissionPublic),
+  img('IMG', eventPermissionImgMember),
+  prv('PRV', eventPermissionPrivate);
 
   final String value;
   final String label;
@@ -41,7 +42,7 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
     final title = _titleController.text.trim();
 
     if (title.isEmpty) {
-      ToastUtils.showShort('Please enter event title');
+      ToastUtils.showShort(eventCreateToastEmptyTitle);
       return;
     }
 
@@ -59,10 +60,10 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
     return BlocListener<EventCreateBloc, EventCreateState>(
       listener: (context, state) {
         if (state is EventCreateSuccess) {
-          ToastUtils.showShort('Event created successfully');
+          ToastUtils.showShort(eventCreateToastSuccess);
           context.pop(true);
         } else if (state is EventCreateFailure) {
-          ToastUtils.showLong('Failed to create event: ${state.error}');
+          ToastUtils.showLong('${eventCreateToastFailedPrefix}${state.error}');
         }
       },
       child: BlocBuilder<EventCreateBloc, EventCreateState>(
@@ -70,7 +71,7 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
           final isLoading = state is EventCreateInProgress;
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Create Event'),
+              title: const Text(eventCreateTitle),
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => context.pop(),
@@ -84,13 +85,13 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
                   // Event Title
                   CustomTextField(
                     controller: _titleController,
-                    hint: 'Enter event title',
+                    hint: eventCreateHintTitle,
                   ),
                   const SizedBox(height: largeSpacing),
 
                   // Read Permission
                   Text(
-                    'Read Permission',
+                    eventCreateReadPermission,
                     style: Theme.of(context).textTheme.labelLarge,
                   ),
                   const SizedBox(height: defaultSpacing),
@@ -117,7 +118,7 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
 
                   // Write Permission
                   Text(
-                    'Write Permission',
+                    eventCreateWritePermission,
                     style: Theme.of(context).textTheme.labelLarge,
                   ),
                   const SizedBox(height: defaultSpacing),
@@ -153,7 +154,7 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
                               width: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Text('Create Event'),
+                          : const Text(eventCreateTitle),
                     ),
                   ),
                 ],

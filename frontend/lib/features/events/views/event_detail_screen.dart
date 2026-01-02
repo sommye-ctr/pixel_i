@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:frontend/core/resources/style.dart';
+import 'package:frontend/core/resources/strings.dart';
 import 'package:frontend/core/utils/index.dart';
 import 'package:frontend/features/photos/models/photo.dart';
 import 'package:go_router/go_router.dart';
@@ -110,7 +111,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     ),
                     const SizedBox(height: defaultSpacing / 2),
                     Text(
-                      '$_displayFileCount files • Created ${_formattedCreatedAt ?? '—'}',
+                      '$_displayFileCount $eventFilesLabel • $eventCreatedLabel ${_formattedCreatedAt ?? dashPlaceholder}',
                       style: Theme.of(
                         context,
                       ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
@@ -252,9 +253,12 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           children: [
             const Icon(Icons.error_outline, color: Colors.red),
             const SizedBox(height: defaultSpacing),
-            Text(_error ?? 'Unknown error'),
+            Text(_error ?? unknownErrorLabel),
             const SizedBox(height: defaultSpacing),
-            ElevatedButton(onPressed: _loadPhotos, child: const Text('Retry')),
+            ElevatedButton(
+              onPressed: _loadPhotos,
+              child: const Text(retryLabel),
+            ),
           ],
         ),
       );

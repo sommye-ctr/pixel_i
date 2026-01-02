@@ -36,11 +36,11 @@ class _EventsScreenState extends State<EventsScreen> {
         if (state is EventsLoadInProgress) {
           body = const Center(child: CircularProgressIndicator());
         } else if (state is EventsLoadFailure) {
-          body = Center(child: Text('Failed to load events: ${state.error}'));
+          body = Center(child: Text('$eventsLoadFailedPrefix${state.error}'));
         } else if (state is EventsLoadSuccess) {
           final events = state.events;
           if (events.isEmpty) {
-            body = const Center(child: Text('No events available'));
+            body = const Center(child: Text(eventsNoneAvailable));
           } else {
             body = Padding(
               padding: const EdgeInsets.all(defaultSpacing),
@@ -93,10 +93,10 @@ class _EventsScreenState extends State<EventsScreen> {
                 onPressed: () {
                   if (state.showOnlyMyEvents) {
                     context.read<EventsBloc>().add(EventsRequested());
-                    ToastUtils.showShort('Showing all events');
+                    ToastUtils.showShort(eventsToastShowAll);
                   } else {
                     context.read<EventsBloc>().add(const MyEventsRequested());
-                    ToastUtils.showShort('Showing your events');
+                    ToastUtils.showShort(eventsToastShowMine);
                   }
                 },
               ),

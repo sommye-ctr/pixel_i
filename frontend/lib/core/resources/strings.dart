@@ -59,3 +59,26 @@ const String photosNoPhotos = 'No photos yet';
 const String photosRetry = 'Retry';
 const String photosGridView = 'Grid view';
 const String photosMasonryView = 'Masonry view';
+
+// Events / Common
+const String retryLabel = 'Retry';
+const String unknownErrorLabel = 'Unknown error';
+const String eventFilesLabel = 'files';
+const String eventCreatedLabel = 'Created';
+const String dashPlaceholder = '—';
+const String eventsLoadFailedPrefix = 'Failed to load events: ';
+const String eventsNoneAvailable = 'No events available';
+const String eventsToastShowAll = 'Showing all events';
+const String eventsToastShowMine = 'Showing your events';
+
+// Event Create
+const String eventCreateTitle = 'Create Event';
+const String eventCreateHintTitle = 'Enter event title';
+const String eventCreateReadPermission = 'Read Permission';
+const String eventCreateWritePermission = 'Write Permission';
+const String eventCreateToastEmptyTitle = 'Please enter event title';
+const String eventCreateToastSuccess = 'Event created successfully';
+const String eventCreateToastFailedPrefix = 'Failed to create event: ';
+const String eventPermissionPublic = 'Public';
+const String eventPermissionImgMember = 'IMG Member';
+const String eventPermissionPrivate = 'Private';

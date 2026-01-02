@@ -1,6 +1,7 @@
 import '../../../core/network/api_client.dart';
 import '../../../core/network/token_storage.dart';
 import '../models/user.dart';
+import '../models/user_suggestion.dart';
 
 class AuthRepository {
   final ApiClient api;
@@ -126,5 +127,24 @@ class AuthRepository {
   Future<void> logout() async {
     await tokenStorage.clearTokens();
     _clearCurrentUser();
+  }
+
+  Future<List<UserSuggestion>> searchUsers({
+    required String query,
+    int limit = 10,
+  }) async {
+    final res = await api.get<List<dynamic>>(
+      '/auth/search/',
+      query: {'q': query, 'limit': limit},
+    );
+
+    final data = res.data;
+    if (data is List) {
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map(UserSuggestion.fromMap)
+          .toList();
+    }
+    return const [];
   }
 }

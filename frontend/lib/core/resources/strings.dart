@@ -82,7 +82,23 @@ const String eventCreateToastFailedPrefix = 'Failed to create event: ';
 
 // Photo Upload
 const String photoUploadTitle = 'Upload Photos';
-const String photoUploadCardText = 'Pick up to 20 images at a time for uploading';
+const String photoUploadCardText =
+    'Pick up to 20 images at a time for uploading';
 const String photoUploadButtonText = 'Pick images';
 const String photoUploadTooMany = 'You can pick up to 20 images only';
 const String photoUploadPickedPrefix = 'Selected ';
+const String photoUploadReadPermission = 'Read Permission';
+const String photoUploadSharePermission = 'Share Permission';
+const String photoUploadTagUsers = 'Tag Users';
+const String photoUploadImageTags = 'Image Tags';
+const String photoUploadSelectReadPermission = 'Select read permission';
+const String photoUploadSelectSharePermission = 'Select share permission';
+const String photoUploadNoTaggedUsers = 'No tagged users';
+const String photoUploadNoTags = 'No tags added';
+const String photoUploadAddImageTags = 'Add Image Tags';
+const String photoUploadTagLabel = 'Tag';
+const String photoUploadNoTagsYet = 'No tags yet';
+const String photoUploadDone = 'Done';
+const String photoUploadSearchUsers = 'Search Users';
+const String photoUploadNoUsersFound = 'No users found';
+const String photoUploadUnableToSearch = 'Unable to search users';

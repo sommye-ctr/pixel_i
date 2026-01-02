@@ -49,6 +49,7 @@ class PhotoUploadBloc extends Bloc<PhotoUploadEvent, PhotoUploadState> {
       readPerm: event.readPerm ?? current.readPerm,
       sharePerm: event.sharePerm ?? current.sharePerm,
       userTags: event.userTags ?? current.userTags,
+      taggedUsernames: event.taggedUsernames ?? current.taggedUsernames,
     );
 
     final next = List<PhotoUploadMetadata>.from(state.metadata);

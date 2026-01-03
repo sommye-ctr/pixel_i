@@ -174,12 +174,19 @@ def upload_to_storage(photo_id, file: ImageFile, variant="original"):
     try:
         file.seek(0)
         blob.upload_from_file(file)
+        if variant in ["watermarked", "thumbnail"]:
+            blob.make_public()
     except FirebaseError as e:
         raise APIException(f"Firebase uploading error {e}")
     except Exception as e:
         raise APIException(f"Unexpected server error during upload {e}")
 
-    return path
+    if variant in ["watermarked", "thumbnail"]:
+        download_url = blob.public_url
+    else:
+        download_url = None
+
+    return path, download_url
 
 
 def generate_thumbnail_image(image_file, size=(300, 300), blur_radius=10):

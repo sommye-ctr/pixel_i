@@ -45,8 +45,8 @@ class Photo(models.Model):
     height = models.IntegerField(null=True, blank=True)
 
     original_path = models.TextField(default="")
-    thumbnail_path = models.TextField(default="")
-    watermarked_path = models.TextField(default="")
+    thumbnail_url = models.TextField(default="")
+    watermarked_url = models.TextField(default="")
     tagged_users = models.ManyToManyField(
         CustomUser, through="PhotoTag", related_name="tagged_photos"
     )

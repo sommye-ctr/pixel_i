@@ -33,11 +33,11 @@ def process_photo_task(photo_id):
         watermarked = generate_watermarked_image(original_img)
         thumbnail = generate_thumbnail_image(original_img)
 
-        wp = upload_to_storage(photo_id, watermarked, "watermarked")
-        tp = upload_to_storage(photo_id, thumbnail, 'thumbnail')
+        wp, watermarked_url = upload_to_storage(photo_id, watermarked, "watermarked")
+        tp, thumbnail_url = upload_to_storage(photo_id, thumbnail, 'thumbnail')
 
-        photo.watermarked_path = wp
-        photo.thumbnail_path = tp
+        photo.watermarked_url = watermarked_url
+        photo.thumbnail_url = thumbnail_url
         logger.info(f"Photo {photo_id}: Successfully generated image variants")
     except Exception as e:
         logger.error(f"Photo {photo_id}: Failed to generate image variants - {str(e)}")
@@ -73,8 +73,8 @@ def process_photo_task(photo_id):
         logger.info(f"Photo {photo_id}: Successfully completed all processing steps")
 
     photo.save(update_fields=[
-        "watermarked_path",
-        "thumbnail_path",
+        "watermarked_url",
+        "thumbnail_url",
         "auto_tags",
         "width",
         "height",

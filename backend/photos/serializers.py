@@ -10,17 +10,12 @@ from photos.services import generate_signed_url, create_photo_tags, upload_to_st
 
 
 class PhotoMiniSerializer(serializers.ModelSerializer):
-    thumbnail_url = serializers.SerializerMethodField()
-
     class Meta:
         model = Photo
         fields = [
             'id', 'thumbnail_url', 'width', 'height'
         ]
         read_only_fields = fields
-
-    def get_thumbnail_url(self, obj):
-        return generate_signed_url(obj.thumbnail_path)
 
 
 class PhotoBulkUploadSerializer(serializers.Serializer):
@@ -111,8 +106,6 @@ class PhotoBulkUploadSerializer(serializers.Serializer):
 # downloads and views only for photographer
 class PhotoReadSerializer(serializers.ModelSerializer):
     tagged_users = MiniUserSerializer(many=True, read_only=True)
-    original_url = serializers.SerializerMethodField()
-    thumbnail_url = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField(read_only=True)
     is_liked = serializers.SerializerMethodField(read_only=True)
     photographer = MiniUserSerializer(read_only=True)
@@ -121,7 +114,7 @@ class PhotoReadSerializer(serializers.ModelSerializer):
         model = Photo
         fields = [
             'id', 'timestamp', 'meta', 'photographer', 'event', 'tagged_users', 'downloads', 'views', 'auto_tags',
-            'user_tags', 'share_perm', 'original_url', 'thumbnail_url', 'likes_count', 'width', 'height', 'is_liked'
+            'user_tags', 'share_perm', 'watermarked_url', 'thumbnail_url', 'likes_count', 'width', 'height', 'is_liked'
         ]
         read_only_fields = fields
 
@@ -135,12 +128,6 @@ class PhotoReadSerializer(serializers.ModelSerializer):
 
     def get_likes_count(self, obj: Photo):
         return obj.likes.count()
-
-    def get_original_url(self, obj):
-        return generate_signed_url(obj.original_path)
-
-    def get_thumbnail_url(self, obj):
-        return generate_signed_url(obj.thumbnail_path)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -160,7 +147,6 @@ class PhotoReadSerializer(serializers.ModelSerializer):
 
 
 class PhotoListSerializer(serializers.ModelSerializer):
-    thumbnail_url = serializers.SerializerMethodField()
     photographer = MiniUserSerializer(read_only=True)
 
     class Meta:
@@ -169,9 +155,6 @@ class PhotoListSerializer(serializers.ModelSerializer):
             'id', 'timestamp', 'photographer', 'thumbnail_url', 'width', 'height'
         ]
         read_only_fields = fields
-
-    def get_thumbnail_url(self, obj):
-        return generate_signed_url(obj.thumbnail_path)
 
 
 class PhotoWriteSerializer(serializers.ModelSerializer):
@@ -204,7 +187,8 @@ class PhotoWriteSerializer(serializers.ModelSerializer):
             create_photo_tags(photo, usernames=tagged_usernames, actor=photographer)
 
         try:
-            photo.original_path = upload_to_storage(photo.id, image_file)
+            original_path, _ = upload_to_storage(photo.id, image_file)
+            photo.original_path = original_path
             photo.save(update_fields=['original_path'])
         except Exception:
             photo.delete()
@@ -243,11 +227,6 @@ class PhotoShareSerializer(serializers.ModelSerializer):
         return value
 
     def get_share_url(self, obj: PhotoShare):
-        if obj.variant_key == 'W':
-            path = obj.photo.watermarked_path
-        else:
-            path = obj.photo.original_path
-
         remaining = None
         if obj.expires_at is not None:
             now = timezone.now()
@@ -255,4 +234,8 @@ class PhotoShareSerializer(serializers.ModelSerializer):
             if remaining <= 0:
                 return None
 
-        return generate_signed_url(path, remaining)
+        if obj.variant_key == 'W':
+            url = obj.photo.watermarked_url
+        else:
+            url = generate_signed_url(obj.photo.original_path, remaining)
+        return url

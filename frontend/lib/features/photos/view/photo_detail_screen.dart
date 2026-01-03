@@ -196,6 +196,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
 
           if (state is PhotoDetailLoadSuccess &&
               state.photo.id == widget.photoId) {
+            imageUrl = state.photo.originalUrl ?? state.photo.thumbnailUrl;
             photo = state.photo;
           } else if (state is PhotoLikeSuccess &&
               state.photo.id == widget.photoId) {
@@ -266,31 +267,26 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                   minScale: 0.5,
                   maxScale: 4.0,
                   child: Center(
-                    child: ClipRRect(
-                      borderRadius: BorderRadiusGeometry.circular(
-                        smallRoundEdgeRadius,
-                      ),
-                      child: Hero(
-                        tag: widget.heroTag,
-                        child: CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          fit: BoxFit.contain,
-                          placeholder: (context, url) =>
-                              widget.thumbnailUrl != null
-                              ? CachedNetworkImage(
-                                  imageUrl: widget.thumbnailUrl!,
-                                  fit: BoxFit.contain,
-                                )
-                              : const Center(
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                  ),
+                    child: Hero(
+                      tag: widget.heroTag,
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.fitWidth,
+                        placeholder: (context, url) =>
+                            widget.thumbnailUrl != null
+                            ? CachedNetworkImage(
+                                imageUrl: widget.thumbnailUrl!,
+                                fit: BoxFit.contain,
+                              )
+                            : const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
                                 ),
-                          errorWidget: (context, url, error) => const Icon(
-                            Icons.broken_image,
-                            color: Colors.white,
-                            size: 64,
-                          ),
+                              ),
+                        errorWidget: (context, url, error) => const Icon(
+                          Icons.broken_image,
+                          color: Colors.white,
+                          size: 64,
                         ),
                       ),
                     ),

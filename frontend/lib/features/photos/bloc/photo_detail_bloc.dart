@@ -33,7 +33,10 @@ class PhotoDetailBloc extends Bloc<PhotoDetailEvent, PhotoDetailState> {
     emit(PhotoLikeInProgress(photo));
 
     try {
-      final updatedPhoto = await repository.toggleLikePhoto(photo);
+      final updatedPhoto = await repository.toggleLikePhoto(
+        photo.id,
+        photo.isLiked != true,
+      );
       emit(PhotoLikeSuccess(updatedPhoto));
     } catch (e) {
       emit(PhotoLikeFailure(photo, e.toString()));

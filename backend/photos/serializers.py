@@ -161,6 +161,7 @@ class PhotoReadSerializer(serializers.ModelSerializer):
 
 class PhotoListSerializer(serializers.ModelSerializer):
     thumbnail_url = serializers.SerializerMethodField()
+    photographer = MiniUserSerializer(read_only=True)
 
     class Meta:
         model = Photo

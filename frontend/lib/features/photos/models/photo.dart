@@ -160,7 +160,9 @@ class Photo {
     return Photo(
       id: map['id'] ?? '',
       thumbnailUrl: map['thumbnail_url'] ?? '',
-      timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp']),
+      timestamp:
+          DateTime.tryParse(map['timestamp']) ??
+          DateTime.fromMillisecondsSinceEpoch(0),
       photographer: User.fromMap(map['photographer']),
       width: map['width'] != null ? (map['width'] as num).toInt() : null,
       height: map['height'] != null ? (map['height'] as num).toInt() : null,

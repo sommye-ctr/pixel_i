@@ -1,4 +1,5 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:frontend/features/photos/models/photo.dart';
 import 'package:uuid/uuid.dart';
 
 class PhotoUtils {
@@ -40,5 +41,14 @@ class PhotoUtils {
       cursor = end;
     }
     return progress;
+  }
+
+  static double aspectRatio(Photo? photo, {double fallback = 1.0}) {
+    final width = photo?.width ?? 0;
+    final height = photo?.height ?? 0;
+    if (width > 0 && height > 0) {
+      return width / height;
+    }
+    return fallback;
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:frontend/core/utils/photo_utils.dart';
 import 'package:frontend/core/utils/screen_utils.dart';
 import 'package:frontend/features/photos/models/photo.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -269,24 +270,27 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                   child: Center(
                     child: Hero(
                       tag: widget.heroTag,
-                      child: CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        fit: BoxFit.fitWidth,
-                        placeholder: (context, url) =>
-                            widget.thumbnailUrl != null
-                            ? CachedNetworkImage(
-                                imageUrl: widget.thumbnailUrl!,
-                                fit: BoxFit.contain,
-                              )
-                            : const Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
+                      child: AspectRatio(
+                        aspectRatio: PhotoUtils.aspectRatio(photo),
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.fitWidth,
+                          placeholder: (context, url) =>
+                              widget.thumbnailUrl != null
+                              ? CachedNetworkImage(
+                                  imageUrl: widget.thumbnailUrl!,
+                                  fit: BoxFit.fitWidth,
+                                )
+                              : const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                        errorWidget: (context, url, error) => const Icon(
-                          Icons.broken_image,
-                          color: Colors.white,
-                          size: 64,
+                          errorWidget: (context, url, error) => const Icon(
+                            Icons.broken_image,
+                            color: Colors.white,
+                            size: 64,
+                          ),
                         ),
                       ),
                     ),

@@ -6,6 +6,7 @@ import 'package:frontend/core/utils/photo_utils.dart';
 import 'package:frontend/core/utils/screen_utils.dart';
 import 'package:frontend/features/photos/bloc/photos_bloc.dart';
 import 'package:frontend/features/photos/bloc/photos_event.dart';
+import 'package:frontend/features/photos/data/photos_repository.dart';
 import 'package:frontend/features/photos/models/photo.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:frontend/core/resources/style.dart';
@@ -38,8 +39,11 @@ class PhotoDetailScreen extends StatefulWidget {
 class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
   final TransformationController _transformationController =
       TransformationController();
+  late final PageController _pageController;
   Color _dominantColor = Colors.black;
   Color _accentColor = Colors.grey;
+  List<Photo> _photos = [];
+  int _currentIndex = 0;
 
   Future<void> _extractColors(String imageUrl) async {
     try {
@@ -61,16 +65,68 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
   @override
   void initState() {
     super.initState();
+    final repo = context.read<PhotosRepository>();
+    _photos = List<Photo>.from(repo.cachedPhotos ?? const []);
+    _currentIndex = _photos.indexWhere((p) => p.id == widget.photoId);
+    if (_currentIndex < 0) _currentIndex = 0;
+    _pageController = PageController(initialPage: _currentIndex);
+
     context.read<PhotoDetailBloc>().add(PhotoDetailRequested(widget.photoId));
-    if (widget.thumbnailUrl != null) {
-      _extractColors(widget.thumbnailUrl!);
+    final thumb =
+        widget.thumbnailUrl ??
+        (_photos.isNotEmpty ? _photos.first.thumbnailUrl : null);
+    if (thumb != null) {
+      _extractColors(thumb);
     }
   }
 
   @override
   void dispose() {
     _transformationController.dispose();
+    _pageController.dispose();
     super.dispose();
+  }
+
+  Photo? _photoFromState(PhotoDetailState state, String photoId) {
+    if (state is PhotoDetailLoadSuccess && state.photo.id == photoId) {
+      return state.photo;
+    }
+    if (state is PhotoLikeSuccess && state.photo.id == photoId) {
+      return state.photo;
+    }
+    if (state is PhotoLikeFailure && state.photo.id == photoId) {
+      return state.photo;
+    }
+    if (state is PhotoLikeInProgress && state.photo.id == photoId) {
+      return state.photo;
+    }
+    return null;
+  }
+
+  void _syncPhotoToLocalList(Photo photo) {
+    final idx = _photos.indexWhere((p) => p.id == photo.id);
+    setState(() {
+      if (idx == -1) {
+        _photos.insert(_currentIndex.clamp(0, _photos.length), photo);
+        _currentIndex = _photos.indexWhere((p) => p.id == photo.id);
+      } else {
+        _photos[idx] = photo;
+        _currentIndex = idx;
+      }
+    });
+  }
+
+  void _onPageChanged(int index) {
+    if (index < 0 || index >= _photos.length) return;
+    final photo = _photos[index];
+    setState(() => _currentIndex = index);
+    _transformationController.value = Matrix4.identity();
+    _extractColors(photo.thumbnailUrl);
+    final repo = context.read<PhotosRepository>();
+    final cached = repo.getById(photo.id);
+    if (cached?.watermarkedUrl == null) {
+      context.read<PhotoDetailBloc>().add(PhotoDetailRequested(photo.id));
+    }
   }
 
   Widget _getUserAvatar(Photo? photo) {
@@ -144,9 +200,6 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                               context.read<PhotoDetailBloc>().add(
                                 PhotoLikeToggleRequested(photo),
                               );
-                              context.read<PhotosBloc>().add(
-                                PhotoUpdated(photo),
-                              );
                             }
                           },
                           activeColor: Colors.redAccent,
@@ -195,174 +248,215 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocBuilder<PhotoDetailBloc, PhotoDetailState>(
-        builder: (context, state) {
-          String imageUrl = widget.thumbnailUrl ?? '';
-          Photo? photo;
-
-          if (state is PhotoDetailLoadSuccess &&
-              state.photo.id == widget.photoId) {
-            imageUrl = state.photo.watermarkedUrl ?? state.photo.thumbnailUrl;
-            photo = state.photo;
-          } else if (state is PhotoLikeSuccess &&
-              state.photo.id == widget.photoId) {
-            imageUrl = state.photo.watermarkedUrl ?? state.photo.thumbnailUrl;
-            photo = state.photo;
-          } else if (state is PhotoLikeFailure &&
-              state.photo.id == widget.photoId) {
-            imageUrl = state.photo.watermarkedUrl ?? state.photo.thumbnailUrl;
-            photo = state.photo;
-            ToastUtils.showLong('Error: ${state.error}');
-          } else if (state is PhotoDetailLoadFailure &&
-              widget.thumbnailUrl != null) {
-            imageUrl = widget.thumbnailUrl!;
+      body: BlocListener<PhotoDetailBloc, PhotoDetailState>(
+        listener: (context, state) {
+          if (state is PhotoDetailLoadSuccess || state is PhotoLikeSuccess) {
+            final photo = state is PhotoDetailLoadSuccess
+                ? state.photo
+                : (state as PhotoLikeSuccess).photo;
+            _syncPhotoToLocalList(photo);
+            context.read<PhotosBloc>().add(PhotoUpdated(photo));
           }
+          if (state is PhotoLikeFailure) {
+            ToastUtils.showLong('Error: ${state.error}');
+          }
+        },
+        child: BlocBuilder<PhotoDetailBloc, PhotoDetailState>(
+          builder: (context, state) {
+            List<Photo> displayPhotos = _photos;
+            if (displayPhotos.isEmpty) {
+              if (state is PhotoDetailLoadSuccess) {
+                displayPhotos = [state.photo];
+              } else if (state is PhotoLikeSuccess) {
+                displayPhotos = [state.photo];
+              } else if (state is PhotoLikeFailure) {
+                displayPhotos = [state.photo];
+              }
+            }
 
-          if (state is PhotoDetailLoadFailure && widget.thumbnailUrl == null) {
+            final hasPhotos = displayPhotos.isNotEmpty;
+            final safeIndex = hasPhotos
+                ? _currentIndex.clamp(0, displayPhotos.length - 1)
+                : 0;
+            final baseActivePhoto = hasPhotos ? displayPhotos[safeIndex] : null;
+            final activePhoto = baseActivePhoto != null
+                ? _photoFromState(state, baseActivePhoto.id) ?? baseActivePhoto
+                : null;
+
+            if (state is PhotoDetailLoadFailure &&
+                widget.thumbnailUrl == null &&
+                !hasPhotos) {
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [_dominantColor, _accentColor],
+                  ),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.white,
+                        size: 48,
+                      ),
+                      const SizedBox(height: largeSpacing),
+                      Text(
+                        photosFailedToLoad,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      const SizedBox(height: defaultSpacing),
+                      Text(
+                        state.error,
+                        style: const TextStyle(color: Colors.white70),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
             return Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [_dominantColor, _accentColor],
-                ),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: Colors.white,
-                      size: 48,
-                    ),
-                    const SizedBox(height: largeSpacing),
-                    Text(
-                      photosFailedToLoad,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    const SizedBox(height: defaultSpacing),
-                    Text(
-                      state.error,
-                      style: const TextStyle(color: Colors.white70),
-                      textAlign: TextAlign.center,
-                    ),
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    _dominantColor.withOpacity(0.8),
+                    _accentColor,
+                    _dominantColor.withOpacity(0.8),
                   ],
                 ),
               ),
-            );
-          }
+              width: context.widthPercent(100),
+              child: Stack(
+                children: [
+                  PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: _onPageChanged,
+                    itemCount: hasPhotos ? displayPhotos.length : 1,
+                    itemBuilder: (context, index) {
+                      final basePhoto = hasPhotos
+                          ? displayPhotos[index]
+                          : activePhoto;
+                      final resolvedPhoto = basePhoto != null
+                          ? _photoFromState(state, basePhoto.id) ?? basePhoto
+                          : null;
+                      final heroTag = index == safeIndex
+                          ? widget.heroTag
+                          : 'photo-${resolvedPhoto?.id ?? basePhoto?.id ?? ''}';
+                      final imageUrl =
+                          resolvedPhoto?.watermarkedUrl ??
+                          resolvedPhoto?.thumbnailUrl ??
+                          widget.thumbnailUrl ??
+                          '';
 
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  _dominantColor.withOpacity(0.8),
-                  _accentColor,
-                  _dominantColor.withOpacity(0.8),
-                ],
-              ),
-            ),
-            width: context.widthPercent(100),
-            child: Stack(
-              children: [
-                InteractiveViewer(
-                  transformationController: _transformationController,
-                  minScale: 0.5,
-                  maxScale: 4.0,
-                  child: Center(
-                    child: Hero(
-                      tag: widget.heroTag,
-                      child: AspectRatio(
-                        aspectRatio: PhotoUtils.aspectRatio(photo),
-                        child: CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          fit: BoxFit.fitWidth,
-                          placeholder: (context, url) =>
-                              widget.thumbnailUrl != null
-                              ? CachedNetworkImage(
-                                  imageUrl: widget.thumbnailUrl!,
-                                  fit: BoxFit.fitWidth,
-                                )
-                              : const Center(
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                          errorWidget: (context, url, error) => const Icon(
-                            Icons.broken_image,
-                            color: Colors.white,
-                            size: 64,
+                      if (resolvedPhoto == null) {
+                        return const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        );
+                      }
+
+                      return InteractiveViewer(
+                        transformationController: _transformationController,
+                        minScale: 0.5,
+                        maxScale: 4.0,
+                        panEnabled: false,
+                        child: Center(
+                          child: Hero(
+                            tag: heroTag,
+                            child: AspectRatio(
+                              aspectRatio: PhotoUtils.aspectRatio(
+                                resolvedPhoto,
+                              ),
+                              child: CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                fit: BoxFit.fitWidth,
+                                placeholder: (context, url) =>
+                                    CachedNetworkImage(
+                                      imageUrl: resolvedPhoto.thumbnailUrl,
+                                      fit: BoxFit.fitWidth,
+                                    ),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(
+                                      Icons.broken_image,
+                                      color: Colors.white,
+                                      size: 64,
+                                    ),
+                              ),
+                            ),
                           ),
+                        ),
+                      );
+                    },
+                  ),
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                _getUserAvatar(activePhoto),
+                                SizedBox(width: defaultSpacing),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      activePhoto?.photographer.username ?? '',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge,
+                                    ),
+                                    Text(
+                                      "Event",
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                _getTopActionButton(
+                                  Icon(LucideIcons.share2),
+                                  () {},
+                                ),
+                                const SizedBox(width: defaultSpacing / 2),
+
+                                _getTopActionButton(
+                                  Icon(LucideIcons.info),
+                                  () {},
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                ),
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              _getUserAvatar(photo),
-                              SizedBox(width: defaultSpacing),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    photo?.photographer.username ?? '',
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyLarge,
-                                  ),
-                                  Text(
-                                    "Event",
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              _getTopActionButton(
-                                Icon(LucideIcons.share2),
-                                () {},
-                              ),
-                              const SizedBox(width: defaultSpacing / 2),
-
-                              _getTopActionButton(
-                                Icon(LucideIcons.info),
-                                () {},
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: _getBottomActions(activePhoto),
                   ),
-                ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: _getBottomActions(photo),
-                ),
-              ],
-            ),
-          );
-        },
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }

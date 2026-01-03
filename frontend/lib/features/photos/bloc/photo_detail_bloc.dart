@@ -19,6 +19,9 @@ class PhotoDetailBloc extends Bloc<PhotoDetailEvent, PhotoDetailState> {
     final cached = repository.getById(event.photoId);
     if (cached != null) {
       emit(PhotoDetailLoadSuccess(cached));
+      if (cached.watermarkedUrl != null) {
+        return;
+      }
     } else {
       emit(PhotoDetailLoadInProgress());
     }

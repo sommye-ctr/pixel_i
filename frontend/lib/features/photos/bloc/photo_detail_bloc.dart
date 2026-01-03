@@ -16,12 +16,19 @@ class PhotoDetailBloc extends Bloc<PhotoDetailEvent, PhotoDetailState> {
     PhotoDetailRequested event,
     Emitter<PhotoDetailState> emit,
   ) async {
-    emit(PhotoDetailLoadInProgress());
+    final cached = repository.getById(event.photoId);
+    if (cached != null) {
+      emit(PhotoDetailLoadSuccess(cached));
+    } else {
+      emit(PhotoDetailLoadInProgress());
+    }
     try {
       final photo = await repository.fetchPhotoById(event.photoId);
       emit(PhotoDetailLoadSuccess(photo));
     } catch (e) {
-      emit(PhotoDetailLoadFailure(e.toString()));
+      if (cached == null) {
+        emit(PhotoDetailLoadFailure(e.toString()));
+      }
     }
   }
 
@@ -37,6 +44,7 @@ class PhotoDetailBloc extends Bloc<PhotoDetailEvent, PhotoDetailState> {
         photo.id,
         photo.isLiked != true,
       );
+      repository.upsertPhoto(updatedPhoto);
       emit(PhotoLikeSuccess(updatedPhoto));
     } catch (e) {
       emit(PhotoLikeFailure(photo, e.toString()));

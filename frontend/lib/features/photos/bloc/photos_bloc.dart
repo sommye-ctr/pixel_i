@@ -7,12 +7,12 @@ import 'photos_state.dart';
 
 class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
   final PhotosRepository repository;
-  List<Photo> _allPhotos = [];
   bool _showFavorites = false;
 
   PhotosBloc(this.repository) : super(PhotosInitial()) {
     on<PhotosRequested>(_onRequested);
     on<PhotosFavoritesToggled>(_onFavoritesToggled);
+    on<PhotoUpdated>(_onPhotoUpdated);
   }
 
   Future<void> _onRequested(
@@ -23,7 +23,6 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
     try {
       final photos = await repository.fetchPhotos();
       photos.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-      _allPhotos = photos;
       final filtered = _filteredPhotos();
       emit(PhotosLoadSuccess(filtered, showingFavorites: _showFavorites));
     } catch (e) {
@@ -35,17 +34,26 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
     PhotosFavoritesToggled event,
     Emitter<PhotosState> emit,
   ) async {
-    if (_allPhotos.isEmpty) return;
-
     _showFavorites = !_showFavorites;
     final filtered = _filteredPhotos();
     emit(PhotosLoadSuccess(filtered, showingFavorites: _showFavorites));
   }
 
+  Future<void> _onPhotoUpdated(
+    PhotoUpdated event,
+    Emitter<PhotosState> emit,
+  ) async {
+    repository.upsertPhoto(event.photo);
+    final filtered = _filteredPhotos();
+    emit(PhotosLoadSuccess(filtered, showingFavorites: _showFavorites));
+  }
+
   List<Photo> _filteredPhotos() {
+    final photos = List<Photo>.from(repository.cachedPhotos ?? const []);
+    photos.sort((a, b) => b.timestamp.compareTo(a.timestamp));
     if (_showFavorites) {
-      return _allPhotos.where((p) => p.isLiked == true).toList();
+      return photos.where((p) => p.isLiked == true).toList();
     }
-    return List<Photo>.from(_allPhotos);
+    return photos;
   }
 }

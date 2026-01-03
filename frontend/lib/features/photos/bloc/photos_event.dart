@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../models/photo.dart';
 
 abstract class PhotosEvent extends Equatable {
   const PhotosEvent();
@@ -10,3 +11,12 @@ abstract class PhotosEvent extends Equatable {
 class PhotosRequested extends PhotosEvent {}
 
 class PhotosFavoritesToggled extends PhotosEvent {}
+
+class PhotoUpdated extends PhotosEvent {
+  final Photo photo;
+
+  const PhotoUpdated(this.photo);
+
+  @override
+  List<Object?> get props => [photo];
+}

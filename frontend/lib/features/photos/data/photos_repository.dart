@@ -11,19 +11,48 @@ import '../models/photo_upload_metadata.dart';
 class PhotosRepository {
   final ApiClient api;
 
+  List<Photo>? _cachedPhotos;
+
   PhotosRepository(this.api);
+
+  List<Photo>? get cachedPhotos => _cachedPhotos;
+
+  Photo? getById(String id) {
+    final photos = _cachedPhotos;
+    if (photos == null) return null;
+    try {
+      return photos.firstWhere((p) => p.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void upsertPhoto(Photo photo) {
+    _cachedPhotos ??= <Photo>[];
+    final index = _cachedPhotos!.indexWhere((p) => p.id == photo.id);
+    if (index == -1) {
+      _cachedPhotos!.add(photo);
+    } else {
+      _cachedPhotos![index] = photo;
+    }
+  }
 
   Future<List<Photo>> fetchPhotos() async {
     final res = await api.get<List<dynamic>>('/photos/');
     final data = res.data ?? [];
-    return data.map((e) => Photo.fromMap(e as Map<String, dynamic>)).toList();
+    _cachedPhotos = data
+        .map((e) => Photo.fromMap(e as Map<String, dynamic>))
+        .toList();
+    return _cachedPhotos!;
   }
 
   Future<Photo> fetchPhotoById(String id) async {
     final res = await api.get<Map<String, dynamic>>('/photos/$id/');
     final data = res.data;
     if (data != null) {
-      return Photo.fromMap(data);
+      final photo = Photo.fromMap(data);
+      upsertPhoto(photo);
+      return photo;
     }
     throw Exception('Photo not found');
   }
@@ -35,7 +64,10 @@ class PhotosRepository {
         : api.delete<Map<String, dynamic>>(endpoint));
     final data = res.data;
     if (data != null) {
-      return Photo.fromMap(data['photo'] as Map<String, dynamic>);
+      final updatedPhoto =
+          Photo.fromMap(data['photo'] as Map<String, dynamic>);
+      upsertPhoto(updatedPhoto);
+      return updatedPhoto;
     }
     throw Exception('Failed to toggle like on photo');
   }

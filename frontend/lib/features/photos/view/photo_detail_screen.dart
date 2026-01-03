@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:frontend/core/utils/photo_utils.dart';
 import 'package:frontend/core/utils/screen_utils.dart';
+import 'package:frontend/features/photos/bloc/photos_bloc.dart';
+import 'package:frontend/features/photos/bloc/photos_event.dart';
 import 'package:frontend/features/photos/models/photo.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:frontend/core/resources/style.dart';
@@ -141,6 +143,9 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                             if (photo != null) {
                               context.read<PhotoDetailBloc>().add(
                                 PhotoLikeToggleRequested(photo),
+                              );
+                              context.read<PhotosBloc>().add(
+                                PhotoUpdated(photo),
                               );
                             }
                           },

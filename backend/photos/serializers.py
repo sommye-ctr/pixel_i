@@ -148,13 +148,20 @@ class PhotoReadSerializer(serializers.ModelSerializer):
 
 class PhotoListSerializer(serializers.ModelSerializer):
     photographer = MiniUserSerializer(read_only=True)
+    is_liked = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Photo
         fields = [
-            'id', 'timestamp', 'photographer', 'thumbnail_url', 'width', 'height'
+            'id', 'timestamp', 'photographer', 'thumbnail_url', 'width', 'height', 'is_liked',
         ]
         read_only_fields = fields
+
+    def get_is_liked(self, obj: Photo):
+        user = getattr(self.context.get('request'), 'user', None)
+        if not user or not user.is_authenticated:
+            return False
+        return obj.likes.filter(user=user).exists()
 
 
 class PhotoWriteSerializer(serializers.ModelSerializer):

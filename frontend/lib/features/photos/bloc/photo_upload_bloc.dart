@@ -21,12 +21,12 @@ class PhotoUploadBloc extends Bloc<PhotoUploadEvent, PhotoUploadState> {
   }
 
   List<PhotoUploadMetadata> _buildMetadata(List<PlatformFile> files) {
-    return files
-        .map((file) => PhotoUploadMetadata.fromPlatformFile(
-              file,
-              PhotoUtils.generateClientId(),
-            ))
-        .toList();
+    return files.map((file) {
+      final uuid = PhotoUtils.generateClientId();
+      final extension = PhotoUtils.getFileExtension(file.name);
+      final clientIdWithExtension = '$uuid$extension';
+      return PhotoUploadMetadata.fromPlatformFile(file, clientIdWithExtension);
+    }).toList();
   }
 
   void _onHydrate(PhotoUploadHydrate event, Emitter<PhotoUploadState> emit) {

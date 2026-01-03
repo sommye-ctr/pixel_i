@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:frontend/core/utils/index.dart';
 
 import '../../../core/network/api_client.dart';
 import '../models/photo.dart';
@@ -79,21 +78,18 @@ class PhotosRepository {
     for (int i = 0; i < files.length; i++) {
       final file = files[i];
       final meta = metadata[i];
-      final clientId = meta.clientId;
-      final ext = PhotoUtils.getFileExtension(file.name);
-      final filename = '$clientId$ext';
       if (file.path != null) {
         formData.files.add(
           MapEntry(
             'images',
-            await MultipartFile.fromFile(file.path!, filename: filename),
+            await MultipartFile.fromFile(file.path!, filename: meta.clientId),
           ),
         );
       } else if (file.bytes != null) {
         formData.files.add(
           MapEntry(
             'images',
-            MultipartFile.fromBytes(file.bytes!, filename: filename),
+            MultipartFile.fromBytes(file.bytes!, filename: meta.clientId),
           ),
         );
       }

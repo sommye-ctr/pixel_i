@@ -4,7 +4,7 @@ from io import BytesIO
 
 import clip
 import torch
-from PIL import Image, ImageFilter, ImageOps
+from PIL import Image
 from PIL.ExifTags import TAGS
 from django.core.files.base import ContentFile
 from django.core.files.images import ImageFile
@@ -189,50 +189,42 @@ def upload_to_storage(photo_id, file: ImageFile, variant="original"):
     return path, download_url
 
 
-def generate_thumbnail_image(image_file, size=(300, 300), blur_radius=10):
+def generate_thumbnail_image(image_file, size=(300, 300)):
     with Image.open(image_file) as img:
-        format = img.format
+        img_format = img.format
         img = img.convert('RGB')
         img.thumbnail(size, Image.Resampling.LANCZOS)
-        img = img.filter(ImageFilter.GaussianBlur(blur_radius))
 
-        return pillow_to_content_file(img, f"thumbnail.{format.lower()}", format.upper())
+        return pillow_to_content_file(img, f"thumbnail.{img_format.lower()}", img_format.upper())
 
 
-def _prepare_logo(target_width, logo_path="pixel-i.jpg"):
+def _prepare_logo(target_width, logo_path="pixel-i.png"):
     with Image.open(logo_path).convert("RGBA") as logo:
-        logo = logo.copy()
-        logo = logo.convert("L")
-        logo = logo.point(lambda x: 255 if x < 50 else 0)
-
         w, h = logo.size
-        margin = 20
-        scale = (target_width - margin) / float(w)
+        scale = target_width / float(w)
         new_size = (target_width, int(h * scale))
-        logo = logo.resize(new_size, Image.Resampling.LANCZOS)
-
-        logo = logo.filter(ImageFilter.CONTOUR)
-        mask = ImageOps.invert(logo)
-        logo_rgba = Image.new("RGBA", mask.size, (255, 255, 255, 0))
-        logo_rgba.putalpha(mask)
-
-        return logo_rgba
+        logo_resized = logo.resize(new_size, Image.Resampling.LANCZOS)
+        return logo_resized
 
 
-def generate_watermarked_image(base_image_file):
+def generate_watermarked_image(base_image_file, size=1200):
     with Image.open(base_image_file) as base:
-        format = base.format
+        img_format = base.format
         base = base.convert("RGBA")
+
+        base.thumbnail((size, size), Image.Resampling.LANCZOS)
+
         bw, bh = base.size
-        logo_rgba = _prepare_logo(bw)
+        logo_rgba = _prepare_logo(int(bw * 0.25))
         lw, lh = logo_rgba.size
 
-        x = (bw - lw) // 2
-        y = (bh - lh) // 2
+        padding = 20
+        x = bw - lw - padding
+        y = bh - lh - padding
 
         base.paste(logo_rgba, (x, y), logo_rgba)
         base = base.convert("RGB")
-        return pillow_to_content_file(base, f"watermarked.{format.lower()}", format.upper())
+        return pillow_to_content_file(base, f"watermarked.{img_format.lower()}", img_format.upper())
 
 
 def extract_exif_data(image_bytes: BytesIO):

@@ -251,7 +251,7 @@ class PhotoUploadResultScreen extends StatelessWidget {
                               ),
                             )
                           : CustomButton(
-                              onPressed: () => Navigator.of(context).pop(),
+                              onPressed: () => Navigator.of(context).pop(true),
                               type: RoundedButtonType.filled,
                               child: Text("Done"),
                             ),

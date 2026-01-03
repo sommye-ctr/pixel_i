@@ -12,3 +12,7 @@ class EventsRequested extends EventsEvent {}
 class MyEventsRequested extends EventsEvent {
   const MyEventsRequested();
 }
+
+class EventsRefreshed extends EventsEvent {
+  const EventsRefreshed();
+}

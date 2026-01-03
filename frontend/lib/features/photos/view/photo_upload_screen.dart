@@ -373,7 +373,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
             listenWhen: (previous, current) =>
                 !previous.isUploading && current.isUploading,
             listener: (context, state) async {
-              await Navigator.of(context).push(
+              final res = await Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => BlocProvider.value(
                     value: bloc,
@@ -382,7 +382,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                 ),
               );
               if (context.mounted) {
-                context.pop();
+                context.pop(res);
               }
             },
             child: BlocBuilder<PhotoUploadBloc, PhotoUploadState>(

@@ -13,6 +13,7 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
     : super(const EventsInitial()) {
     on<EventsRequested>(_onRequested);
     on<MyEventsRequested>(_onMyEventsRequested);
+    on<EventsRefreshed>(_onRefreshed);
   }
 
   Future<void> _onRequested(
@@ -50,6 +51,25 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
       emit(EventsLoadSuccess(myEvents, showOnlyMyEvents: true));
     } catch (e) {
       emit(EventsLoadFailure(e.toString(), showOnlyMyEvents: true));
+    }
+  }
+
+  Future<void> _onRefreshed(
+    EventsRefreshed event,
+    Emitter<EventsState> emit,
+  ) async {
+    final cachedEvents = repository.cachedEvents;
+    if (cachedEvents != null) {
+      final showOnlyMyEvents = state.showOnlyMyEvents;
+      if (showOnlyMyEvents) {
+        final currentUser = authRepository.currentUser;
+        final myEvents = cachedEvents
+            .where((event) => event.coordinator.id == currentUser?.id)
+            .toList();
+        emit(EventsLoadSuccess(myEvents, showOnlyMyEvents: true));
+      } else {
+        emit(EventsLoadSuccess(cachedEvents, showOnlyMyEvents: false));
+      }
     }
   }
 }

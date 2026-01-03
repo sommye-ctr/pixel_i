@@ -10,6 +10,8 @@ import 'package:frontend/core/utils/index.dart';
 import 'package:frontend/features/events/data/events_repository.dart';
 import 'package:frontend/features/photos/bloc/photo_upload_bloc.dart';
 import 'package:frontend/features/photos/models/photo.dart';
+import 'package:frontend/features/events/bloc/events_bloc.dart';
+import 'package:frontend/features/events/bloc/events_event.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -180,7 +182,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     }
 
     if (!mounted) return;
-    await context.push(
+    final res = await context.push(
       '/photos/upload',
       extra: {
         'files': files,
@@ -188,6 +190,11 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
         'eventName': widget.title,
       },
     );
+
+    if (mounted && res == true) {
+      _loadPhotos();
+      context.read<EventsBloc>().add(const EventsRefreshed());
+    }
   }
 
   Widget _buildTile(Photo photo) {

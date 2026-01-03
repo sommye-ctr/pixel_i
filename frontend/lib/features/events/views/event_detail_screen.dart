@@ -1,14 +1,13 @@
-import 'dart:convert';
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:frontend/core/resources/style.dart';
 import 'package:frontend/core/resources/strings.dart';
 import 'package:frontend/core/utils/index.dart';
-import 'package:frontend/core/utils/toast_utils.dart';
+import 'package:frontend/features/events/data/events_repository.dart';
 import 'package:frontend/features/photos/bloc/photo_upload_bloc.dart';
 import 'package:frontend/features/photos/models/photo.dart';
 import 'package:go_router/go_router.dart';
@@ -142,9 +141,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
         _error = null;
       });
 
-      final jsonStr = await rootBundle.loadString('assets/json/photos.json');
-      final List<dynamic> data = json.decode(jsonStr);
-      final photos = data.map((e) => Photo.fromMap(e)).toList();
+      final repository = context.read<EventsRepository>();
+      final photos = await repository.fetchEventPhotos(widget.eventId);
 
       setState(() {
         _photos = photos;
@@ -182,11 +180,14 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     }
 
     if (!mounted) return;
-    await context.push('/photos/upload', extra: {
-      'files': files,
-      'eventId': widget.eventId,
-      'eventName': widget.title,
-    });
+    await context.push(
+      '/photos/upload',
+      extra: {
+        'files': files,
+        'eventId': widget.eventId,
+        'eventName': widget.title,
+      },
+    );
   }
 
   Widget _buildTile(Photo photo) {
@@ -297,18 +298,26 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           children: [
             _buildHeader(),
             SizedBox(height: largeSpacing),
-            Padding(
-              padding: const EdgeInsets.all(defaultSpacing),
-              child: MasonryGridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                mainAxisSpacing: defaultSpacing,
-                crossAxisSpacing: defaultSpacing,
-                itemCount: _photos.length,
-                itemBuilder: (context, index) => _buildTile(_photos[index]),
+            if (_photos.isEmpty)
+              Center(
+                child: Text(
+                  photosNoPhotos,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.all(defaultSpacing),
+                child: MasonryGridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  mainAxisSpacing: defaultSpacing,
+                  crossAxisSpacing: defaultSpacing,
+                  itemCount: _photos.length,
+                  itemBuilder: (context, index) => _buildTile(_photos[index]),
+                ),
               ),
-            ),
           ],
         ),
       );

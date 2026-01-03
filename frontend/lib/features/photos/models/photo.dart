@@ -65,7 +65,7 @@ class Photo {
   final int? views;
   final PhotoReadPermission? readPerm;
   final PhotoSharePermission? sharePerm;
-  final String? originalUrl;
+  final String? watermarkedUrl;
   final int? likesCount;
   final bool? isLiked;
   Photo({
@@ -81,7 +81,7 @@ class Photo {
     this.views,
     this.readPerm,
     this.sharePerm,
-    this.originalUrl,
+    this.watermarkedUrl,
     this.likesCount,
     this.isLiked,
   });
@@ -113,7 +113,7 @@ class Photo {
     ValueGetter<int?>? views,
     ValueGetter<PhotoReadPermission?>? readPerm,
     ValueGetter<PhotoSharePermission?>? sharePerm,
-    ValueGetter<String?>? originalUrl,
+    ValueGetter<String?>? watermarkedUrl,
     ValueGetter<int?>? likesCount,
     ValueGetter<bool?>? isLiked,
   }) {
@@ -130,7 +130,7 @@ class Photo {
       views: views != null ? views() : this.views,
       readPerm: readPerm != null ? readPerm() : this.readPerm,
       sharePerm: sharePerm != null ? sharePerm() : this.sharePerm,
-      originalUrl: originalUrl != null ? originalUrl() : this.originalUrl,
+      watermarkedUrl: watermarkedUrl != null ? watermarkedUrl() : this.watermarkedUrl,
       likesCount: likesCount != null ? likesCount() : this.likesCount,
       isLiked: isLiked != null ? isLiked() : this.isLiked,
     );
@@ -150,7 +150,7 @@ class Photo {
       'views': views,
       'read_perm': readPerm?.value,
       'share_perm': sharePerm?.value,
-      'original_url': originalUrl,
+      'watermarked_url': watermarkedUrl,
       'likes_count': likesCount,
       'is_liked': isLiked,
     };
@@ -178,7 +178,7 @@ class Photo {
       sharePerm: map['share_perm'] != null
           ? PhotoSharePermission.fromValue(map['share_perm'])
           : null,
-      originalUrl: map['original_url'],
+      watermarkedUrl: map['watermarked_url'],
       likesCount: map['likes_count']?.toInt(),
       isLiked: map['is_liked'] == null ? null : map['is_liked'] as bool,
     );
@@ -199,7 +199,7 @@ class Photo {
 
   @override
   String toString() {
-    return 'Photo(id: $id, thumbnailUrl: $thumbnailUrl, timestamp: $timestamp, photographer: $photographer, width: $width, height: $height, meta: $meta, taggedUsers: $taggedUsers, downloads: $downloads, views: $views, readPerm: $readPerm, sharePerm: $sharePerm, originalUrl: $originalUrl, likesCount: $likesCount, isLiked: $isLiked)';
+    return 'Photo(id: $id, thumbnailUrl: $thumbnailUrl, timestamp: $timestamp, photographer: $photographer, width: $width, height: $height, meta: $meta, taggedUsers: $taggedUsers, downloads: $downloads, views: $views, readPerm: $readPerm, sharePerm: $sharePerm, watermarkedUrl: $watermarkedUrl, likesCount: $likesCount, isLiked: $isLiked)';
   }
 
   @override
@@ -219,7 +219,7 @@ class Photo {
         other.views == views &&
         other.readPerm == readPerm &&
         other.sharePerm == sharePerm &&
-        other.originalUrl == originalUrl &&
+        other.watermarkedUrl == watermarkedUrl &&
         other.likesCount == likesCount &&
         other.isLiked == isLiked;
   }
@@ -238,7 +238,7 @@ class Photo {
         views.hashCode ^
         readPerm.hashCode ^
         sharePerm.hashCode ^
-        originalUrl.hashCode ^
+        watermarkedUrl.hashCode ^
         likesCount.hashCode ^
         isLiked.hashCode;
   }

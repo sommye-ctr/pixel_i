@@ -196,15 +196,15 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
 
           if (state is PhotoDetailLoadSuccess &&
               state.photo.id == widget.photoId) {
-            imageUrl = state.photo.originalUrl ?? state.photo.thumbnailUrl;
+            imageUrl = state.photo.watermarkedUrl ?? state.photo.thumbnailUrl;
             photo = state.photo;
           } else if (state is PhotoLikeSuccess &&
               state.photo.id == widget.photoId) {
-            imageUrl = state.photo.originalUrl ?? state.photo.thumbnailUrl;
+            imageUrl = state.photo.watermarkedUrl ?? state.photo.thumbnailUrl;
             photo = state.photo;
           } else if (state is PhotoLikeFailure &&
               state.photo.id == widget.photoId) {
-            imageUrl = state.photo.originalUrl ?? state.photo.thumbnailUrl;
+            imageUrl = state.photo.watermarkedUrl ?? state.photo.thumbnailUrl;
             photo = state.photo;
             ToastUtils.showLong('Error: ${state.error}');
           } else if (state is PhotoDetailLoadFailure &&

@@ -1,5 +1,6 @@
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/events/models/event.dart';
+import 'package:frontend/features/photos/models/photo.dart';
 
 class EventsRepository {
   final ApiClient apiClient;
@@ -22,5 +23,11 @@ class EventsRepository {
     );
     final data = res.data ?? {};
     return Event.fromMap(data);
+  }
+
+  Future<List<Photo>> fetchEventPhotos(String eventId) async {
+    final res = await apiClient.get<List<dynamic>>('/events/$eventId/photos/');
+    final data = res.data ?? [];
+    return data.map((e) => Photo.fromMap(e as Map<String, dynamic>)).toList();
   }
 }

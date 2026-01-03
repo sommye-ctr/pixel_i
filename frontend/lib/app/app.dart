@@ -42,13 +42,16 @@ class _AppState extends State<App> {
       providers: [
         RepositoryProvider.value(value: authRepository),
         RepositoryProvider.value(value: photosRepository),
+        RepositoryProvider.value(value: eventsRepository),
       ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => AuthBloc(authRepository)),
           BlocProvider(create: (_) => PhotosBloc(photosRepository)),
           BlocProvider(create: (_) => PhotoDetailBloc(photosRepository)),
-          BlocProvider(create: (_) => EventsBloc(eventsRepository, authRepository)),
+          BlocProvider(
+            create: (_) => EventsBloc(eventsRepository, authRepository),
+          ),
           BlocProvider(create: (_) => EventCreateBloc(eventsRepository)),
         ],
         child: MaterialApp.router(

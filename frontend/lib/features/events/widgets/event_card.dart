@@ -47,7 +47,7 @@ class EventCard extends StatelessWidget {
               vertical: defaultSpacing / 2,
             ),
             decoration: BoxDecoration(
-              color: event.readPerm == 'PUB'
+              color: event.readPerm == EventPermission.pub
                   ? Colors.green.withOpacity(0.9)
                   : Colors.orange.withOpacity(0.9),
               borderRadius: BorderRadius.circular(smallRoundEdgeRadius),
@@ -56,7 +56,7 @@ class EventCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  event.readPerm == 'PUB'
+                  event.readPerm == EventPermission.pub
                       ? LucideIcons.globe
                       : LucideIcons.lock,
                   size: 12,
@@ -64,7 +64,7 @@ class EventCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  event.readPerm == 'PUB' ? 'Public' : 'Private',
+                  event.readPerm.label,
                   style: const TextStyle(color: Colors.white),
                 ),
               ],

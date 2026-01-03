@@ -76,7 +76,7 @@ class PhotosRepository {
     }
 
     final res = await api.dio.post<Map<String, dynamic>>(
-      '/events/4ff95cd3-04ca-4253-8fc9-e2b0ea8b4e0b/photos/bulk-upload/', //TODO CHANGE THIS TO EVENT ID
+      '/events/$eventId/photos/bulk-upload/',
       data: formData,
       options: Options(contentType: 'multipart/form-data'),
       onSendProgress: onSendProgress,

@@ -101,8 +101,12 @@ class Event extends Equatable {
     return Event(
       id: map['id'] ?? '',
       title: map['title'] ?? '',
-      readPerm: EventPermission.fromValue(map['read_perm'] ?? 'PUB'),
-      writePerm: EventPermission.fromValue(map['write_perm'] ?? 'PUB'),
+      readPerm: EventPermission.fromValue(
+        map['read_perm'] ?? EventPermission.pub.value,
+      ),
+      writePerm: EventPermission.fromValue(
+        map['write_perm'] ?? EventPermission.pub.value,
+      ),
       coordinator: User.fromMap(map['coordinator']),
       imagesCount: map['images_count']?.toInt() ?? 0,
       coverPhoto: map['cover_photo'] != null

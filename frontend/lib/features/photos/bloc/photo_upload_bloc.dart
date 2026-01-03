@@ -1,5 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:frontend/core/utils/index.dart';
+import 'package:frontend/features/photos/data/photos_repository.dart';
+import 'package:frontend/features/photos/models/photo_bulk_upload_result.dart';
 import 'package:frontend/features/photos/models/photo_upload_metadata.dart';
 import 'photo_upload_event.dart';
 import 'photo_upload_state.dart';
@@ -7,14 +10,23 @@ import 'photo_upload_state.dart';
 class PhotoUploadBloc extends Bloc<PhotoUploadEvent, PhotoUploadState> {
   static const int maxFiles = 20;
 
-  PhotoUploadBloc() : super(const PhotoUploadState()) {
+  final PhotosRepository photosRepository;
+
+  PhotoUploadBloc({required this.photosRepository})
+    : super(const PhotoUploadState()) {
     on<PhotoUploadHydrate>(_onHydrate);
     on<PhotoUploadPageChanged>(_onPageChanged);
     on<PhotoUploadMetadataUpdated>(_onMetadataUpdated);
+    on<PhotoUploadSubmitted>(_onSubmitted);
   }
 
   List<PhotoUploadMetadata> _buildMetadata(List<PlatformFile> files) {
-    return files.map(PhotoUploadMetadata.fromPlatformFile).toList();
+    return files
+        .map((file) => PhotoUploadMetadata.fromPlatformFile(
+              file,
+              PhotoUtils.generateClientId(),
+            ))
+        .toList();
   }
 
   void _onHydrate(PhotoUploadHydrate event, Emitter<PhotoUploadState> emit) {
@@ -24,6 +36,8 @@ class PhotoUploadBloc extends Bloc<PhotoUploadEvent, PhotoUploadState> {
         files: files,
         metadata: _buildMetadata(files),
         currentIndex: 0,
+        uploadResults: const <String, PhotoBulkUploadResult>{},
+        resetUploadError: true,
       ),
     );
   }
@@ -69,5 +83,51 @@ class PhotoUploadBloc extends Bloc<PhotoUploadEvent, PhotoUploadState> {
     }
 
     emit(state.copyWith(metadata: next));
+  }
+
+  Future<void> _onSubmitted(
+    PhotoUploadSubmitted event,
+    Emitter<PhotoUploadState> emit,
+  ) async {
+    if (state.files.isEmpty) return;
+
+    emit(
+      state.copyWith(
+        isUploading: true,
+        uploadResults: const <String, PhotoBulkUploadResult>{},
+        uploadProgress: const <String, double>{},
+        resetUploadError: true,
+      ),
+    );
+
+    try {
+      final results = await photosRepository.bulkUploadPhotos(
+        eventId: event.eventId,
+        files: state.files,
+        metadata: state.metadata,
+        onSendProgress: (sent, total) {
+          final progress = PhotoUtils.progressByFile(sent, state.files);
+          emit(state.copyWith(uploadProgress: progress));
+        },
+      );
+
+      final resultMap = <String, PhotoBulkUploadResult>{
+        for (final result in results) result.clientId: result,
+      };
+
+      final completedProgress = {
+        for (final m in state.metadata) m.clientId: 1.0,
+      };
+
+      emit(
+        state.copyWith(
+          isUploading: false,
+          uploadResults: resultMap,
+          uploadProgress: completedProgress,
+        ),
+      );
+    } catch (err) {
+      emit(state.copyWith(isUploading: false, uploadError: err.toString()));
+    }
   }
 }

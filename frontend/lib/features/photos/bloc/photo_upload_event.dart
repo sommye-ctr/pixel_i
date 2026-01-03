@@ -45,5 +45,21 @@ class PhotoUploadMetadataUpdated extends PhotoUploadEvent {
   });
 
   @override
-  List<Object?> get props => [index, readPerm, sharePerm, userTags, taggedUsernames, applyToAll];
+  List<Object?> get props => [
+    index,
+    readPerm,
+    sharePerm,
+    userTags,
+    taggedUsernames,
+    applyToAll,
+  ];
+}
+
+class PhotoUploadSubmitted extends PhotoUploadEvent {
+  final String eventId;
+
+  const PhotoUploadSubmitted(this.eventId);
+
+  @override
+  List<Object?> get props => [eventId];
 }

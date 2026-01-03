@@ -14,6 +14,7 @@ import 'package:frontend/features/photos/bloc/photo_upload_bloc.dart';
 import 'package:frontend/features/photos/bloc/photo_upload_event.dart';
 import 'package:frontend/features/photos/bloc/photo_upload_state.dart';
 import 'package:frontend/features/photos/models/photo.dart';
+import 'package:frontend/features/photos/data/photos_repository.dart';
 import 'package:frontend/features/photos/widgets/photo_image_tags_sheet.dart';
 import 'package:frontend/features/photos/widgets/photo_permission_sheet.dart';
 import 'package:frontend/features/photos/widgets/photo_tag_users_sheet.dart';
@@ -349,6 +350,121 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     );
   }
 
+  String? _formatError(Map<String, dynamic>? error) {
+    if (error == null || error.isEmpty) return null;
+    final parts = <String>[];
+    error.forEach((key, value) {
+      if (value is List) {
+        parts.add('$key: ${value.join(', ')}');
+      } else {
+        parts.add('$key: $value');
+      }
+    });
+    return parts.join(' | ');
+  }
+
+  Widget _buildUploadResults(PhotoUploadState state) {
+    if (state.files.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: defaultSpacing),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                photoUploadUploadResults,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (state.isUploading) ...[
+                const SizedBox(width: defaultSpacing / 2),
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: defaultSpacing / 2),
+          ...state.metadata.map((meta) {
+            final result = state.uploadResults[meta.clientId];
+            final isSuccess = result?.isSuccess ?? false;
+            final progress = state.uploadProgress[meta.clientId];
+            final statusLabel = result == null
+                ? state.isUploading && progress != null
+                      ? '${(progress * 100).clamp(0, 100).toStringAsFixed(0)}%'
+                      : photoUploadPendingStatus
+                : isSuccess
+                ? photoUploadSuccessStatus
+                : photoUploadErrorStatus;
+            final errorText = _formatError(result?.error);
+
+            final color = result == null
+                ? state.isUploading
+                      ? Colors.blue.withOpacity(0.14)
+                      : Colors.white.withOpacity(0.12)
+                : isSuccess
+                ? Colors.green.withOpacity(0.18)
+                : Colors.red.withOpacity(0.18);
+            final icon = result == null
+                ? Icons.hourglass_bottom
+                : isSuccess
+                ? Icons.check_circle
+                : Icons.error;
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: defaultSpacing / 2),
+              padding: const EdgeInsets.all(defaultSpacing / 1.2),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(smallRoundEdgeRadius),
+              ),
+              child: Row(
+                children: [
+                  Icon(icon, color: Colors.white, size: 20),
+                  const SizedBox(width: defaultSpacing / 2),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          meta.clientId,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        Text(
+                          statusLabel,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: Colors.white70),
+                        ),
+                        if (errorText != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            errorText,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: Colors.white70),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _pageController.dispose();
@@ -360,8 +476,31 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     final initial = widget.initialFiles ?? const [];
 
     return BlocProvider(
-      create: (_) => PhotoUploadBloc()..add(PhotoUploadHydrate(initial)),
-      child: BlocBuilder<PhotoUploadBloc, PhotoUploadState>(
+      create: (context) =>
+          PhotoUploadBloc(photosRepository: context.read<PhotosRepository>())
+            ..add(PhotoUploadHydrate(initial)),
+      child: BlocConsumer<PhotoUploadBloc, PhotoUploadState>(
+        listenWhen: (previous, current) =>
+            previous.isUploading != current.isUploading ||
+            previous.uploadResults != current.uploadResults ||
+            previous.uploadError != current.uploadError ||
+            previous.uploadProgress != current.uploadProgress,
+        listener: (context, state) {
+          if (state.isUploading) return;
+          if (state.uploadError != null) {
+            ToastUtils.showLong('$photoUploadFailedPrefix${state.uploadError}');
+            return;
+          }
+
+          if (state.uploadResults.isNotEmpty) {
+            final successCount = state.uploadResults.values
+                .where((r) => r.isSuccess)
+                .length;
+            ToastUtils.showShort(
+              'Uploaded $successCount/${state.files.length} images',
+            );
+          }
+        },
         builder: (context, state) {
           final hasFiles = state.files.isNotEmpty;
 
@@ -406,12 +545,31 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                         child: SizedBox(
                           width: double.infinity,
                           child: CustomButton(
-                            onPressed: () {},
+                            onPressed: (!hasFiles || state.isUploading)
+                                ? null
+                                : () {
+                                    final eventId = widget.eventId;
+                                    if (eventId == null || eventId.isEmpty) {
+                                      ToastUtils.showShort(
+                                        photoUploadMissingEventId,
+                                      );
+                                      return;
+                                    }
+                                    context.read<PhotoUploadBloc>().add(
+                                      PhotoUploadSubmitted(eventId),
+                                    );
+                                  },
                             type: RoundedButtonType.filled,
-                            child: Text("Add Photos"),
+                            child: Text(
+                              state.isUploading
+                                  ? photoUploadUploading
+                                  : photoUploadSubmit,
+                            ),
                           ),
                         ),
                       ),
+                      const SizedBox(height: defaultSpacing),
+                      _buildUploadResults(state),
                     ],
                   ),
                 ),

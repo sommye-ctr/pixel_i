@@ -2,14 +2,15 @@ from rest_framework import serializers
 
 from accounts.serializers import MiniUserSerializer
 from engagement.models import Like, Comment
+from photos.serializers import PhotoReadSerializer
 
 
 class LikeSerializer(serializers.ModelSerializer):
-    user = MiniUserSerializer(read_only=True)
+    photo = PhotoReadSerializer(read_only=True)
 
     class Meta:
         model = Like
-        fields = ['user', 'created_at']
+        fields = ['photo', 'created_at']
 
 
 class CommentSerializer(serializers.ModelSerializer):

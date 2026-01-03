@@ -29,12 +29,13 @@ class PhotosRepository {
   }
 
   Future<Photo> toggleLikePhoto(String photoId, bool like) async {
-    final res = await api.post<Map<String, dynamic>>(
-      '/photos/$photoId/likes/${like ? '' : 'me/'}',
-    );
+    String endpoint = '/photos/$photoId/likes/';
+    final res = await (like
+        ? api.post<Map<String, dynamic>>(endpoint)
+        : api.delete<Map<String, dynamic>>(endpoint));
     final data = res.data;
     if (data != null) {
-      return Photo.fromMap(data);
+      return Photo.fromMap(data['photo'] as Map<String, dynamic>);
     }
     throw Exception('Failed to toggle like on photo');
   }

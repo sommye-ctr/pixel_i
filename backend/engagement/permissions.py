@@ -22,4 +22,4 @@ class EngagementPermission(permissions.BasePermission):
 class IsOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user
-        return user and user.is_authenticated and getattr(user, 'id', None) == obj.user.id
+        return user and user.is_authenticated and getattr(user, 'id', None) == obj.user_id

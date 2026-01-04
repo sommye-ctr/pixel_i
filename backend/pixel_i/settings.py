@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'engagement.apps.EngagementConfig',
     'notifications.apps.NotificationsConfig',
     'channels',
+    'rest_framework_simplejwt',
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 MIDDLEWARE = [
@@ -133,6 +135,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # TODO Update before production
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'

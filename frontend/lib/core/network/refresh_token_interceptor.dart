@@ -72,6 +72,15 @@ class RefreshTokenInterceptor extends Interceptor {
 
     if (data is Map<String, dynamic>) {
       final detail = data['detail'] as String?;
+      final code = data['code'] as String?;
+      if (code != null) {
+        if (code == 'token_not_valid') {
+          return true;
+        }
+        if (code == 'authentication_failed') {
+          return false;
+        }
+      }
       if (detail != null) {
         if (detail.contains('expired') ||
             detail.contains('Expired') ||

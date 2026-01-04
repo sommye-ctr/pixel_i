@@ -8,6 +8,7 @@ import 'package:frontend/features/photos/bloc/photos_bloc.dart';
 import 'package:frontend/features/photos/bloc/photos_event.dart';
 import 'package:frontend/features/photos/data/photos_repository.dart';
 import 'package:frontend/features/photos/models/photo.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:frontend/core/resources/style.dart';
 import 'package:frontend/core/widgets/animated_heart.dart';
@@ -400,13 +401,20 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                     right: 0,
                     child: SafeArea(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: defaultSpacing / 2,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
+                                IconButton(
+                                  icon: Icon(LucideIcons.arrowLeft),
+                                  onPressed: () => context.pop(),
+                                ),
+                                const SizedBox(width: defaultSpacing / 2),
                                 _getUserAvatar(activePhoto),
                                 SizedBox(width: defaultSpacing),
                                 Column(

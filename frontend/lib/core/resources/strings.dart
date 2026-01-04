@@ -59,6 +59,8 @@ const String photosNoPhotos = 'No photos yet';
 const String photosRetry = 'Retry';
 const String photosGridView = 'Grid view';
 const String photosMasonryView = 'Masonry view';
+const String photoDetailTaggedUsersTitle = 'Tagged People';
+const String photoDetailNoTaggedUsers = 'No tagged users';
 
 // Events / Common
 const String retryLabel = 'Retry';

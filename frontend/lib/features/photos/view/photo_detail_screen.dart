@@ -8,10 +8,12 @@ import 'package:frontend/features/photos/bloc/photos_bloc.dart';
 import 'package:frontend/features/photos/bloc/photos_event.dart';
 import 'package:frontend/features/photos/data/photos_repository.dart';
 import 'package:frontend/features/photos/models/photo.dart';
+import 'package:frontend/features/photos/widgets/photo_tagged_users_sheet.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:frontend/core/resources/style.dart';
 import 'package:frontend/core/widgets/animated_heart.dart';
+import 'package:frontend/core/widgets/user_avatar.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:frontend/features/comments/view/comments_bottom_sheet.dart';
 import 'package:frontend/core/utils/toast_utils.dart';
@@ -130,31 +132,20 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
     }
   }
 
-  Widget _getUserAvatar(Photo? photo) {
-    if ((photo?.photographer.profilePicture ?? '').isNotEmpty) {
-      return CircleAvatar(
-        backgroundImage: CachedNetworkImageProvider(
-          photo!.photographer.profilePicture!,
-        ),
-      );
-    }
-    String initial = (photo?.photographer.name ?? "?")[0];
-    return CircleAvatar(
-      child: Text(
-        initial,
-        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-          color: Theme.of(context).colorScheme.onPrimary,
-        ),
-      ),
-    );
-  }
-
   void _openCommentsBottomSheet() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const CommentsBottomSheet(),
+    );
+  }
+
+  void _openTaggedUsersSheet(Photo? photo) {
+    if (photo == null) return;
+    showTaggedUsersSheet(
+      context: context,
+      users: photo.taggedUsers ?? const [],
     );
   }
 
@@ -207,15 +198,15 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                           padding: const EdgeInsets.all(8),
                         ),
                         IconButton(
-                          icon: const Icon(LucideIcons.download),
-                          onPressed: () {},
-                        ),
-                        IconButton(
                           icon: const Icon(LucideIcons.messageCircle),
                           onPressed: _openCommentsBottomSheet,
                         ),
                         IconButton(
                           icon: const Icon(LucideIcons.users),
+                          onPressed: () => _openTaggedUsersSheet(photo),
+                        ),
+                        IconButton(
+                          icon: const Icon(LucideIcons.download),
                           onPressed: () {},
                         ),
                       ],
@@ -415,14 +406,19 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                                   onPressed: () => context.pop(),
                                 ),
                                 const SizedBox(width: defaultSpacing / 2),
-                                _getUserAvatar(activePhoto),
+                                UserAvatar(
+                                  username:
+                                      activePhoto?.photographer.name ?? '',
+                                  profilePicture:
+                                      activePhoto?.photographer.profilePicture,
+                                ),
                                 SizedBox(width: defaultSpacing),
                                 Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      activePhoto?.photographer.username ?? '',
+                                      activePhoto?.photographer.name ?? '',
                                       style: Theme.of(
                                         context,
                                       ).textTheme.bodyLarge,

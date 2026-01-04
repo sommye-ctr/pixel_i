@@ -18,10 +18,11 @@ class IsEventCoordinator(permissions.BasePermission):
         if not event:
             return False
 
-        if event and getattr(event, 'coordinator_id', None) \
-                == getattr(request.user, 'id', None):
-            return True
-        return False
+        return event and is_event_coordinator(request.user, event)
+
+
+def is_event_coordinator(user, event):
+    return event.coordinator_id == getattr(user, 'id', None)
 
 
 def is_admin_or_photographer(user, obj):

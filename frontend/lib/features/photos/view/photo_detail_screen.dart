@@ -196,6 +196,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                           },
                           activeColor: Colors.redAccent,
                           padding: const EdgeInsets.all(8),
+                          size: 28,
                         ),
                         IconButton(
                           icon: const Icon(LucideIcons.messageCircle),
@@ -217,21 +218,22 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
             ),
           ),
           SizedBox(width: defaultSpacing),
-          ClipOval(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: SizedBox.square(
-                dimension: kBottomNavigationBarHeight + 8,
-                child: Container(
-                  color: Colors.red.withOpacity(0.8),
-                  child: IconButton(
-                    onPressed: () {},
-                    icon: Icon(LucideIcons.trash),
+          if (photo?.canDelete == true)
+            ClipOval(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: SizedBox.square(
+                  dimension: kBottomNavigationBarHeight + 8,
+                  child: Container(
+                    color: Colors.red.withOpacity(0.8),
+                    child: IconButton(
+                      onPressed: () {},
+                      icon: Icon(LucideIcons.trash),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

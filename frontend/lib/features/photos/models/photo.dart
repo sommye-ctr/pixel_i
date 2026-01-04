@@ -67,7 +67,11 @@ class Photo {
   final PhotoSharePermission? sharePerm;
   final String? watermarkedUrl;
   final int? likesCount;
+
   final bool? isLiked;
+  final bool? canDelete;
+  final bool? canEdit;
+
   Photo({
     required this.id,
     required this.thumbnailUrl,
@@ -84,6 +88,8 @@ class Photo {
     this.watermarkedUrl,
     this.likesCount,
     this.isLiked,
+    this.canDelete,
+    this.canEdit,
   });
 
   Photo.cover({
@@ -116,6 +122,8 @@ class Photo {
     ValueGetter<String?>? watermarkedUrl,
     ValueGetter<int?>? likesCount,
     ValueGetter<bool?>? isLiked,
+    ValueGetter<bool?>? canDelete,
+    ValueGetter<bool?>? canEdit,
   }) {
     return Photo(
       id: id ?? this.id,
@@ -130,9 +138,13 @@ class Photo {
       views: views != null ? views() : this.views,
       readPerm: readPerm != null ? readPerm() : this.readPerm,
       sharePerm: sharePerm != null ? sharePerm() : this.sharePerm,
-      watermarkedUrl: watermarkedUrl != null ? watermarkedUrl() : this.watermarkedUrl,
+      watermarkedUrl: watermarkedUrl != null
+          ? watermarkedUrl()
+          : this.watermarkedUrl,
       likesCount: likesCount != null ? likesCount() : this.likesCount,
       isLiked: isLiked != null ? isLiked() : this.isLiked,
+      canDelete: canDelete != null ? canDelete() : this.canDelete,
+      canEdit: canEdit != null ? canEdit() : this.canEdit,
     );
   }
 
@@ -153,6 +165,8 @@ class Photo {
       'watermarked_url': watermarkedUrl,
       'likes_count': likesCount,
       'is_liked': isLiked,
+      'can_delete': canDelete,
+      'can_edit': canEdit,
     };
   }
 
@@ -181,6 +195,8 @@ class Photo {
       watermarkedUrl: map['watermarked_url'],
       likesCount: map['likes_count']?.toInt(),
       isLiked: map['is_liked'] == null ? null : map['is_liked'] as bool,
+      canDelete: map['can_delete'] == null ? null : map['can_delete'] as bool,
+      canEdit: map['can_edit'] == null ? null : map['can_edit'] as bool,
     );
   }
 
@@ -199,7 +215,7 @@ class Photo {
 
   @override
   String toString() {
-    return 'Photo(id: $id, thumbnailUrl: $thumbnailUrl, timestamp: $timestamp, photographer: $photographer, width: $width, height: $height, meta: $meta, taggedUsers: $taggedUsers, downloads: $downloads, views: $views, readPerm: $readPerm, sharePerm: $sharePerm, watermarkedUrl: $watermarkedUrl, likesCount: $likesCount, isLiked: $isLiked)';
+    return 'Photo(id: $id, thumbnailUrl: $thumbnailUrl, timestamp: $timestamp, photographer: $photographer, width: $width, height: $height, meta: $meta, taggedUsers: $taggedUsers, downloads: $downloads, views: $views, readPerm: $readPerm, sharePerm: $sharePerm, watermarkedUrl: $watermarkedUrl, likesCount: $likesCount, isLiked: $isLiked, canDelete: $canDelete, canEdit: $canEdit)';
   }
 
   @override
@@ -221,7 +237,9 @@ class Photo {
         other.sharePerm == sharePerm &&
         other.watermarkedUrl == watermarkedUrl &&
         other.likesCount == likesCount &&
-        other.isLiked == isLiked;
+        other.isLiked == isLiked &&
+        other.canDelete == canDelete &&
+        other.canEdit == canEdit;
   }
 
   @override
@@ -240,6 +258,8 @@ class Photo {
         sharePerm.hashCode ^
         watermarkedUrl.hashCode ^
         likesCount.hashCode ^
-        isLiked.hashCode;
+        isLiked.hashCode ^
+        canDelete.hashCode ^
+        canEdit.hashCode;
   }
 }

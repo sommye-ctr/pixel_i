@@ -70,6 +70,7 @@ class Photo {
 
   final bool? isLiked;
   final bool? canDelete;
+  final bool? canShare;
   final bool? canEdit;
 
   Photo({
@@ -89,6 +90,7 @@ class Photo {
     this.likesCount,
     this.isLiked,
     this.canDelete,
+    this.canShare,
     this.canEdit,
   });
 
@@ -123,6 +125,7 @@ class Photo {
     ValueGetter<int?>? likesCount,
     ValueGetter<bool?>? isLiked,
     ValueGetter<bool?>? canDelete,
+    ValueGetter<bool?>? canShare,
     ValueGetter<bool?>? canEdit,
   }) {
     return Photo(
@@ -144,6 +147,7 @@ class Photo {
       likesCount: likesCount != null ? likesCount() : this.likesCount,
       isLiked: isLiked != null ? isLiked() : this.isLiked,
       canDelete: canDelete != null ? canDelete() : this.canDelete,
+      canShare: canShare != null ? canShare() : this.canShare,
       canEdit: canEdit != null ? canEdit() : this.canEdit,
     );
   }
@@ -166,6 +170,7 @@ class Photo {
       'likes_count': likesCount,
       'is_liked': isLiked,
       'can_delete': canDelete,
+      'can_share': canShare,
       'can_edit': canEdit,
     };
   }
@@ -196,6 +201,7 @@ class Photo {
       likesCount: map['likes_count']?.toInt(),
       isLiked: map['is_liked'] == null ? null : map['is_liked'] as bool,
       canDelete: map['can_delete'] == null ? null : map['can_delete'] as bool,
+      canShare: map['can_share'] == null ? null : map['can_share'] as bool,
       canEdit: map['can_edit'] == null ? null : map['can_edit'] as bool,
     );
   }
@@ -239,6 +245,7 @@ class Photo {
         other.likesCount == likesCount &&
         other.isLiked == isLiked &&
         other.canDelete == canDelete &&
+          other.canShare == canShare &&
         other.canEdit == canEdit;
   }
 
@@ -260,6 +267,7 @@ class Photo {
         likesCount.hashCode ^
         isLiked.hashCode ^
         canDelete.hashCode ^
+        canShare.hashCode ^
         canEdit.hashCode;
   }
 }

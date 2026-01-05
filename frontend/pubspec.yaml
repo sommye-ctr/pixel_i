@@ -53,6 +53,7 @@ dependencies:
   palette_generator: ^0.3.3
   fluttertoast: ^8.2.6
   file_picker: ^8.1.2
+  share_plus: ^10.1.4
   flutter_test:
     sdk: flutter
 

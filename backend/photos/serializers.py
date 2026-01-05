@@ -5,7 +5,7 @@ from rest_framework.exceptions import ValidationError
 
 from accounts.serializers import MiniUserSerializer
 from photos.models import Photo, PhotoShare
-from photos.permissions import is_admin_or_photographer, is_event_coordinator
+from photos.permissions import is_admin_or_photographer, is_event_coordinator, can_share_photo
 from photos.services import generate_signed_url, create_photo_tags, upload_to_storage
 
 
@@ -111,13 +111,14 @@ class PhotoReadSerializer(serializers.ModelSerializer):
     photographer = MiniUserSerializer(read_only=True)
     can_delete = serializers.SerializerMethodField(read_only=True)
     can_edit = serializers.SerializerMethodField(read_only=True)
+    can_share = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Photo
         fields = [
             'id', 'timestamp', 'meta', 'photographer', 'event', 'tagged_users', 'downloads', 'views', 'auto_tags',
-            'read_perm', 'user_tags', 'share_perm', 'watermarked_url', 'thumbnail_url', 'likes_count', 'width',
-            'height', 'is_liked', 'can_edit', 'can_delete'
+            'read_perm', 'user_tags', 'watermarked_url', 'thumbnail_url', 'likes_count', 'width',
+            'height', 'is_liked', 'can_edit', 'can_delete', 'can_share'
         ]
         read_only_fields = fields
 
@@ -130,6 +131,10 @@ class PhotoReadSerializer(serializers.ModelSerializer):
     def get_can_delete(self, obj: Photo):
         user = getattr(self.context.get('request'), 'user', None)
         return is_admin_or_photographer(user, obj) or is_event_coordinator(user, obj.event)
+
+    def get_can_share(self, obj: Photo):
+        user = getattr(self.context.get('request'), 'user', None)
+        return can_share_photo(user, obj)
 
     def get_is_liked(self, obj: Photo):
         user = getattr(self.context.get('request'), 'user', None)
@@ -162,11 +167,13 @@ class PhotoListSerializer(serializers.ModelSerializer):
     is_liked = serializers.SerializerMethodField(read_only=True)
     can_delete = serializers.SerializerMethodField(read_only=True)
     can_edit = serializers.SerializerMethodField(read_only=True)
+    can_share = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Photo
         fields = [
-            'id', 'timestamp', 'photographer', 'thumbnail_url', 'width', 'height', 'is_liked', 'can_edit', 'can_delete'
+            'id', 'timestamp', 'photographer', 'thumbnail_url', 'width', 'height', 'is_liked', 'can_edit', 'can_delete',
+            'can_share'
         ]
         read_only_fields = fields
 
@@ -183,6 +190,10 @@ class PhotoListSerializer(serializers.ModelSerializer):
     def get_can_delete(self, obj: Photo):
         user = getattr(self.context.get('request'), 'user', None)
         return is_admin_or_photographer(user, obj) or is_event_coordinator(user, obj.event)
+
+    def get_can_share(self, obj: Photo):
+        user = getattr(self.context.get('request'), 'user', None)
+        return can_share_photo(user, obj)
 
 
 class PhotoWriteSerializer(serializers.ModelSerializer):

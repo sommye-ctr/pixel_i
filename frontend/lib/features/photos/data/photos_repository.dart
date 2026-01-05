@@ -7,6 +7,7 @@ import '../../../core/network/api_client.dart';
 import '../models/photo.dart';
 import '../models/photo_bulk_upload_result.dart';
 import '../models/photo_upload_metadata.dart';
+import '../models/photo_share_response.dart';
 
 class PhotosRepository {
   final ApiClient api;
@@ -64,8 +65,7 @@ class PhotosRepository {
         : api.delete<Map<String, dynamic>>(endpoint));
     final data = res.data;
     if (data != null) {
-      final updatedPhoto =
-          Photo.fromMap(data['photo'] as Map<String, dynamic>);
+      final updatedPhoto = Photo.fromMap(data['photo'] as Map<String, dynamic>);
       upsertPhoto(updatedPhoto);
       return updatedPhoto;
     }
@@ -129,5 +129,27 @@ class PhotosRepository {
     }
 
     return [];
+  }
+
+  Future<PhotoShareResponse> sharePhoto({
+    required String photoId,
+    required String variantKey,
+    required DateTime expiresAt,
+  }) async {
+    final body = <String, dynamic>{
+      'variant': variantKey,
+      'expires_at': expiresAt.toIso8601String(),
+    };
+
+    final res = await api.post<Map<String, dynamic>>(
+      '/photos/$photoId/share/',
+      data: body,
+    );
+
+    final data = res.data;
+    if (data != null) {
+      return PhotoShareResponse.fromMap(data);
+    }
+    throw Exception('Failed to share photo');
   }
 }

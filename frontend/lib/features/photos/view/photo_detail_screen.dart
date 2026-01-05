@@ -17,6 +17,7 @@ import 'package:frontend/core/widgets/user_avatar.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:frontend/features/comments/view/comments_bottom_sheet.dart';
 import 'package:frontend/core/utils/toast_utils.dart';
+import 'package:frontend/features/photos/widgets/photo_share_sheet.dart';
 
 import '../../../core/resources/strings.dart';
 import '../bloc/photo_detail_bloc.dart';
@@ -239,6 +240,18 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
     );
   }
 
+  Widget _getShareButton(Photo? photo) {
+    if (photo?.canShare != true) {
+      return const SizedBox.shrink();
+    }
+    return _getTopActionButton(const Icon(LucideIcons.share2), () {
+      showPhotoShareSheet(
+        context: context,
+        photoId: photo!.id,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -437,12 +450,8 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                             ),
                             Row(
                               children: [
-                                _getTopActionButton(
-                                  Icon(LucideIcons.share2),
-                                  () {},
-                                ),
+                                _getShareButton(activePhoto),
                                 const SizedBox(width: defaultSpacing / 2),
-
                                 _getTopActionButton(
                                   Icon(LucideIcons.info),
                                   () {},

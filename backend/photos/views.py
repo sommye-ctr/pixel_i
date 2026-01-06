@@ -1,6 +1,6 @@
 from django.db.models import Q
 from django.utils import timezone
-from rest_framework import viewsets, parsers, generics, permissions
+from rest_framework import viewsets, parsers, generics, permissions, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
@@ -14,7 +14,8 @@ from photos.models import Photo, PhotoShare
 from photos.permissions import PhotoReadPermission, ReadPerm, IsPhotographer, IsEventCoordinator, \
     PhotoShareCreatePermission, PhotoShareRevokePermission, PhotoUploadPermission
 from photos.serializers import PhotoReadSerializer, PhotoListSerializer, PhotoWriteSerializer, PhotoShareSerializer, \
-    PhotoBulkUploadSerializer
+    PhotoBulkUploadSerializer, PhotoSearchSerializer
+from photos.services import PhotoSearchService
 from photos.tasks import process_photo_task
 from utils.user_utils import user_is_admin, user_is_img
 
@@ -170,3 +171,49 @@ class PhotoShareDetailView(generics.RetrieveDestroyAPIView):
         elif self.request.method == "DELETE":
             return [PhotoShareRevokePermission()]
         return [IsAuthenticated()]
+
+
+class PhotoSearchView(generics.ListAPIView):
+    serializer_class = PhotoListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = Photo.objects.all()
+
+        if user_is_admin(user):
+            return qs
+
+        if not user.is_authenticated:
+            return qs.none()
+
+        q_photographer = Q(photographer=user)
+        q_img = Q(read_perm=ReadPerm.IMG)
+        q_public = Q(read_perm=ReadPerm.PUBLIC)
+
+        if user_is_img(user):
+            return qs.filter(q_photographer | q_img | q_public).distinct()
+        return qs.filter(q_photographer | q_public).distinct()
+
+    def list(self, request, *args, **kwargs):
+        search_params = request.query_params.dict()
+
+        tags = request.query_params.getlist('tags')
+        if tags:
+            search_params['tags'] = tags
+
+        serializer = PhotoSearchSerializer(data=search_params)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        base_qs = self.get_queryset()
+        search_service = PhotoSearchService(base_qs)
+        filtered_qs = search_service.search(**serializer.validated_data)
+
+        serialized = self.get_serializer(filtered_qs, many=True)
+        response_data = {
+            'count': filtered_qs.count(),
+            'results': serialized.data,
+        }
+
+        return Response(response_data)

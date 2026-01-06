@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from accounts.serializers import MiniUserSerializer
-from photos.models import Photo, PhotoShare
+from photos.models import Photo, PhotoShare, ReadPerm
 from photos.permissions import is_admin_or_photographer, is_event_coordinator, can_share_photo
 from photos.services import generate_signed_url, create_photo_tags, upload_to_storage
 
@@ -278,3 +278,63 @@ class PhotoShareSerializer(serializers.ModelSerializer):
         else:
             url = generate_signed_url(obj.photo.original_path, remaining)
         return url
+
+
+class PhotoSearchSerializer(serializers.Serializer):
+    event_name = serializers.CharField(
+        required=False,
+        allow_blank=True
+    )
+    date_from = serializers.DateTimeField(
+        required=False,
+        allow_null=True
+    )
+    date_to = serializers.DateTimeField(
+        required=False,
+        allow_null=True,
+    )
+    photographer_id = serializers.UUIDField(
+        required=False,
+        allow_null=True
+    )
+    photographer_name = serializers.CharField(
+        required=False,
+        allow_blank=True
+    )
+    auto_tags = serializers.ListField(
+        child=serializers.CharField(),
+        required=False
+    )
+    user_tags = serializers.ListField(
+        child=serializers.CharField(),
+        required=False
+    )
+    status = serializers.ChoiceField(
+        required=False,
+        allow_blank=True,
+        choices=Photo.PhotoStatus
+    )
+    read_perm = serializers.ChoiceField(
+        required=False,
+        allow_blank=True,
+        choices=ReadPerm
+    )
+
+    def validate_date_from(self, value):
+        if value and value > timezone.now():
+            raise ValidationError("Start date cannot be in the future")
+        return value
+
+    def validate_date_to(self, value):
+        if value and value > timezone.now():
+            raise ValidationError("End date cannot be in the future")
+        return value
+
+    def validate(self, data):
+        date_from = data.get('date_from')
+        date_to = data.get('date_to')
+
+        if date_from and date_to and date_from > date_to:
+            raise ValidationError("Start date must be before end date")
+
+        return data

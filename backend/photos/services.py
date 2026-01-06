@@ -1,5 +1,5 @@
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta
 from io import BytesIO
 
 import clip
@@ -8,6 +8,7 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 from django.core.files.base import ContentFile
 from django.core.files.images import ImageFile
+from django.db.models import Q, QuerySet
 from django.utils import timezone
 from dotenv import load_dotenv
 from firebase_admin import storage
@@ -17,7 +18,62 @@ from rest_framework.exceptions import APIException
 from accounts.models import CustomUser
 from notifications.models import Notification
 from notifications.services import create_notification
+from photos.models import Photo
 from photos.models import PhotoTag
+
+
+class PhotoSearchService:
+
+    def __init__(self, queryset: QuerySet = None):
+        self.queryset = queryset if queryset is not None else Photo.objects.all()
+
+    def search(
+            self,
+            event_name: str = None,
+            date_from: datetime = None,
+            date_to: datetime = None,
+            photographer_id: str = None,
+            photographer_name: str = None,
+            tags: list = None,
+            read_perm: str = None,
+    ) -> QuerySet:
+        qs = self.queryset
+
+        if event_name:
+            qs = qs.filter(event__title__icontains=event_name)
+
+        if date_from:
+            qs = qs.filter(timestamp__gte=date_from)
+
+        if date_to:
+            date_to = date_to + timedelta(days=1)
+            qs = qs.filter(timestamp__lt=date_to)
+
+        if photographer_id:
+            qs = qs.filter(photographer_id=photographer_id)
+
+        if photographer_name:
+            qs = qs.filter(
+                Q(photographer__name__icontains=photographer_name) |
+                Q(photographer__username__icontains=photographer_name)
+            )
+
+        if tags:
+            if isinstance(tags, str):
+                tags = [tags]
+            q_objects = Q()
+            for tag in tags:
+                q_objects |= Q(user_tags__contains=[tag]) | Q(auto_tags__contains=[tag])
+            qs = qs.filter(q_objects)
+
+        if read_perm:
+            qs = qs.filter(read_perm=read_perm)
+
+        return qs.distinct()
+
+    def search_combined(self, filters: dict) -> QuerySet:
+        return self.search(**filters)
+
 
 load_dotenv()
 image_ttl = int(os.getenv("DEFAULT_IMAGE_TTL"))

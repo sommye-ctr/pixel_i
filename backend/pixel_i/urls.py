@@ -22,5 +22,6 @@ urlpatterns = [
     path('auth/', include("accounts.urls")),
     path('events/', include("events.urls")),
     path('photos/', include("photos.urls")),
+    path('notifications/', include("notifications.urls")),
     path('', include("engagement.urls"))
 ]

@@ -9,6 +9,7 @@ import '../features/photos/view/photo_detail_screen.dart';
 import '../features/photos/view/photo_upload_screen.dart';
 import '../features/events/views/event_detail_screen.dart';
 import '../features/events/views/event_create_screen.dart';
+import '../features/notifications/view/notifications_screen.dart';
 
 GoRouter buildRouter({bool isLoggedIn = false}) {
   return GoRouter(
@@ -93,6 +94,11 @@ GoRouter buildRouter({bool isLoggedIn = false}) {
             coverPhotoUrl: coverUrl,
           );
         },
+      ),
+      GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

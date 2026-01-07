@@ -12,6 +12,7 @@ import '../models/photo.dart';
 import '../bloc/photos_bloc.dart';
 import '../bloc/photos_event.dart';
 import '../bloc/photos_state.dart';
+import 'package:frontend/features/notifications/bloc/notifications_bloc.dart';
 import '../../../core/utils/toast_utils.dart';
 
 class PhotosScreen extends StatefulWidget {
@@ -216,7 +217,19 @@ class _PhotosScreenState extends State<PhotosScreen> {
                   activeColor: Colors.redAccent,
                 ),
               ),
-              IconButton(onPressed: () {}, icon: Icon(LucideIcons.bell)),
+              BlocBuilder<NotificationsBloc, NotificationsState>(
+                builder: (context, notifState) {
+                  final count = notifState.unreadCount;
+                  return Badge.count(
+                    count: count,
+                    offset: const Offset(-5, 5),
+                    child: IconButton(
+                      icon: Icon(LucideIcons.bell),
+                      onPressed: () => context.push('/notifications'),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
           body: AnimatedSwitcher(

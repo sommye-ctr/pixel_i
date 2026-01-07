@@ -13,7 +13,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
         self.user = self.scope["user"]
-        print("WS USER:", self.scope["user"], type(self.scope["user"]))
         if not self.user.is_authenticated:
             await self.close()
             return
@@ -34,5 +33,4 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             )
 
     async def send_notification(self, event):
-        print(f"WS NOTIF: SENDING NOTIF WITH {event['data']}")
         await self.send(text_data=json.dumps(event["data"]))

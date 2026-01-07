@@ -32,7 +32,8 @@ class PhotoView(viewsets.ModelViewSet):
             target_type=Notification.NotificationTarget.EVENT,
             target_id=photo.event.id,
             actor=self.request.user,
-            dedupe_key=f"event_add:{photo.event.id}:actor:{self.request.user.id}"
+            dedupe_key=f"event_add:{photo.event.id}:actor:{self.request.user.id}",
+            data={"count": 1}
         )
         process_photo_task.delay(photo.id)
 
@@ -134,7 +135,7 @@ class PhotoBulkUploadView(generics.CreateAPIView):
                 target_id=event.id,
                 actor=self.request.user,
                 dedupe_key=f"event_add:{event.id}:actor:{self.request.user.id}",
-                data={"photo_count": count}
+                data={"count": count}
             )
 
         return Response({"results": results}, status=207)

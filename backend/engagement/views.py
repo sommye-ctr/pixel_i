@@ -76,7 +76,8 @@ class LikeView(BaseEngagementView):
             target_type=Notification.NotificationTarget.PHOTO,
             target_id=photo.id,
             actor=self.request.user,
-            dedupe_key=f"like:{self.request.user.id}:{photo_id}"
+            dedupe_key=f"like:{photo.photographer}:{photo_id}",
+            data={'count': 1}
         )
 
 

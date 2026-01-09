@@ -12,6 +12,10 @@ class User extends Equatable {
   final String? batch;
   final String? department;
   final String? bio;
+  final int? photosCount;
+  final int? eventsCount;
+  final int? likesCount;
+  final int? downloadsCount;
 
   const User({
     required this.id,
@@ -22,11 +26,28 @@ class User extends Equatable {
     this.batch,
     this.department,
     this.bio,
+    this.photosCount,
+    this.eventsCount,
+    this.likesCount,
+    this.downloadsCount,
   });
 
   @override
   List<Object?> get props {
-    return [id, name, email, username, profilePicture, batch, department, bio];
+    return [
+      id,
+      name,
+      email,
+      username,
+      profilePicture,
+      batch,
+      department,
+      bio,
+      photosCount,
+      eventsCount,
+      likesCount,
+      downloadsCount,
+    ];
   }
 
   User copyWith({
@@ -38,6 +59,10 @@ class User extends Equatable {
     ValueGetter<String?>? batch,
     ValueGetter<String?>? department,
     ValueGetter<String?>? bio,
+    ValueGetter<int?>? photosCount,
+    ValueGetter<int?>? eventsCount,
+    ValueGetter<int?>? likesCount,
+    ValueGetter<int?>? downloadsCount,
   }) {
     return User(
       id: id ?? this.id,
@@ -50,6 +75,12 @@ class User extends Equatable {
       batch: batch != null ? batch() : this.batch,
       department: department != null ? department() : this.department,
       bio: bio != null ? bio() : this.bio,
+      photosCount: photosCount != null ? photosCount() : this.photosCount,
+      eventsCount: eventsCount != null ? eventsCount() : this.eventsCount,
+      likesCount: likesCount != null ? likesCount() : this.likesCount,
+      downloadsCount: downloadsCount != null
+          ? downloadsCount()
+          : this.downloadsCount,
     );
   }
 
@@ -63,6 +94,10 @@ class User extends Equatable {
       'batch': batch,
       'department': department,
       'bio': bio,
+      'photos_count': photosCount,
+      'events_count': eventsCount,
+      'likes_count': likesCount,
+      'downloads_count': downloadsCount,
     };
   }
 
@@ -76,6 +111,10 @@ class User extends Equatable {
       batch: map['batch'],
       department: map['department'],
       bio: map['bio'],
+      photosCount: map['photos_count']?.toInt(),
+      eventsCount: map['events_count']?.toInt(),
+      likesCount: map['likes_count']?.toInt(),
+      downloadsCount: map['downloads_count']?.toInt(),
     );
   }
 
@@ -85,6 +124,6 @@ class User extends Equatable {
 
   @override
   String toString() {
-    return 'User(id: $id, name: $name, email: $email, username: $username, profilePicture: $profilePicture, batch: $batch, department: $department, bio: $bio)';
+    return 'User(id: $id, name: $name, email: $email, username: $username, profilePicture: $profilePicture, batch: $batch, department: $department, bio: $bio, photosCount: $photosCount, eventsCount: $eventsCount, likesCount: $likesCount, downloadsCount: $downloadsCount)';
   }
 }

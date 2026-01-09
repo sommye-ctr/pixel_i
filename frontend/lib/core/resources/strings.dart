@@ -47,6 +47,18 @@ const String profileTitle = 'Profile';
 const String searchTitle = 'Search';
 const String photosTitle = 'Photos';
 
+// Profile
+const String profileTotalPhotos = 'Total photos';
+const String profileTotalEvents = 'Total events';
+const String profileLikes = 'Likes';
+const String profileDownloads = 'Downloads';
+const String profileLogout = 'Logout';
+const String profileLoadingFailed = 'Unable to load profile';
+const String profileRetry = 'Retry';
+const String photosTaggedIn = 'Photos you are tagged in';
+const String photosTaggedInEmpty = 'You are not tagged in any photos yet';
+const String photosTaggedInFailedPrefix = 'Failed to load tagged photos: ';
+
 // Error Messages
 const String errorSignupFailed = 'Signup failed: ';
 const String errorOtpVerificationFailed = 'OTP verification failed: ';

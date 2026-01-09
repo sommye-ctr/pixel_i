@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
+from django.db.models import Sum, Count
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -13,11 +14,28 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
+    photos_count = serializers.SerializerMethodField(read_only=True)
+    events_count = serializers.SerializerMethodField(read_only=True)
+    likes_count = serializers.SerializerMethodField(read_only=True)
+    downloads_count = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'name', 'profile_pic', 'bio', 'department', 'batch']
+        fields = ['id', 'username', 'email', 'name', 'profile_pic', 'bio', 'department', 'batch',
+                  'photos_count', 'events_count', 'likes_count', 'downloads_count']
         read_only_fields = ['id', 'email', 'username']
 
+    def get_photos_count(self, obj:CustomUser):
+        return obj.photos.count()
+
+    def get_events_count(self, obj:CustomUser):
+        return obj.events.count()
+
+    def get_likes_count(self, obj:CustomUser):
+        return obj.photos.aggregate(total_likes=Count('likes'))['total_likes'] or 0
+
+    def get_downloads_count(self, obj:CustomUser):
+        return obj.photos.aggregate(total_downloads=Sum('downloads'))['total_downloads'] or 0
 
 class MiniUserSerializer(serializers.ModelSerializer):
     profile_pic = serializers.SerializerMethodField()

@@ -99,6 +99,14 @@ class EventPhotosView(generics.ListAPIView):
         return qs.filter(q_coord | q_public).distinct()
 
 
+class PhotosTaggedInView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PhotoListSerializer
+
+    def get_queryset(self):
+        return self.request.user.tagged_photos.all().distinct()
+
+
 class PhotoBulkUploadView(generics.CreateAPIView):
     _event = None
     serializer_class = PhotoBulkUploadSerializer

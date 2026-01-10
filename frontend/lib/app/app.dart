@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/core/resources/strings.dart';
@@ -28,6 +30,15 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
+  StreamSubscription? _authSubscription;
+  NotificationsBloc? _notificationsBloc;
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final tokenStorage = TokenStorage();
@@ -53,28 +64,51 @@ class _AppState extends State<App> {
           RepositoryProvider.value(value: eventsRepository),
           RepositoryProvider.value(value: notificationsRepository),
         ],
-        child: MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => AuthBloc(authRepository)),
-            BlocProvider(create: (_) => PhotosBloc(photosRepository)),
-            BlocProvider(create: (_) => PhotoDetailBloc(photosRepository)),
-            BlocProvider(
-              create: (_) => EventsBloc(eventsRepository, authRepository),
-            ),
-            BlocProvider(create: (_) => EventCreateBloc(eventsRepository)),
-            BlocProvider(
-              create: (ctx) =>
-                  NotificationsBloc(ctx.read<NotificationsRepository>())
-                    ..add(NotificationsInitialized()),
-            ),
-          ],
-          child: MaterialApp.router(
-            title: appName,
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            themeMode: ThemeMode.system,
-            routerConfig: router,
-          ),
+        child: Builder(
+          builder: (context) {
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider(create: (_) => AuthBloc(authRepository)),
+                BlocProvider(create: (_) => PhotosBloc(photosRepository)),
+                BlocProvider(create: (_) => PhotoDetailBloc(photosRepository)),
+                BlocProvider(
+                  create: (_) => EventsBloc(eventsRepository, authRepository),
+                ),
+                BlocProvider(create: (_) => EventCreateBloc(eventsRepository)),
+                BlocProvider(
+                  create: (ctx) {
+                    _notificationsBloc = NotificationsBloc(
+                      ctx.read<NotificationsRepository>(),
+                    )..add(NotificationsInitialized());
+                    return _notificationsBloc!;
+                  },
+                ),
+              ],
+              child: Builder(
+                builder: (context) {
+                  // Listen to auth state changes to cleanup notifications on logout
+                  _authSubscription?.cancel();
+                  _authSubscription = context.read<AuthBloc>().stream.listen((
+                    authState,
+                  ) {
+                    if (authState.status == AuthStatus.unauthenticated) {
+                      _notificationsBloc?.add(NotificationsDisconnect());
+                    } else if (authState.status == AuthStatus.authenticated) {
+                      _notificationsBloc?.add(NotificationsInitialized());
+                    }
+                  });
+
+                  return MaterialApp.router(
+                    title: appName,
+                    theme: AppTheme.light,
+                    darkTheme: AppTheme.dark,
+                    themeMode: ThemeMode.system,
+                    routerConfig: router,
+                  );
+                },
+              ),
+            );
+          },
         ),
       ),
     );

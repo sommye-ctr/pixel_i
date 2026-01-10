@@ -69,14 +69,7 @@ class PhotoView(viewsets.ModelViewSet):
         if not user.is_authenticated:
             return qs.none()
 
-        q_photographer = Q(photographer=user)
-        q_img = Q(read_perm=ReadPerm.IMG)
-        q_public = Q(read_perm=ReadPerm.PUBLIC)
-
-        if user_is_img(user):
-            return qs.filter(q_photographer | q_img | q_public).distinct()
-        return qs.filter(q_photographer | q_public).distinct()
-
+        return qs.filter(photographer=user).distinct()
 
 class EventPhotosView(generics.ListAPIView):
     serializer_class = PhotoListSerializer
@@ -92,11 +85,12 @@ class EventPhotosView(generics.ListAPIView):
 
         q_coord = Q(event__coordinator_id=user.id)
         q_public = Q(read_perm=EventPermission.PUBLIC)
+        q_photographer = Q(photographer=user)
 
         if user_is_img(user):
             q_img = Q(read_perm=EventPermission.IMG)
-            return qs.filter(q_coord | q_img | q_public).distinct()
-        return qs.filter(q_coord | q_public).distinct()
+            return qs.filter(q_coord | q_img | q_public | q_photographer).distinct()
+        return qs.filter(q_coord | q_public | q_photographer).distinct()
 
 
 class PhotosTaggedInView(generics.ListAPIView):

@@ -31,7 +31,7 @@ def is_admin_or_photographer(user, obj):
 
 
 def can_read_photo(user, obj):
-    if is_admin_or_photographer(user, obj):
+    if is_admin_or_photographer(user, obj) or is_event_coordinator(user, obj.event):
         return True
 
     perm = getattr(obj, "read_perm", None)

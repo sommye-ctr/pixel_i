@@ -21,11 +21,13 @@ class EventDetailScreen extends StatefulWidget {
   final int? fileCount;
   final DateTime? createdAt;
   final String? coverPhotoUrl;
+  final bool canWrite;
 
   const EventDetailScreen({
     super.key,
     required this.eventId,
     required this.title,
+    required this.canWrite,
     this.fileCount,
     this.createdAt,
     this.coverPhotoUrl,
@@ -332,10 +334,12 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
 
     return Scaffold(
       body: SafeArea(child: body),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _pickAndUpload,
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: widget.canWrite
+          ? FloatingActionButton(
+              onPressed: _pickAndUpload,
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 }

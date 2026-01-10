@@ -32,6 +32,8 @@ class NotificationsMarkRead extends NotificationsEvent {
   List<Object?> get props => [id];
 }
 
+class NotificationsDisconnect extends NotificationsEvent {}
+
 class _NotificationsWsRawReceived extends NotificationsEvent {
   final dynamic raw;
   const _NotificationsWsRawReceived(this.raw);
@@ -89,6 +91,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
     on<NotificationsLoadRequested>(_onLoadRequested);
     on<NotificationsErrorCleared>(_onErrorCleared);
     on<NotificationsMarkRead>(_onMarkRead);
+    on<NotificationsDisconnect>(_onDisconnect);
     on<_NotificationsWsRawReceived>(_onWsRawReceived);
     on<_NotificationsWsStatusChanged>(_onWsStatusChanged);
   }
@@ -208,6 +211,21 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         if (!isClosed) add(NotificationsInitialized());
       });
     }
+  }
+
+  Future<void> _onDisconnect(
+    NotificationsDisconnect event,
+    Emitter<NotificationsState> emit,
+  ) async {
+    await _disposeChannel();
+    emit(
+      const NotificationsState(
+        items: [],
+        unreadCount: 0,
+        loading: false,
+        connected: false,
+      ),
+    );
   }
 
   Future<void> _disposeChannel() async {

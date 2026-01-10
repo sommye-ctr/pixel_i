@@ -10,6 +10,25 @@ class EventPermission(models.TextChoices):
     PRIVATE = "PRV", "Private"
 
 
+def can_write_to_event(user, event):
+    if not user or not user.is_authenticated:
+        return False
+
+    # if admin
+    if user_is_admin(user):
+        return True
+
+    write_perm = getattr(event, "write_perm", None)
+    if write_perm == EventPermission.PUBLIC:
+        return True
+    elif write_perm == EventPermission.IMG:
+        return user_is_img(user)
+    elif write_perm == EventPermission.PRIVATE:
+        return getattr(user, "id", None) == getattr(event, "coordinator_id", None)
+
+    return False
+
+
 class IsCoordinator(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.coordinator_id == request.user.id

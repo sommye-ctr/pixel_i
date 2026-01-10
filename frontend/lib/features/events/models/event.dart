@@ -31,21 +31,22 @@ class Event extends Equatable {
   final String id;
   final String title;
   final EventPermission readPerm;
-  final EventPermission writePerm;
   final User coordinator;
   final int imagesCount;
   final Photo? coverPhoto;
   final DateTime? createdAt;
 
+  final bool? canWrite;
+
   const Event({
     required this.id,
     required this.title,
     required this.readPerm,
-    required this.writePerm,
     required this.coordinator,
     required this.imagesCount,
     this.coverPhoto,
     this.createdAt,
+    this.canWrite,
   });
 
   @override
@@ -54,11 +55,11 @@ class Event extends Equatable {
       id,
       title,
       readPerm,
-      writePerm,
       coordinator,
       imagesCount,
       coverPhoto,
       createdAt,
+      canWrite,
     ];
   }
 
@@ -71,16 +72,17 @@ class Event extends Equatable {
     int? imagesCount,
     Photo? coverPhoto,
     DateTime? createdAt,
+    bool? canWrite,
   }) {
     return Event(
       id: id ?? this.id,
       title: title ?? this.title,
       readPerm: readPerm ?? this.readPerm,
-      writePerm: writePerm ?? this.writePerm,
       coordinator: coordinator ?? this.coordinator,
       imagesCount: imagesCount ?? this.imagesCount,
       coverPhoto: coverPhoto ?? this.coverPhoto,
       createdAt: createdAt ?? this.createdAt,
+      canWrite: canWrite ?? this.canWrite,
     );
   }
 
@@ -89,11 +91,11 @@ class Event extends Equatable {
       'id': id,
       'title': title,
       'read_perm': readPerm.value,
-      'write_perm': writePerm.value,
       'coordinator': coordinator.toMap(),
       'images_count': imagesCount,
       'cover_photo': coverPhoto?.toMap(),
       'created_at': createdAt?.toIso8601String(),
+      'can_write': canWrite,
     };
   }
 
@@ -104,9 +106,6 @@ class Event extends Equatable {
       readPerm: EventPermission.fromValue(
         map['read_perm'] ?? EventPermission.pub.value,
       ),
-      writePerm: EventPermission.fromValue(
-        map['write_perm'] ?? EventPermission.pub.value,
-      ),
       coordinator: User.fromMap(map['coordinator']),
       imagesCount: map['images_count']?.toInt() ?? 0,
       coverPhoto: map['cover_photo'] != null
@@ -115,6 +114,7 @@ class Event extends Equatable {
       createdAt: map['created_at'] != null
           ? DateTime.tryParse(map['created_at'])
           : null,
+      canWrite: map['can_write'],
     );
   }
 
@@ -124,6 +124,6 @@ class Event extends Equatable {
 
   @override
   String toString() {
-    return 'Event(id: $id, title: $title, readPerm: $readPerm, writePerm: $writePerm, coordinator: $coordinator, imagesCount: $imagesCount, coverPhoto: $coverPhoto, createdAt: $createdAt)';
+    return 'Event(id: $id, title: $title, readPerm: $readPerm, canWrite: $canWrite, coordinator: $coordinator, imagesCount: $imagesCount, coverPhoto: $coverPhoto, createdAt: $createdAt)';
   }
 }

@@ -85,6 +85,7 @@ GoRouter buildRouter({bool isLoggedIn = false}) {
               ? DateTime.tryParse(createdAtParam)
               : null;
           final coverUrl = state.uri.queryParameters['cover'];
+          final canWrite = state.uri.queryParameters['canWrite'] == 'true';
 
           return EventDetailScreen(
             eventId: eventId,
@@ -92,6 +93,7 @@ GoRouter buildRouter({bool isLoggedIn = false}) {
             fileCount: fileCount,
             createdAt: createdAt,
             coverPhotoUrl: coverUrl,
+            canWrite: canWrite,
           );
         },
       ),

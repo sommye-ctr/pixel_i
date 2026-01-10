@@ -59,6 +59,7 @@ class _EventsScreenState extends State<EventsScreen> {
                         queryParameters: {
                           'title': event.title,
                           'files': event.imagesCount.toString(),
+                          'canWrite': (event.canWrite).toString(),
                           if (event.createdAt != null)
                             'createdAt': event.createdAt!.toIso8601String(),
                           if (event.coverPhoto?.thumbnailUrl != null)

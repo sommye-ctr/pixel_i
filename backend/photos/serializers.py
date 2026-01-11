@@ -301,11 +301,7 @@ class PhotoSearchSerializer(serializers.Serializer):
         required=False,
         allow_blank=True
     )
-    auto_tags = serializers.ListField(
-        child=serializers.CharField(),
-        required=False
-    )
-    user_tags = serializers.ListField(
+    tags = serializers.ListField(
         child=serializers.CharField(),
         required=False
     )

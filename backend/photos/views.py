@@ -11,8 +11,8 @@ from events.permissions import EventPermission
 from notifications.models import Notification
 from notifications.services import create_notification
 from photos.models import Photo, PhotoShare
-from photos.permissions import PhotoReadPermission, ReadPerm, IsPhotographer, IsEventCoordinator, \
-    PhotoShareCreatePermission, PhotoShareRevokePermission, PhotoUploadPermission
+from photos.permissions import PhotoReadPermission, ReadPerm, IsPhotographer, PhotoShareCreatePermission, \
+    PhotoShareRevokePermission, PhotoUploadPermission, PhotoDeletePermission
 from photos.serializers import PhotoReadSerializer, PhotoListSerializer, PhotoWriteSerializer, PhotoShareSerializer, \
     PhotoBulkUploadSerializer, PhotoSearchSerializer
 from photos.services import PhotoSearchService
@@ -57,7 +57,7 @@ class PhotoView(viewsets.ModelViewSet):
         elif self.action in ("update", "partial_update"):
             return [IsPhotographer()]
         elif self.action == 'destroy':
-            return [IsPhotographer(), IsEventCoordinator()]
+            return [PhotoDeletePermission()]
         return [IsAuthenticated()]
 
     def get_queryset(self):
@@ -70,6 +70,7 @@ class PhotoView(viewsets.ModelViewSet):
             return qs.none()
 
         return qs.filter(photographer=user).distinct()
+
 
 class EventPhotosView(generics.ListAPIView):
     serializer_class = PhotoListSerializer
@@ -213,9 +214,11 @@ class PhotoSearchView(generics.ListAPIView):
         search_service = PhotoSearchService(base_qs)
         filtered_qs = search_service.search(**serializer.validated_data)
 
+        count = filtered_qs.count()
+
         serialized = self.get_serializer(filtered_qs, many=True)
         response_data = {
-            'count': filtered_qs.count(),
+            'count': count,
             'results': serialized.data,
         }
 

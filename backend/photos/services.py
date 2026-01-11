@@ -58,18 +58,24 @@ class PhotoSearchService:
                 Q(photographer__username__icontains=photographer_name)
             )
 
-        if tags:
+        if tags is not None:
             if isinstance(tags, str):
                 tags = [tags]
-            q_objects = Q()
-            for tag in tags:
-                q_objects |= Q(user_tags__contains=[tag]) | Q(auto_tags__contains=[tag])
-            qs = qs.filter(q_objects)
+            cleaned_tags = [str(t).strip() for t in tags if str(t).strip()]
+            if not cleaned_tags:
+                return qs.distinct()
+
+            tag_query = None
+            for tag in cleaned_tags:
+                condition = Q(user_tags__contains=[tag]) | Q(auto_tags__contains=[tag])
+                tag_query = condition if tag_query is None else (tag_query | condition)
+            qs = qs.filter(tag_query)
 
         if read_perm:
             qs = qs.filter(read_perm=read_perm)
 
-        return qs.distinct()
+        final_qs = qs.distinct()
+        return final_qs
 
     def search_combined(self, filters: dict) -> QuerySet:
         return self.search(**filters)
@@ -125,24 +131,34 @@ CLIP_TAGS = [
 ]
 
 
-def generate_auto_tag_photo(image_bytes: BytesIO, threshold=0.3):
+def generate_auto_tag_photo(image_bytes: BytesIO):
+    import logging
+    logger = logging.getLogger(__name__)
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model, preprocess = clip.load("ViT-B/32", device=device)
 
-    image = Image.open(image_bytes).convert("RGB")
+    image_bytes.seek(0)
+    with Image.open(image_bytes) as img:
+        image = img.convert("RGB")
+        image.load()
+
     image_tensor = preprocess(image).unsqueeze(0).to(device)
     tokens = clip.tokenize(CLIP_TAGS).to(device)
+
     with torch.no_grad():
         image_features = model.encode_image(image_tensor)
         text_features = model.encode_text(tokens)
-
         image_features = image_features / image_features.norm(dim=-1, keepdim=True)
         text_features = text_features / text_features.norm(dim=-1, keepdim=True)
-
-        similarity = (image_features @ text_features.T)
+        similarity = image_features @ text_features.T
 
     scores = similarity[0].cpu().tolist()
-    return [CLIP_TAGS[i] for i, score in enumerate(scores) if score >= threshold]
+    ranked = sorted(((CLIP_TAGS[i], score) for i, score in enumerate(scores)), key=lambda x: x[1], reverse=True)
+    top_tags = [tag for tag, _ in ranked[:10]]
+
+    logger.info("Generated %d auto tags (top scores)", len(top_tags))
+    return top_tags
 
 
 def create_photo_tags(photo, usernames, actor):

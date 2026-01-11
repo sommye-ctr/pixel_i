@@ -12,15 +12,6 @@ class IsPhotographer(permissions.BasePermission):
         return getattr(obj, "photographer_id", None) == getattr(request.user, "id", None)
 
 
-class IsEventCoordinator(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        event = getattr(obj, 'event', None)
-        if not event:
-            return False
-
-        return event and is_event_coordinator(request.user, event)
-
-
 def is_event_coordinator(user, event):
     return event.coordinator_id == getattr(user, 'id', None)
 
@@ -81,6 +72,21 @@ class PhotoReadPermission(permissions.BasePermission):
             return False
 
         return can_read_photo(user, obj)
+
+
+class PhotoDeletePermission(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+
+        if is_admin_or_photographer(user, obj):
+            return True
+
+        if is_event_coordinator(user, obj.event):
+            return True
+
+        return False
 
 
 class PhotoShareRevokePermission(permissions.BasePermission):

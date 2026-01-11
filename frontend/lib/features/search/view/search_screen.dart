@@ -51,7 +51,7 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() => _loading = true);
     try {
       final tags = _tagsController.text
-          .split(' ')
+          .split(',')
           .map((s) => s.trim())
           .where((s) => s.isNotEmpty)
           .toList();
@@ -230,7 +230,7 @@ class _SearchScreenState extends State<SearchScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CustomTextField(
-              hint: 'Tags (separated by space)',
+              hint: 'Tags (separated by comma)',
               controller: _tagsController,
             ),
             Row(

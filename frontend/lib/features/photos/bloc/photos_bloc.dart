@@ -12,7 +12,7 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
   PhotosBloc(this.repository) : super(PhotosInitial()) {
     on<PhotosRequested>(_onRequested);
     on<PhotosFavoritesToggled>(_onFavoritesToggled);
-    on<PhotoUpdated>(_onPhotoUpdated);
+    on<PhotosUpdated>(_onPhotosUpdated);
   }
 
   Future<void> _onRequested(
@@ -39,11 +39,10 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
     emit(PhotosLoadSuccess(filtered, showingFavorites: _showFavorites));
   }
 
-  Future<void> _onPhotoUpdated(
-    PhotoUpdated event,
+  Future<void> _onPhotosUpdated(
+    PhotosUpdated event,
     Emitter<PhotosState> emit,
   ) async {
-    repository.upsertPhoto(event.photo);
     final filtered = _filteredPhotos();
     emit(PhotosLoadSuccess(filtered, showingFavorites: _showFavorites));
   }

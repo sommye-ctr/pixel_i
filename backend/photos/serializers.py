@@ -116,9 +116,9 @@ class PhotoReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photo
         fields = [
-            'id', 'timestamp', 'meta', 'photographer', 'event', 'tagged_users', 'downloads', 'views', 'auto_tags',
-            'read_perm', 'user_tags', 'watermarked_url', 'thumbnail_url', 'likes_count', 'width',
-            'height', 'is_liked', 'can_edit', 'can_delete', 'can_share'
+            'id', 'timestamp', 'meta', 'photographer', 'event', 'tagged_users', 'downloads', 'views',
+            'read_perm', 'watermarked_url', 'thumbnail_url', 'likes_count', 'width',
+            'height', 'is_liked', 'can_edit', 'can_delete', 'can_share', 'auto_tags', 'user_tags'
         ]
         read_only_fields = fields
 

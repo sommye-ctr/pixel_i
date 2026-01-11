@@ -161,4 +161,13 @@ class PhotosRepository {
         .toList();
     return photos;
   }
+
+  Future<void> deletePhoto(String id) async {
+    try {
+      await api.delete<Map<String, dynamic>>('/photos/$id/');
+    } catch (e) {
+      rethrow;
+    }
+    _cachedPhotos?.removeWhere((photo) => photo.id == id);
+  }
 }

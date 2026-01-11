@@ -59,6 +59,8 @@ class Photo {
   final int? height;
 
   final Map<String, dynamic>? meta;
+  final List<String>? userTags;
+  final List<String>? autoTags;
   //final Event? event
   final List<User>? taggedUsers;
   final int? downloads;
@@ -81,6 +83,8 @@ class Photo {
     this.width,
     this.height,
     this.meta,
+    this.userTags,
+    this.autoTags,
     this.taggedUsers,
     this.downloads,
     this.views,
@@ -116,6 +120,8 @@ class Photo {
     ValueGetter<int?>? width,
     ValueGetter<int?>? height,
     ValueGetter<Map<String, dynamic>?>? meta,
+    ValueGetter<List<String>?>? userTags,
+    ValueGetter<List<String>?>? autoTags,
     ValueGetter<List<User>?>? taggedUsers,
     ValueGetter<int?>? downloads,
     ValueGetter<int?>? views,
@@ -136,6 +142,8 @@ class Photo {
       width: width != null ? width() : this.width,
       height: height != null ? height() : this.height,
       meta: meta != null ? meta() : this.meta,
+      userTags: userTags != null ? userTags() : this.userTags,
+      autoTags: autoTags != null ? autoTags() : this.autoTags,
       taggedUsers: taggedUsers != null ? taggedUsers() : this.taggedUsers,
       downloads: downloads != null ? downloads() : this.downloads,
       views: views != null ? views() : this.views,
@@ -161,6 +169,8 @@ class Photo {
       'width': width,
       'height': height,
       'meta': meta,
+      'user_tags': userTags,
+      'auto_tags': autoTags,
       'tagged_users': taggedUsers?.map((x) => x.toMap()).toList(),
       'downloads': downloads,
       'views': views,
@@ -186,6 +196,12 @@ class Photo {
       width: map['width'] != null ? (map['width'] as num).toInt() : null,
       height: map['height'] != null ? (map['height'] as num).toInt() : null,
       meta: Map<String, dynamic>.from(map['meta'] ?? {}),
+      userTags: map['user_tags'] != null
+          ? List<String>.from(map['user_tags'] as List)
+          : null,
+      autoTags: map['auto_tags'] != null
+          ? List<String>.from(map['auto_tags'] as List)
+          : null,
       taggedUsers: map['tagged_users'] != null
           ? List<User>.from(map['tagged_users']?.map((x) => User.fromMap(x)))
           : null,
@@ -245,7 +261,7 @@ class Photo {
         other.likesCount == likesCount &&
         other.isLiked == isLiked &&
         other.canDelete == canDelete &&
-          other.canShare == canShare &&
+        other.canShare == canShare &&
         other.canEdit == canEdit;
   }
 

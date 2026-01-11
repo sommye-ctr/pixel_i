@@ -126,3 +126,20 @@ const String photoUploadSuccessStatus = 'Uploaded';
 const String photoUploadErrorStatus = 'Failed';
 const String photoUploadMissingEventId = 'Event id is required to upload';
 const String photoUploadFailedPrefix = 'Upload failed: ';
+
+// Photo detail / info
+const String photoDeleteTitle = 'Delete photo';
+const String photoDeleteConfirm = 'Are you sure you want to delete this photo?';
+const String cancelLabel = 'Cancel';
+const String deleteLabel = 'Delete';
+const String photoDeleteErrorPrefix = 'Error deleting photo: ';
+const String errorPrefix = 'Error: ';
+const String eventLabel = 'Event';
+
+const String photoInfoTagsTitle = 'Tags';
+const String photoInfoNoTags = 'No tags available';
+const String photoInfoMetaTitle = 'Meta';
+const String photoInfoNoMeta = 'No metadata available';
+const String photoInfoNoUserTags = 'No user tags';
+const String photoInfoNoAutoTags = 'No auto tags';
+const String closeLabel = 'Close';

@@ -9,6 +9,7 @@ import 'package:frontend/features/photos/bloc/photos_event.dart';
 import 'package:frontend/features/photos/models/photo.dart';
 import 'package:frontend/features/photos/widgets/photo_tagged_users_sheet.dart';
 import 'package:go_router/go_router.dart';
+import 'package:frontend/features/photos/data/photos_repository.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:frontend/core/resources/style.dart';
 import 'package:frontend/core/widgets/animated_heart.dart';
@@ -17,6 +18,7 @@ import 'package:palette_generator/palette_generator.dart';
 import 'package:frontend/features/comments/view/comments_bottom_sheet.dart';
 import 'package:frontend/core/utils/toast_utils.dart';
 import 'package:frontend/features/photos/widgets/photo_share_sheet.dart';
+import 'package:frontend/features/photos/widgets/photo_info_sheet.dart';
 
 import '../../../core/resources/strings.dart';
 import '../bloc/photo_detail_bloc.dart';
@@ -44,6 +46,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
       TransformationController();
   Color _dominantColor = Colors.black;
   Color _accentColor = Colors.grey;
+  bool _heroEnabled = true;
 
   Future<void> _extractColors(String imageUrl) async {
     try {
@@ -137,9 +140,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                               context.read<PhotoDetailBloc>().add(
                                 PhotoLikeToggleRequested(photo),
                               );
-                              context.read<PhotosBloc>().add(
-                                PhotoUpdated(photo),
-                              );
+                              context.read<PhotosBloc>().add(PhotosUpdated());
                             }
                           },
                           activeColor: Colors.redAccent,
@@ -175,7 +176,9 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                   child: Container(
                     color: Colors.red.withOpacity(0.8),
                     child: IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        if (photo != null) _onDelete(photo);
+                      },
                       icon: Icon(LucideIcons.trash),
                     ),
                   ),
@@ -185,6 +188,40 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _onDelete(Photo photo) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+          title: const Text(photoDeleteTitle),
+          content: const Text(photoDeleteConfirm),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text(cancelLabel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text(deleteLabel),
+            ),
+          ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      final repo = context.read<PhotosRepository>();
+      await repo.deletePhoto(photo.id);
+      setState(() => _heroEnabled = false);
+      await Future.delayed(const Duration(milliseconds: 80));
+      if (mounted) {
+        context.read<PhotosBloc>().add(PhotosUpdated());
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+        ToastUtils.showLong(photoDeleteErrorPrefix + e.toString());
+    }
   }
 
   Widget _getShareButton(Photo? photo) {
@@ -216,7 +253,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
               state.photo.id == widget.photoId) {
             imageUrl = state.photo.watermarkedUrl ?? state.photo.thumbnailUrl;
             photo = state.photo;
-            ToastUtils.showLong('Error: ${state.error}');
+              ToastUtils.showLong(errorPrefix + state.error);
           } else if (state is PhotoDetailLoadFailure &&
               widget.thumbnailUrl != null) {
             imageUrl = widget.thumbnailUrl!;
@@ -283,28 +320,31 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                     maxScale: 4.0,
                     panEnabled: false,
                     child: Center(
-                      child: Hero(
-                        tag: widget.heroTag,
-                        child: AspectRatio(
-                          aspectRatio: PhotoUtils.aspectRatio(photo),
-                          child: CachedNetworkImage(
-                            imageUrl: imageUrl,
-                            fit: BoxFit.fitWidth,
-                            placeholder: (context, url) =>
-                                widget.thumbnailUrl != null
-                                ? CachedNetworkImage(
-                                    imageUrl: widget.thumbnailUrl!,
-                                    fit: BoxFit.fitWidth,
-                                  )
-                                : const Center(
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
+                      child: HeroMode(
+                        enabled: _heroEnabled,
+                        child: Hero(
+                          tag: widget.heroTag,
+                          child: AspectRatio(
+                            aspectRatio: PhotoUtils.aspectRatio(photo),
+                            child: CachedNetworkImage(
+                              imageUrl: imageUrl,
+                              fit: BoxFit.fitWidth,
+                              placeholder: (context, url) =>
+                                  widget.thumbnailUrl != null
+                                  ? CachedNetworkImage(
+                                      imageUrl: widget.thumbnailUrl!,
+                                      fit: BoxFit.fitWidth,
+                                    )
+                                  : const Center(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  ),
-                            errorWidget: (context, url, error) => const Icon(
-                              Icons.broken_image,
-                              color: Colors.white,
-                              size: 64,
+                              errorWidget: (context, url, error) => const Icon(
+                                Icons.broken_image,
+                                color: Colors.white,
+                                size: 64,
+                              ),
                             ),
                           ),
                         ),
@@ -348,7 +388,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                                     ).textTheme.bodyLarge,
                                   ),
                                   Text(
-                                    "Event",
+                                      eventLabel,
                                     style: Theme.of(
                                       context,
                                     ).textTheme.bodySmall,
@@ -361,10 +401,11 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                             children: [
                               _getShareButton(photo),
                               const SizedBox(width: defaultSpacing / 2),
-                              _getTopActionButton(
-                                Icon(LucideIcons.info),
-                                () {},
-                              ),
+                              _getTopActionButton(Icon(LucideIcons.info), () {
+                                if (photo != null) {
+                                  showPhotoInfoSheet(context, photo);
+                                }
+                              }),
                             ],
                           ),
                         ],

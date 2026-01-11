@@ -4,6 +4,7 @@ import 'package:frontend/core/widgets/custom_nav_bar.dart';
 import 'package:frontend/features/auth/bloc/auth_bloc.dart';
 import 'package:frontend/features/events/views/events_screen.dart';
 import 'package:frontend/features/auth/view/profile_screen.dart';
+import 'package:frontend/features/search/view/search_screen.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../core/resources/strings.dart';
@@ -21,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = [
     const PhotosScreen(),
-    const Center(child: Text('Search')),
+    const SearchScreen(),
     const EventsScreen(),
     const ProfileScreen(),
   ];

@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 from accounts.models import CustomUser
 from photos.models import Photo
@@ -19,6 +20,14 @@ class Comment(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        if self.parent_comment and self.parent_comment.parent_comment:
+            raise ValidationError("Replies to replies are not allowed. Only one level of nesting is permitted.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class Like(models.Model):

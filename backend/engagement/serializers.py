@@ -13,9 +13,27 @@ class LikeSerializer(serializers.ModelSerializer):
         fields = ['photo', 'created_at']
 
 
+class TopLevelCommentSerializer(serializers.ModelSerializer):
+    user = MiniUserSerializer(read_only=True)
+    child_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'user', 'created_at', 'content', 'child_count']
+
+    def get_child_count(self, obj):
+        return obj.child_comments.count()
+
+
 class CommentSerializer(serializers.ModelSerializer):
     user = MiniUserSerializer(read_only=True)
 
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'created_at', 'content']
+        fields = ['id', 'user', 'created_at', 'content', 'parent_comment']
+
+    def validate_parent_comment(self, value):
+        if value is not None and value.parent_comment is not None:
+            raise serializers.ValidationError(
+                "Replies to replies are not allowed. Only one level of nesting is permitted.")
+        return value

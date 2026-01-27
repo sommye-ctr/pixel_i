@@ -15,6 +15,7 @@ import '../core/config.dart';
 import '../features/auth/data/auth_repository.dart';
 import '../features/auth/bloc/auth_bloc.dart';
 import '../features/photos/data/photos_repository.dart';
+import '../features/comments/data/comments_repository.dart';
 import '../features/photos/bloc/photos_bloc.dart';
 import '../features/photos/bloc/photo_detail_bloc.dart';
 import '../features/notifications/data/notifications_repository.dart';
@@ -50,6 +51,7 @@ class _AppState extends State<App> {
 
     final authRepository = AuthRepository(apiClient, tokenStorage);
     final photosRepository = PhotosRepository(apiClient);
+    final commentsRepository = CommentsRepository(apiClient);
     final searchRepository = SearchRepository(apiClient);
     final eventsRepository = EventsRepository(apiClient);
     final notificationsRepository = NotificationsRepository(
@@ -63,6 +65,7 @@ class _AppState extends State<App> {
         providers: [
           RepositoryProvider.value(value: authRepository),
           RepositoryProvider.value(value: photosRepository),
+          RepositoryProvider.value(value: commentsRepository),
           RepositoryProvider.value(value: searchRepository),
           RepositoryProvider.value(value: eventsRepository),
           RepositoryProvider.value(value: notificationsRepository),

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from engagement.models import Like, Comment
 from engagement.permissions import EngagementPermission, IsOwner
-from engagement.serializers import LikeSerializer, CommentSerializer
+from engagement.serializers import LikeSerializer, CommentSerializer, TopLevelCommentSerializer
 from notifications.models import Notification
 from notifications.services import create_notification
 from photos.models import Photo
@@ -83,7 +83,18 @@ class LikeView(BaseEngagementView):
 
 class CommentView(BaseEngagementView):
     model = Comment
-    serializer_class = CommentSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TopLevelCommentSerializer
+        return CommentSerializer
+
+    def get_queryset(self):
+        photo_id = self.kwargs['photo_id']
+        photo = get_object_or_404(Photo, pk=photo_id)
+        if self.request.method == 'GET':
+            return Comment.objects.filter(photo=photo, parent_comment__isnull=True).order_by('-created_at')
+        return Comment.objects.filter(photo=photo)
 
     def perform_create(self, serializer):
         photo_id = self.kwargs['photo_id']
@@ -97,3 +108,13 @@ class CommentView(BaseEngagementView):
             target_id=photo.id,
             actor=self.request.user,
         )
+
+
+class ChildCommentView(generics.ListAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [EngagementPermission]
+
+    def get_queryset(self):
+        parent_id = self.kwargs['comment_id']
+        parent = get_object_or_404(Comment, pk=parent_id)
+        return parent.child_comments.all().order_by('created_at')

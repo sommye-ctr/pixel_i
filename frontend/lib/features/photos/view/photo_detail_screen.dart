@@ -194,18 +194,18 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-          title: const Text(photoDeleteTitle),
-          content: const Text(photoDeleteConfirm),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text(cancelLabel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text(deleteLabel),
-            ),
-          ],
+        title: const Text(photoDeleteTitle),
+        content: const Text(photoDeleteConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text(cancelLabel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text(deleteLabel),
+          ),
+        ],
       ),
     );
     if (confirmed != true) return;
@@ -220,7 +220,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
         Navigator.of(context).pop();
       }
     } catch (e) {
-        ToastUtils.showLong(photoDeleteErrorPrefix + e.toString());
+      ToastUtils.showLong(photoDeleteErrorPrefix + e.toString());
     }
   }
 
@@ -249,11 +249,16 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
               state.photo.id == widget.photoId) {
             imageUrl = state.photo.watermarkedUrl ?? state.photo.thumbnailUrl;
             photo = state.photo;
+          } else if (state is PhotoLikeInProgress &&
+              state.photo.id == widget.photoId) {
+            // Keep showing the photo while like toggle is in progress
+            imageUrl = state.photo.watermarkedUrl ?? state.photo.thumbnailUrl;
+            photo = state.photo;
           } else if (state is PhotoLikeFailure &&
               state.photo.id == widget.photoId) {
             imageUrl = state.photo.watermarkedUrl ?? state.photo.thumbnailUrl;
             photo = state.photo;
-              ToastUtils.showLong(errorPrefix + state.error);
+            ToastUtils.showLong(errorPrefix + state.error);
           } else if (state is PhotoDetailLoadFailure &&
               widget.thumbnailUrl != null) {
             imageUrl = widget.thumbnailUrl!;
@@ -388,7 +393,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                                     ).textTheme.bodyLarge,
                                   ),
                                   Text(
-                                      eventLabel,
+                                    eventLabel,
                                     style: Theme.of(
                                       context,
                                     ).textTheme.bodySmall,

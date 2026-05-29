@@ -23,6 +23,8 @@ class NotificationsInitialized extends NotificationsEvent {}
 
 class NotificationsLoadRequested extends NotificationsEvent {}
 
+class NotificationsLoadMoreRequested extends NotificationsEvent {}
+
 class NotificationsErrorCleared extends NotificationsEvent {}
 
 class NotificationsMarkRead extends NotificationsEvent {
@@ -52,6 +54,8 @@ class NotificationsState extends Equatable {
   final bool loading;
   final bool connected;
   final String? error;
+  final String? nextUrl;
+  final bool hasReachedMax;
 
   const NotificationsState({
     this.items = const [],
@@ -59,6 +63,8 @@ class NotificationsState extends Equatable {
     this.loading = false,
     this.connected = false,
     this.error,
+    this.nextUrl,
+    this.hasReachedMax = false,
   });
 
   NotificationsState copyWith({
@@ -67,6 +73,8 @@ class NotificationsState extends Equatable {
     bool? loading,
     bool? connected,
     String? error,
+    String? nextUrl,
+    bool? hasReachedMax,
   }) {
     return NotificationsState(
       items: items ?? this.items,
@@ -74,11 +82,13 @@ class NotificationsState extends Equatable {
       loading: loading ?? this.loading,
       connected: connected ?? this.connected,
       error: error,
+      nextUrl: nextUrl ?? this.nextUrl,
+      hasReachedMax: hasReachedMax ?? this.hasReachedMax,
     );
   }
 
   @override
-  List<Object?> get props => [items, unreadCount, loading, connected, error];
+  List<Object?> get props => [items, unreadCount, loading, connected, error, nextUrl, hasReachedMax];
 }
 
 class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
@@ -89,6 +99,7 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   NotificationsBloc(this.repository) : super(const NotificationsState()) {
     on<NotificationsInitialized>(_onInitialized);
     on<NotificationsLoadRequested>(_onLoadRequested);
+    on<NotificationsLoadMoreRequested>(_onLoadMoreRequested);
     on<NotificationsErrorCleared>(_onErrorCleared);
     on<NotificationsMarkRead>(_onMarkRead);
     on<NotificationsDisconnect>(_onDisconnect);
@@ -121,9 +132,40 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
   Future<void> _loadList(Emitter<NotificationsState> emit) async {
     emit(state.copyWith(loading: true, error: null));
     try {
-      final items = await repository.fetchNotifications();
+      final res = await repository.fetchNotifications();
+      final items = res.results;
       final unread = items.where((n) => !n.read).length;
-      emit(state.copyWith(items: items, unreadCount: unread, loading: false));
+      emit(state.copyWith(
+        items: items, 
+        unreadCount: unread, 
+        loading: false,
+        nextUrl: res.next,
+        hasReachedMax: res.next == null,
+      ));
+    } catch (e) {
+      emit(state.copyWith(error: e.toString(), loading: false));
+    }
+  }
+
+  Future<void> _onLoadMoreRequested(
+    NotificationsLoadMoreRequested event,
+    Emitter<NotificationsState> emit,
+  ) async {
+    if (state.hasReachedMax || state.loading || state.nextUrl == null) return;
+    
+    emit(state.copyWith(loading: true, error: null));
+    try {
+      final res = await repository.fetchNotifications(url: state.nextUrl);
+      final newItems = List<NotificationItem>.from(state.items)..addAll(res.results);
+      final unread = newItems.where((n) => !n.read).length;
+      
+      emit(state.copyWith(
+        items: newItems,
+        unreadCount: unread,
+        loading: false,
+        nextUrl: res.next,
+        hasReachedMax: res.next == null,
+      ));
     } catch (e) {
       emit(state.copyWith(error: e.toString(), loading: false));
     }
@@ -224,6 +266,8 @@ class NotificationsBloc extends Bloc<NotificationsEvent, NotificationsState> {
         unreadCount: 0,
         loading: false,
         connected: false,
+        nextUrl: null,
+        hasReachedMax: false,
       ),
     );
   }

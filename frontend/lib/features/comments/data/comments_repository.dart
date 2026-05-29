@@ -1,22 +1,25 @@
 import 'package:frontend/core/network/api_client.dart';
 import '../models/comment.dart';
 
+import '../../../core/network/paginated_response.dart';
+
 class CommentsRepository {
   final ApiClient api;
 
   CommentsRepository(this.api);
 
-  Future<List<Comment>> fetchTopLevelComments(String photoId) async {
-    final res = await api.get<List<dynamic>>('/photos/$photoId/comments/');
-    final data = res.data ?? [];
-    print(data);
-    return data.map((e) => Comment.fromMap(e as Map<String, dynamic>)).toList();
+  Future<PaginatedResponse<Comment>> fetchTopLevelComments(String photoId, {String? url}) async {
+    final targetUrl = url ?? '/photos/$photoId/comments/';
+    final res = await api.get<Map<String, dynamic>>(targetUrl);
+    final data = res.data ?? <String, dynamic>{};
+    return PaginatedResponse.fromMap(data, Comment.fromMap);
   }
 
   Future<List<Comment>> fetchReplies(String photoId, String parentId) async {
-    final res = await api.get<List<dynamic>>('/comments/$parentId/children/');
-    final data = res.data ?? [];
-    return data.map((e) => Comment.fromMap(e as Map<String, dynamic>)).toList();
+    final res = await api.get<Map<String, dynamic>>('/comments/$parentId/children/');
+    final data = res.data ?? <String, dynamic>{};
+    final page = PaginatedResponse.fromMap(data, Comment.fromMap);
+    return page.results;
   }
 
   Future<Comment> sendComment(

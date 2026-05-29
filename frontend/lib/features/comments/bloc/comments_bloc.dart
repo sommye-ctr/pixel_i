@@ -18,6 +18,13 @@ class CommentsLoadRequested extends CommentsEvent {
   List<Object?> get props => [photoId];
 }
 
+class CommentsLoadMoreRequested extends CommentsEvent {
+  final String photoId;
+  const CommentsLoadMoreRequested(this.photoId);
+  @override
+  List<Object?> get props => [photoId];
+}
+
 class CommentRepliesLoadRequested extends CommentsEvent {
   final String photoId;
   final String parentId;
@@ -44,6 +51,8 @@ class CommentsState extends Equatable {
   final bool loading;
   final Map<String, bool> loadingReplies;
   final String? error;
+  final String? nextUrl;
+  final bool hasReachedMax;
 
   const CommentsState({
     this.comments = const [],
@@ -51,6 +60,8 @@ class CommentsState extends Equatable {
     this.loading = false,
     this.loadingReplies = const {},
     this.error,
+    this.nextUrl,
+    this.hasReachedMax = false,
   });
 
   CommentsState copyWith({
@@ -59,6 +70,8 @@ class CommentsState extends Equatable {
     bool? loading,
     Map<String, bool>? loadingReplies,
     String? error,
+    String? nextUrl,
+    bool? hasReachedMax,
   }) {
     return CommentsState(
       comments: comments ?? this.comments,
@@ -66,6 +79,8 @@ class CommentsState extends Equatable {
       loading: loading ?? this.loading,
       loadingReplies: loadingReplies ?? this.loadingReplies,
       error: error,
+      nextUrl: nextUrl ?? this.nextUrl,
+      hasReachedMax: hasReachedMax ?? this.hasReachedMax,
     );
   }
 
@@ -76,6 +91,8 @@ class CommentsState extends Equatable {
     loading,
     loadingReplies,
     error,
+    nextUrl,
+    hasReachedMax,
   ];
 }
 
@@ -84,6 +101,7 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
 
   CommentsBloc(this.repository) : super(const CommentsState()) {
     on<CommentsLoadRequested>(_onLoadRequested);
+    on<CommentsLoadMoreRequested>(_onLoadMoreRequested);
     on<CommentRepliesLoadRequested>(_onRepliesRequested);
     on<SendCommentRequested>(_onSendRequested);
   }
@@ -94,8 +112,37 @@ class CommentsBloc extends Bloc<CommentsEvent, CommentsState> {
   ) async {
     emit(state.copyWith(loading: true, error: null));
     try {
-      final list = await repository.fetchTopLevelComments(event.photoId);
-      emit(state.copyWith(comments: list, loading: false));
+      final page = await repository.fetchTopLevelComments(event.photoId);
+      emit(state.copyWith(
+        comments: page.results,
+        loading: false,
+        nextUrl: page.next,
+        hasReachedMax: page.next == null,
+      ));
+    } catch (e) {
+      emit(state.copyWith(error: e.toString(), loading: false));
+    }
+  }
+
+  Future<void> _onLoadMoreRequested(
+    CommentsLoadMoreRequested event,
+    Emitter<CommentsState> emit,
+  ) async {
+    if (state.hasReachedMax || state.loading || state.nextUrl == null) return;
+
+    emit(state.copyWith(loading: true, error: null));
+    try {
+      final page = await repository.fetchTopLevelComments(
+        event.photoId,
+        url: state.nextUrl,
+      );
+      final newList = List<Comment>.from(state.comments)..addAll(page.results);
+      emit(state.copyWith(
+        comments: newList,
+        loading: false,
+        nextUrl: page.next,
+        hasReachedMax: page.next == null,
+      ));
     } catch (e) {
       emit(state.copyWith(error: e.toString(), loading: false));
     }

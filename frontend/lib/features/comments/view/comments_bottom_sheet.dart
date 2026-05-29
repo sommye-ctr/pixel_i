@@ -208,25 +208,42 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                       }
 
                       final comments = state.comments;
-                      return ListView.builder(
-                        controller: scrollController,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: defaultSpacing,
-                          vertical: defaultSpacing,
-                        ),
-                        itemCount: comments.length,
-                        itemBuilder: (context, index) {
-                          final c = comments[index];
-                          final replies = state.replies[c.id];
-                          final isLoadingReplies =
-                              state.loadingReplies[c.id] ?? false;
-                          return _buildcommentItem(
-                            context,
-                            c,
-                            replies,
-                            isLoadingReplies,
-                          );
+                      return NotificationListener<ScrollNotification>(
+                        onNotification: (scrollInfo) {
+                          if (scrollInfo.metrics.pixels >=
+                              scrollInfo.metrics.maxScrollExtent - 200) {
+                            context.read<CommentsBloc>().add(
+                                  CommentsLoadMoreRequested(widget.photoId),
+                                );
+                          }
+                          return false;
                         },
+                        child: ListView.builder(
+                          controller: scrollController,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: defaultSpacing,
+                            vertical: defaultSpacing,
+                          ),
+                          itemCount: comments.length + (state.hasReachedMax ? 0 : 1),
+                          itemBuilder: (context, index) {
+                            if (index >= comments.length) {
+                              return const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Center(child: CircularProgressIndicator()),
+                              );
+                            }
+                            final c = comments[index];
+                            final replies = state.replies[c.id];
+                            final isLoadingReplies =
+                                state.loadingReplies[c.id] ?? false;
+                            return _buildcommentItem(
+                              context,
+                              c,
+                              replies,
+                              isLoadingReplies,
+                            );
+                          },
+                        ),
                       );
                     },
                   ),

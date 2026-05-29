@@ -6,6 +6,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../../../core/config.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/token_storage.dart';
+import '../../../core/network/paginated_response.dart';
 import '../models/notification_item.dart';
 
 class NotificationsRepository {
@@ -14,13 +15,11 @@ class NotificationsRepository {
 
   NotificationsRepository(this.api, this.tokenStorage);
 
-  Future<List<NotificationItem>> fetchNotifications() async {
-    final res = await api.get<List<dynamic>>('/notifications/');
-    final data = res.data ?? const [];
-    return data
-        .whereType<Map<String, dynamic>>()
-        .map((m) => NotificationItem.fromMap(m))
-        .toList();
+  Future<PaginatedResponse<NotificationItem>> fetchNotifications({String? url}) async {
+    final targetUrl = url ?? '/notifications/';
+    final res = await api.get<Map<String, dynamic>>(targetUrl);
+    final data = res.data ?? <String, dynamic>{};
+    return PaginatedResponse.fromMap(data, NotificationItem.fromMap);
   }
 
   Future<NotificationItem?> markAsRead(String id) async {

@@ -18,13 +18,29 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsViewState extends State<NotificationsScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback(
       (_) =>
           context.read<NotificationsBloc>().add(NotificationsLoadRequested()),
     );
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<NotificationsBloc>().add(NotificationsLoadMoreRequested());
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -51,8 +67,15 @@ class _NotificationsViewState extends State<NotificationsScreen> {
               return const Center(child: Text('No notifications yet.'));
             }
             return ListView.builder(
-              itemCount: state.items.length,
+              controller: _scrollController,
+              itemCount: state.items.length + (state.hasReachedMax ? 0 : 1),
               itemBuilder: (context, index) {
+                if (index >= state.items.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
                 final n = state.items[index];
                 return _NotificationTile(
                   item: n,

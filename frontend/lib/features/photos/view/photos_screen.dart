@@ -24,13 +24,28 @@ class PhotosScreen extends StatefulWidget {
 
 class _PhotosScreenState extends State<PhotosScreen> {
   bool _isGrid = true;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<PhotosBloc>().add(PhotosRequested());
     });
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<PhotosBloc>().add(PhotosLoadMoreRequested());
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Map<String, List<Photo>> _groupByMonthYear(List<Photo> photos) {
@@ -158,9 +173,16 @@ class _PhotosScreenState extends State<PhotosScreen> {
           showingFavorites = state.showingFavorites;
           final groups = _groupByMonthYear(state.photos);
           body = ListView.builder(
+            controller: _scrollController,
             padding: const EdgeInsets.all(12),
-            itemCount: groups.keys.length,
+            itemCount: groups.keys.length + (state.isLoadingMore ? 1 : 0),
             itemBuilder: (context, index) {
+              if (index >= groups.keys.length) {
+                return const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
               final key = groups.keys.elementAt(index);
               final items = groups[key]!;
               return Column(

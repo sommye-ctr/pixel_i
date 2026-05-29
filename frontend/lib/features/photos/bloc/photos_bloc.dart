@@ -11,6 +11,7 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
 
   PhotosBloc(this.repository) : super(PhotosInitial()) {
     on<PhotosRequested>(_onRequested);
+    on<PhotosLoadMoreRequested>(_onLoadMoreRequested);
     on<PhotosFavoritesToggled>(_onFavoritesToggled);
     on<PhotosUpdated>(_onPhotosUpdated);
   }
@@ -21,12 +22,47 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
   ) async {
     emit(PhotosLoadInProgress());
     try {
-      final photos = await repository.fetchPhotos();
-      photos.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      final page = await repository.fetchPhotos();
       final filtered = _filteredPhotos();
-      emit(PhotosLoadSuccess(filtered, showingFavorites: _showFavorites));
+      emit(
+        PhotosLoadSuccess(
+          filtered,
+          showingFavorites: _showFavorites,
+          nextUrl: page.next,
+          hasReachedMax: page.next == null,
+        ),
+      );
     } catch (e) {
       emit(PhotosLoadFailure(e.toString()));
+    }
+  }
+
+  Future<void> _onLoadMoreRequested(
+    PhotosLoadMoreRequested event,
+    Emitter<PhotosState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is PhotosLoadSuccess) {
+      if (currentState.hasReachedMax ||
+          currentState.isLoadingMore ||
+          currentState.nextUrl == null)
+        return;
+
+      emit(currentState.copyWith(isLoadingMore: true));
+      try {
+        final page = await repository.fetchPhotos(url: currentState.nextUrl);
+        final filtered = _filteredPhotos();
+        emit(
+          currentState.copyWith(
+            photos: filtered,
+            isLoadingMore: false,
+            nextUrl: page.next,
+            hasReachedMax: page.next == null,
+          ),
+        );
+      } catch (e) {
+        emit(currentState.copyWith(isLoadingMore: false));
+      }
     }
   }
 
@@ -36,7 +72,17 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
   ) async {
     _showFavorites = !_showFavorites;
     final filtered = _filteredPhotos();
-    emit(PhotosLoadSuccess(filtered, showingFavorites: _showFavorites));
+    final currentState = state;
+    if (currentState is PhotosLoadSuccess) {
+      emit(
+        currentState.copyWith(
+          photos: filtered,
+          showingFavorites: _showFavorites,
+        ),
+      );
+    } else {
+      emit(PhotosLoadSuccess(filtered, showingFavorites: _showFavorites));
+    }
   }
 
   Future<void> _onPhotosUpdated(
@@ -44,7 +90,12 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
     Emitter<PhotosState> emit,
   ) async {
     final filtered = _filteredPhotos();
-    emit(PhotosLoadSuccess(filtered, showingFavorites: _showFavorites));
+    final currentState = state;
+    if (currentState is PhotosLoadSuccess) {
+      emit(currentState.copyWith(photos: filtered));
+    } else {
+      emit(PhotosLoadSuccess(filtered, showingFavorites: _showFavorites));
+    }
   }
 
   List<Photo> _filteredPhotos() {

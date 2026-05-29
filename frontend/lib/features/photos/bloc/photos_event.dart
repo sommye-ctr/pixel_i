@@ -12,3 +12,5 @@ class PhotosRequested extends PhotosEvent {}
 class PhotosFavoritesToggled extends PhotosEvent {}
 
 class PhotosUpdated extends PhotosEvent {}
+
+class PhotosLoadMoreRequested extends PhotosEvent {}

@@ -8,6 +8,7 @@ import '../models/photo.dart';
 import '../models/photo_bulk_upload_result.dart';
 import '../models/photo_upload_metadata.dart';
 import '../models/photo_share_response.dart';
+import '../../../core/network/paginated_response.dart';
 
 class PhotosRepository {
   final ApiClient api;
@@ -38,13 +39,19 @@ class PhotosRepository {
     }
   }
 
-  Future<List<Photo>> fetchPhotos() async {
-    final res = await api.get<List<dynamic>>('/photos/');
-    final data = res.data ?? [];
-    _cachedPhotos = data
-        .map((e) => Photo.fromMap(e as Map<String, dynamic>))
-        .toList();
-    return _cachedPhotos!;
+  Future<PaginatedResponse<Photo>> fetchPhotos({String? url}) async {
+    final targetUrl = url ?? '/photos/';
+    final res = await api.get<Map<String, dynamic>>(targetUrl);
+    final data = res.data ?? <String, dynamic>{};
+    final page = PaginatedResponse.fromMap(data, Photo.fromMap);
+
+    if (url == null) {
+      _cachedPhotos = List.from(page.results);
+    } else {
+      _cachedPhotos ??= <Photo>[];
+      _cachedPhotos!.addAll(page.results);
+    }
+    return page;
   }
 
   Future<Photo> fetchPhotoById(String id) async {

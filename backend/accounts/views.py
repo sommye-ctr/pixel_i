@@ -8,8 +8,13 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from accounts.errors import OTPDeliveryError
 from accounts.models import CustomUser, EmailOTP
-from accounts.serializers import SignupSerializer, SearchUserSerializer, EmailVerifySerializer, \
-    ResendEmailOTPSerializer, UserSerializer
+from accounts.serializers import (
+    SignupSerializer,
+    SearchUserSerializer,
+    EmailVerifySerializer,
+    ResendEmailOTPSerializer,
+    UserSerializer,
+)
 from accounts.services import send_otp_email
 from utils.auth_utils import get_otp_ttl
 
@@ -62,7 +67,11 @@ class EmailVerifyView(generics.CreateAPIView):
         access = refresh.access_token
 
         return Response(
-            {"access": str(access), "refresh": str(refresh), "detail": "Email Verified successfully"},
+            {
+                "access": str(access),
+                "refresh": str(refresh),
+                "detail": "Email Verified successfully",
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -86,17 +95,11 @@ class SearchUserView(generics.ListAPIView):
     serializer_class = SearchUserSerializer
 
     def get_queryset(self):
-        q = self.request.query_params.get('q', '').strip()
-        limit = self.request.query_params.get('l', '').strip()
+        q = self.request.query_params.get("q", "").strip()
 
         if not q:
             return CustomUser.objects.none()
-        try:
-            limit = int(limit) if limit else 20
-        except ValueError:
-            limit = 20
 
         return CustomUser.objects.filter(
-            Q(username__istartswith=q) |
-            Q(name__istartswith=q)
-        )[:limit]
+            Q(username__istartswith=q) | Q(name__istartswith=q)
+        )

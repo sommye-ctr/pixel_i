@@ -214,12 +214,10 @@ class PhotoSearchView(generics.ListAPIView):
         search_service = PhotoSearchService(base_qs)
         filtered_qs = search_service.search(**serializer.validated_data)
 
-        count = filtered_qs.count()
+        page = self.paginate_queryset(filtered_qs)
+        if page is not None:
+            serialized = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serialized.data)
 
         serialized = self.get_serializer(filtered_qs, many=True)
-        response_data = {
-            'count': count,
-            'results': serialized.data,
-        }
-
-        return Response(response_data)
+        return Response(serialized.data)

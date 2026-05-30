@@ -160,13 +160,11 @@ class PhotosRepository {
     throw Exception('Failed to share photo');
   }
 
-  Future<List<Photo>> fetchTaggedInPhotos() async {
-    final res = await api.get<List<dynamic>>('/photos/photos-tagged-in/');
-    final data = res.data ?? [];
-    final photos = data
-        .map((e) => Photo.fromMap(e as Map<String, dynamic>))
-        .toList();
-    return photos;
+  Future<PaginatedResponse<Photo>> fetchTaggedInPhotos({String? url}) async {
+    final targetUrl = url ?? '/photos/photos-tagged-in/';
+    final res = await api.get<Map<String, dynamic>>(targetUrl);
+    final data = res.data ?? <String, dynamic>{};
+    return PaginatedResponse.fromMap(data, Photo.fromMap);
   }
 
   Future<void> deletePhoto(String id) async {

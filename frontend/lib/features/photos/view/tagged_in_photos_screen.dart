@@ -19,12 +19,82 @@ class TaggedInPhotosScreen extends StatefulWidget {
 }
 
 class _TaggedInPhotosScreenState extends State<TaggedInPhotosScreen> {
-  late Future<List<Photo>> _photosFuture;
+  bool _loading = true;
+  String? _error;
+  List<Photo> _photos = [];
+  
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadingMore = false;
+  bool _hasReachedMax = false;
+  String? _nextUrl;
 
   @override
   void initState() {
     super.initState();
-    _photosFuture = widget.photosRepository.fetchTaggedInPhotos();
+    _scrollController.addListener(_onScroll);
+    _loadPhotos();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMorePhotos();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadPhotos() async {
+    try {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+      final page = await widget.photosRepository.fetchTaggedInPhotos();
+      if (mounted) {
+        setState(() {
+          _photos = page.results;
+          _nextUrl = page.next;
+          _hasReachedMax = page.next == null;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadMorePhotos() async {
+    if (_hasReachedMax || _isLoadingMore || _nextUrl == null) return;
+    setState(() {
+      _isLoadingMore = true;
+    });
+    try {
+      final page = await widget.photosRepository.fetchTaggedInPhotos(url: _nextUrl);
+      if (mounted) {
+        setState(() {
+          _photos.addAll(page.results);
+          _nextUrl = page.next;
+          _hasReachedMax = page.next == null;
+          _isLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+      }
+    }
   }
 
   void _openPhoto(Photo photo) {
@@ -73,65 +143,63 @@ class _TaggedInPhotosScreenState extends State<TaggedInPhotosScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Widget body;
+    if (_loading) {
+      body = const Center(child: CircularProgressIndicator());
+    } else if (_error != null) {
+      body = Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('$photosTaggedInFailedPrefix$_error'),
+            const SizedBox(height: defaultSpacing),
+            ElevatedButton.icon(
+              onPressed: _loadPhotos,
+              icon: const Icon(LucideIcons.refreshCw),
+              label: const Text(photosRetry),
+            ),
+          ],
+        ),
+      );
+    } else if (_photos.isEmpty) {
+      body = Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              LucideIcons.image,
+              color: Theme.of(context).colorScheme.outline,
+            ),
+            const SizedBox(height: largeSpacing),
+            Text(
+              photosTaggedInEmpty,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      body = ListView(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(defaultSpacing),
+        children: [
+          _buildPhotoMasonry(_photos),
+          if (_isLoadingMore)
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+        ],
+      );
+    }
+
     return Scaffold(
-      body: FutureBuilder<List<Photo>>(
-        future: _photosFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('$photosTaggedInFailedPrefix${snapshot.error}'),
-                  const SizedBox(height: defaultSpacing),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _photosFuture = widget.photosRepository
-                            .fetchTaggedInPhotos();
-                      });
-                    },
-                    icon: const Icon(LucideIcons.refreshCw),
-                    label: const Text(photosRetry),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final photos = snapshot.data ?? [];
-
-          if (photos.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    LucideIcons.image,
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                  const SizedBox(height: largeSpacing),
-                  Text(
-                    photosTaggedInEmpty,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView(
-            padding: const EdgeInsets.all(defaultSpacing),
-            children: [_buildPhotoMasonry(photos)],
-          );
-        },
+      appBar: AppBar(
+        title: const Text(photosTaggedIn),
       ),
+      body: body,
     );
   }
 }

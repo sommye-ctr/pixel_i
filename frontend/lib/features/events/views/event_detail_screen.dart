@@ -41,6 +41,11 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   bool _loading = true;
   String? _error;
   List<Photo> _photos = [];
+  
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadingMore = false;
+  bool _hasReachedMax = false;
+  String? _nextUrl;
 
   int get _displayFileCount => widget.fileCount ?? _photos.length;
 
@@ -135,7 +140,21 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _loadPhotos();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMorePhotos();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadPhotos() async {
@@ -146,16 +165,39 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
       });
 
       final repository = context.read<EventsRepository>();
-      final photos = await repository.fetchEventPhotos(widget.eventId);
+      final page = await repository.fetchEventPhotos(widget.eventId);
 
       setState(() {
-        _photos = photos;
+        _photos = page.results;
+        _nextUrl = page.next;
+        _hasReachedMax = page.next == null;
         _loading = false;
       });
     } catch (e) {
       setState(() {
         _error = e.toString();
         _loading = false;
+      });
+    }
+  }
+
+  Future<void> _loadMorePhotos() async {
+    if (_hasReachedMax || _isLoadingMore || _nextUrl == null) return;
+    setState(() {
+      _isLoadingMore = true;
+    });
+    try {
+      final repository = context.read<EventsRepository>();
+      final page = await repository.fetchEventPhotos(widget.eventId, url: _nextUrl);
+      setState(() {
+        _photos.addAll(page.results);
+        _nextUrl = page.next;
+        _hasReachedMax = page.next == null;
+        _isLoadingMore = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingMore = false;
       });
     }
   }
@@ -302,6 +344,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
       );
     } else {
       body = SingleChildScrollView(
+        controller: _scrollController,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -326,6 +369,11 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   itemCount: _photos.length,
                   itemBuilder: (context, index) => _buildTile(_photos[index]),
                 ),
+              ),
+            if (_isLoadingMore)
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(child: CircularProgressIndicator()),
               ),
           ],
         ),

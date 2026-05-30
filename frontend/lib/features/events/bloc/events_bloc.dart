@@ -14,6 +14,7 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
     on<EventsRequested>(_onRequested);
     on<MyEventsRequested>(_onMyEventsRequested);
     on<EventsRefreshed>(_onRefreshed);
+    on<EventsLoadMoreRequested>(_onLoadMoreRequested);
   }
 
   Future<void> _onRequested(
@@ -22,8 +23,13 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
   ) async {
     emit(EventsLoadInProgress(showOnlyMyEvents: this.state.showOnlyMyEvents));
     try {
-      final List<Event> events = await repository.fetchEvents();
-      emit(EventsLoadSuccess(events, showOnlyMyEvents: false));
+      final page = await repository.fetchEvents();
+      emit(EventsLoadSuccess(
+        page.results, 
+        showOnlyMyEvents: false,
+        nextUrl: page.next,
+        hasReachedMax: page.next == null,
+      ));
     } catch (e) {
       emit(EventsLoadFailure(e.toString(), showOnlyMyEvents: false));
     }
@@ -42,13 +48,18 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
         return;
       }
 
-      final List<Event> events = await repository.fetchEvents();
+      final page = await repository.fetchEvents();
 
-      final myEvents = events
+      final myEvents = page.results
           .where((event) => event.coordinator.id == currentUser.id)
           .toList();
 
-      emit(EventsLoadSuccess(myEvents, showOnlyMyEvents: true));
+      emit(EventsLoadSuccess(
+        myEvents, 
+        showOnlyMyEvents: true,
+        nextUrl: page.next,
+        hasReachedMax: page.next == null,
+      ));
     } catch (e) {
       emit(EventsLoadFailure(e.toString(), showOnlyMyEvents: true));
     }
@@ -69,6 +80,41 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
         emit(EventsLoadSuccess(myEvents, showOnlyMyEvents: true));
       } else {
         emit(EventsLoadSuccess(cachedEvents, showOnlyMyEvents: false));
+      }
+    }
+  }
+
+  Future<void> _onLoadMoreRequested(
+    EventsLoadMoreRequested event,
+    Emitter<EventsState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is EventsLoadSuccess) {
+      if (currentState.hasReachedMax || currentState.isLoadingMore || currentState.nextUrl == null) {
+        return;
+      }
+
+      emit(currentState.copyWith(isLoadingMore: true));
+      try {
+        final page = await repository.fetchEvents(url: currentState.nextUrl);
+        final isMyEvents = currentState.showOnlyMyEvents;
+        
+        List<Event> newEvents = page.results;
+        if (isMyEvents) {
+           final currentUser = authRepository.currentUser;
+           if (currentUser != null) {
+              newEvents = newEvents.where((e) => e.coordinator.id == currentUser.id).toList();
+           }
+        }
+        
+        emit(currentState.copyWith(
+          events: List.of(currentState.events)..addAll(newEvents),
+          isLoadingMore: false,
+          nextUrl: page.next,
+          hasReachedMax: page.next == null,
+        ));
+      } catch (e) {
+        emit(currentState.copyWith(isLoadingMore: false));
       }
     }
   }

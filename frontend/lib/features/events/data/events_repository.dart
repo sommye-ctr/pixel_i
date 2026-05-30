@@ -1,6 +1,7 @@
 import 'package:frontend/core/network/api_client.dart';
 import 'package:frontend/features/events/models/event.dart';
 import 'package:frontend/features/photos/models/photo.dart';
+import 'package:frontend/core/network/paginated_response.dart';
 
 class EventsRepository {
   final ApiClient apiClient;
@@ -10,13 +11,18 @@ class EventsRepository {
 
   List<Event>? get cachedEvents => _cachedEvents;
 
-  Future<List<Event>> fetchEvents() async {
-    final res = await apiClient.get<List<dynamic>>('/events/');
-    final data = res.data ?? [];
-    _cachedEvents = data
-        .map((e) => Event.fromMap(e as Map<String, dynamic>))
-        .toList();
-    return _cachedEvents!;
+  Future<PaginatedResponse<Event>> fetchEvents({String? url}) async {
+    final targetUrl = url ?? '/events/';
+    final res = await apiClient.get<Map<String, dynamic>>(targetUrl);
+    final data = res.data ?? <String, dynamic>{};
+    final page = PaginatedResponse.fromMap(data, Event.fromMap);
+    if (url == null) {
+      _cachedEvents = List.from(page.results);
+    } else {
+      _cachedEvents ??= <Event>[];
+      _cachedEvents!.addAll(page.results);
+    }
+    return page;
   }
 
   Event? getEventFromCache(String eventId) {
@@ -47,16 +53,15 @@ class EventsRepository {
     return newEvent;
   }
 
-  Future<List<Photo>> fetchEventPhotos(String eventId) async {
-    final res = await apiClient.get<List<dynamic>>('/events/$eventId/photos/');
-    final data = res.data ?? [];
-    final photos = data
-        .map((e) => Photo.fromMap(e as Map<String, dynamic>))
-        .toList();
+  Future<PaginatedResponse<Photo>> fetchEventPhotos(String eventId, {String? url}) async {
+    final targetUrl = url ?? '/events/$eventId/photos/';
+    final res = await apiClient.get<Map<String, dynamic>>(targetUrl);
+    final data = res.data ?? <String, dynamic>{};
+    final page = PaginatedResponse.fromMap(data, Photo.fromMap);
 
-    updateEventPhotosInCache(eventId, photos);
+    updateEventPhotosInCache(eventId, page.results);
 
-    return photos;
+    return page;
   }
 
   void updateEventInCache(Event updatedEvent) {

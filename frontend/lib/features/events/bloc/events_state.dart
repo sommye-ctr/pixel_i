@@ -20,11 +20,36 @@ class EventsLoadInProgress extends EventsState {
 
 class EventsLoadSuccess extends EventsState {
   final List<Event> events;
+  final String? nextUrl;
+  final bool hasReachedMax;
+  final bool isLoadingMore;
 
-  const EventsLoadSuccess(this.events, {super.showOnlyMyEvents = false});
+  const EventsLoadSuccess(
+    this.events, {
+    super.showOnlyMyEvents = false,
+    this.nextUrl,
+    this.hasReachedMax = false,
+    this.isLoadingMore = false,
+  });
+
+  EventsLoadSuccess copyWith({
+    List<Event>? events,
+    bool? showOnlyMyEvents,
+    String? nextUrl,
+    bool? hasReachedMax,
+    bool? isLoadingMore,
+  }) {
+    return EventsLoadSuccess(
+      events ?? this.events,
+      showOnlyMyEvents: showOnlyMyEvents ?? this.showOnlyMyEvents,
+      nextUrl: nextUrl ?? this.nextUrl,
+      hasReachedMax: hasReachedMax ?? this.hasReachedMax,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    );
+  }
 
   @override
-  List<Object?> get props => [events, showOnlyMyEvents];
+  List<Object?> get props => [events, showOnlyMyEvents, nextUrl, hasReachedMax, isLoadingMore];
 }
 
 class EventsLoadFailure extends EventsState {

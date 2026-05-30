@@ -19,12 +19,28 @@ class EventsScreen extends StatefulWidget {
 }
 
 class _EventsScreenState extends State<EventsScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<EventsBloc>().add(EventsRequested());
     });
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      context.read<EventsBloc>().add(const EventsLoadMoreRequested());
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -45,11 +61,18 @@ class _EventsScreenState extends State<EventsScreen> {
             body = Padding(
               padding: const EdgeInsets.all(defaultSpacing),
               child: MasonryGridView.count(
+                controller: _scrollController,
                 crossAxisCount: 2,
                 mainAxisSpacing: defaultSpacing,
                 crossAxisSpacing: defaultSpacing,
-                itemCount: events.length,
+                itemCount: events.length + (state.isLoadingMore ? 1 : 0),
                 itemBuilder: (context, index) {
+                  if (index >= events.length) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
                   return EventCard(
                     event: events[index],
                     onTap: () {

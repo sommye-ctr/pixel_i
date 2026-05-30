@@ -45,8 +45,9 @@ class PhotosBloc extends Bloc<PhotosEvent, PhotosState> {
     if (currentState is PhotosLoadSuccess) {
       if (currentState.hasReachedMax ||
           currentState.isLoadingMore ||
-          currentState.nextUrl == null)
+          currentState.nextUrl == null) {
         return;
+      }
 
       emit(currentState.copyWith(isLoadingMore: true));
       try {

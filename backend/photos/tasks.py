@@ -45,8 +45,9 @@ def process_photo_task(photo_id):
 
     try:
         original_img.seek(0)
-        tags = generate_auto_tag_photo(original_img)
+        tags, embedding = generate_auto_tag_photo(original_img)
         photo.auto_tags = tags
+        photo.clip_embedding = embedding
         logger.info(f"Photo {photo_id}: Successfully generated auto tags")
     except Exception as e:
         logger.error(f"Photo {photo_id}: Failed to generate auto tags - {str(e)}")
@@ -76,6 +77,7 @@ def process_photo_task(photo_id):
         "watermarked_url",
         "thumbnail_url",
         "auto_tags",
+        "clip_embedding",
         "width",
         "height",
         "meta",

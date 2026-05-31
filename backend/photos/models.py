@@ -30,6 +30,7 @@ class Photo(models.Model):
     timestamp = models.DateTimeField(default=timezone.now)
     auto_tags = models.JSONField(default=list)
     user_tags = models.JSONField(default=list)
+    clip_embedding = models.JSONField(null=True, blank=True)
     meta = models.JSONField(default=dict)
     status = models.CharField(choices=PhotoStatus, default=PhotoStatus.PENDING)
     processing_errors = models.JSONField(default=dict, blank=True)

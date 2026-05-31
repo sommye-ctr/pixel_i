@@ -156,9 +156,11 @@ def generate_auto_tag_photo(image_bytes: BytesIO):
     scores = similarity[0].cpu().tolist()
     ranked = sorted(((CLIP_TAGS[i], score) for i, score in enumerate(scores)), key=lambda x: x[1], reverse=True)
     top_tags = [tag for tag, _ in ranked[:10]]
+    
+    embedding_list = image_features[0].cpu().tolist()
 
     logger.info("Generated %d auto tags (top scores)", len(top_tags))
-    return top_tags
+    return top_tags, embedding_list
 
 
 def create_photo_tags(photo, usernames, actor):

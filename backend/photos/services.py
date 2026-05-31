@@ -36,6 +36,7 @@ class PhotoSearchService:
             photographer_name: str = None,
             tags: list = None,
             read_perm: str = None,
+            semantic_query: str = None,
     ) -> QuerySet:
         qs = self.queryset
 
@@ -75,6 +76,40 @@ class PhotoSearchService:
             qs = qs.filter(read_perm=read_perm)
 
         final_qs = qs.distinct()
+
+        if semantic_query:
+            import clip
+            import torch
+            import numpy as np
+            from django.db.models import Case, When
+
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            model, _ = clip.load("ViT-B/32", device=device)
+            tokens = clip.tokenize([semantic_query]).to(device)
+
+            with torch.no_grad():
+                text_features = model.encode_text(tokens)
+                text_features = text_features / text_features.norm(dim=-1, keepdim=True)
+            text_vec = text_features[0].cpu().numpy()
+
+            final_qs = final_qs.filter(clip_embedding__isnull=False)
+            
+            photo_scores = []
+            # Optimization: Fetch ONLY the id and embedding instead of the entire Photo model
+            for photo_id, embedding in final_qs.values_list('id', 'clip_embedding'):
+                img_vec = np.array(embedding)
+                score = np.dot(text_vec, img_vec)
+                photo_scores.append((photo_id, score))
+            
+            photo_scores.sort(key=lambda x: x[1], reverse=True)
+            sorted_ids = [ps[0] for ps in photo_scores]
+            
+            if sorted_ids:
+                preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(sorted_ids)])
+                final_qs = Photo.objects.filter(pk__in=sorted_ids).order_by(preserved)
+            else:
+                final_qs = Photo.objects.none()
+
         return final_qs
 
     def search_combined(self, filters: dict) -> QuerySet:

@@ -315,6 +315,10 @@ class PhotoSearchSerializer(serializers.Serializer):
         allow_blank=True,
         choices=ReadPerm
     )
+    semantic_query = serializers.CharField(
+        required=False,
+        allow_blank=True
+    )
 
     def validate_date_from(self, value):
         if value and value > timezone.now():

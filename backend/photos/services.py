@@ -95,11 +95,12 @@ class PhotoSearchService:
             final_qs = final_qs.filter(clip_embedding__isnull=False)
             
             photo_scores = []
-            # Optimization: Fetch ONLY the id and embedding instead of the entire Photo model
+            SIMILARITY_THRESHOLD = 0.22
             for photo_id, embedding in final_qs.values_list('id', 'clip_embedding'):
                 img_vec = np.array(embedding)
                 score = np.dot(text_vec, img_vec)
-                photo_scores.append((photo_id, score))
+                if score >= SIMILARITY_THRESHOLD:
+                    photo_scores.append((photo_id, score))
             
             photo_scores.sort(key=lambda x: x[1], reverse=True)
             sorted_ids = [ps[0] for ps in photo_scores]

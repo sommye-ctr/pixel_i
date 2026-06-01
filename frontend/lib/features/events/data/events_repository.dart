@@ -53,6 +53,38 @@ class EventsRepository {
     return newEvent;
   }
 
+  Future<Event> updateEvent({
+    required String eventId,
+    String? title,
+    String? readPerm,
+    String? writePerm,
+  }) async {
+    final data = <String, dynamic>{};
+    if (title != null) data['title'] = title;
+    if (readPerm != null) data['read_perm'] = readPerm;
+    if (writePerm != null) data['write_perm'] = writePerm;
+
+    final res = await apiClient.patch<Map<String, dynamic>>(
+      '/events/$eventId/',
+      data: data,
+    );
+    
+    final updatedData = res.data ?? {};
+    final updatedEvent = Event.fromMap(updatedData);
+
+    updateEventInCache(updatedEvent);
+
+    return updatedEvent;
+  }
+
+  Future<void> deleteEvent(String eventId) async {
+    await apiClient.delete<dynamic>('/events/$eventId/');
+    
+    if (_cachedEvents != null) {
+      _cachedEvents!.removeWhere((e) => e.id == eventId);
+    }
+  }
+
   Future<PaginatedResponse<Photo>> fetchEventPhotos(String eventId, {String? url}) async {
     final targetUrl = url ?? '/events/$eventId/photos/';
     final res = await apiClient.get<Map<String, dynamic>>(targetUrl);

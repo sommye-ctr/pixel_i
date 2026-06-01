@@ -14,6 +14,9 @@ import 'package:frontend/features/events/bloc/events_bloc.dart';
 import 'package:frontend/features/events/bloc/events_event.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:frontend/features/auth/bloc/auth_bloc.dart';
+import 'package:frontend/core/widgets/custom_text_field.dart';
+import 'package:frontend/features/events/models/event.dart';
 
 class EventDetailScreen extends StatefulWidget {
   final String eventId;
@@ -41,7 +44,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   bool _loading = true;
   String? _error;
   List<Photo> _photos = [];
-  
+
   final ScrollController _scrollController = ScrollController();
   bool _isLoadingMore = false;
   bool _hasReachedMax = false;
@@ -55,6 +58,11 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
 
   Widget _buildHeader() {
     final coverUrl = widget.coverPhotoUrl;
+    final user = context.read<AuthBloc>().state.user;
+    final repo = context.read<EventsRepository>();
+    final event = repo.getEventFromCache(widget.eventId);
+    final isOwner =
+        event != null && user != null && event.coordinator.id == user.id;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: defaultSpacing),
@@ -113,7 +121,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      widget.title,
+                      event?.title ?? widget.title,
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
                             color: Colors.white,
@@ -131,6 +139,15 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                 ),
               ),
             ),
+            if (isOwner)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.settings, color: Colors.white),
+                  onPressed: _openEditBottomSheet,
+                ),
+              ),
           ],
         ),
       ),
@@ -188,7 +205,10 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     });
     try {
       final repository = context.read<EventsRepository>();
-      final page = await repository.fetchEventPhotos(widget.eventId, url: _nextUrl);
+      final page = await repository.fetchEventPhotos(
+        widget.eventId,
+        url: _nextUrl,
+      );
       setState(() {
         _photos.addAll(page.results);
         _nextUrl = page.next;
@@ -239,6 +259,188 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
       _loadPhotos();
       context.read<EventsBloc>().add(const EventsRefreshed());
     }
+  }
+
+  void _openEditBottomSheet() async {
+    final repo = context.read<EventsRepository>();
+    final event = repo.getEventFromCache(widget.eventId);
+    if (event == null) return;
+
+    final titleController = TextEditingController(text: event.title);
+    String selectedReadPerm = event.readPerm.value;
+    bool isSaving = false;
+    bool isDeleting = false;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + defaultSpacing,
+                left: defaultSpacing,
+                right: defaultSpacing,
+                top: largeSpacing,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Edit Event',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: largeSpacing),
+                  CustomTextField(
+                    hint: 'Event Title',
+                    controller: titleController,
+                  ),
+                  const SizedBox(height: defaultSpacing),
+                  DropdownButtonFormField<String>(
+                    value: selectedReadPerm,
+                    decoration: const InputDecoration(
+                      labelText: 'Read Permission',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: EventPermission.values.map((perm) {
+                      return DropdownMenuItem(
+                        value: perm.value,
+                        child: Text(perm.label),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setModalState(() => selectedReadPerm = val);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: largeSpacing * 2),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: isDeleting || isSaving
+                              ? null
+                              : () async {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (c) => AlertDialog(
+                                      title: const Text('Delete Event?'),
+                                      content: const Text(
+                                        'This action cannot be undone.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(c, false),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(c, true),
+                                          child: const Text(
+                                            'Delete',
+                                            style: TextStyle(color: Colors.red),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (confirm == true) {
+                                    setModalState(() => isDeleting = true);
+                                    try {
+                                      await repo.deleteEvent(event.id);
+                                      if (mounted) {
+                                        context.read<EventsBloc>().add(
+                                          const EventsRefreshed(),
+                                        );
+                                        Navigator.pop(ctx);
+                                        context.pop();
+                                        ToastUtils.showShort('Event deleted');
+                                      }
+                                    } catch (e) {
+                                      ToastUtils.showShort(
+                                        'Failed to delete event',
+                                      );
+                                    } finally {
+                                      setModalState(() => isDeleting = false);
+                                    }
+                                  }
+                                },
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.red,
+                          ),
+                          child: isDeleting
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.red,
+                                  ),
+                                )
+                              : const Text('Delete Event'),
+                        ),
+                      ),
+                      const SizedBox(width: defaultSpacing),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: isSaving || isDeleting
+                              ? null
+                              : () async {
+                                  setModalState(() => isSaving = true);
+                                  try {
+                                    await repo.updateEvent(
+                                      eventId: event.id,
+                                      title: titleController.text.trim(),
+                                      readPerm: selectedReadPerm,
+                                    );
+                                    if (mounted) {
+                                      context.read<EventsBloc>().add(
+                                        const EventsRefreshed(),
+                                      );
+                                      setState(
+                                        () {},
+                                      ); // Refresh detail screen UI
+                                      Navigator.pop(ctx);
+                                      ToastUtils.showShort('Event updated');
+                                    }
+                                  } catch (e) {
+                                    ToastUtils.showShort(
+                                      'Failed to update event',
+                                    );
+                                  } finally {
+                                    setModalState(() => isSaving = false);
+                                  }
+                                },
+                          child: isSaving
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Save Changes'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Widget _buildTile(Photo photo) {

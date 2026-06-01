@@ -29,6 +29,7 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _moreFiltersApplied = false;
 
   bool _loading = false;
+  bool _isAiSearch = false;
   List<Photo> _photos = [];
 
   @override
@@ -50,11 +51,19 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _performSearch(SearchRepository repo) async {
     setState(() => _loading = true);
     try {
-      final tags = _tagsController.text
-          .split(',')
-          .map((s) => s.trim())
-          .where((s) => s.isNotEmpty)
-          .toList();
+      final textInput = _tagsController.text.trim();
+      List<String>? tags;
+      String? semanticQuery;
+
+      if (_isAiSearch) {
+        semanticQuery = textInput.isEmpty ? null : textInput;
+      } else {
+        tags = textInput
+            .split(',')
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
+            .toList();
+      }
 
       final results = await repo.searchPhotos(
         dateFrom: _dateFrom(),
@@ -65,7 +74,8 @@ class _SearchScreenState extends State<SearchScreen> {
         eventName: _eventController.text.trim().isEmpty
             ? null
             : _eventController.text.trim(),
-        tags: tags.isEmpty ? null : tags,
+        tags: tags == null || tags.isEmpty ? null : tags,
+        semanticQuery: semanticQuery,
       );
 
       setState(() {
@@ -229,8 +239,34 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.auto_awesome, color: Colors.amber),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Smart AI Search',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                Switch(
+                  value: _isAiSearch,
+                  onChanged: (val) {
+                    setState(() {
+                      _isAiSearch = val;
+                    });
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: defaultSpacing),
             CustomTextField(
-              hint: 'Tags (separated by comma)',
+              hint: _isAiSearch
+                  ? 'Describe the photo (e.g. people clapping)'
+                  : 'Tags (separated by comma)',
               controller: _tagsController,
             ),
             Row(

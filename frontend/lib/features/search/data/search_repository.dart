@@ -15,6 +15,7 @@ class SearchRepository {
     List<String>? tags,
     String? readPerm,
     String? eventName,
+    String? semanticQuery,
   }) async {
     final query = <String, dynamic>{};
 
@@ -33,6 +34,9 @@ class SearchRepository {
       query['tags'] = tags.join(',');
     }
     if (readPerm != null && readPerm.isNotEmpty) query['read_perm'] = readPerm;
+    if (semanticQuery != null && semanticQuery.isNotEmpty) {
+      query['semantic_query'] = semanticQuery;
+    }
 
     final res = await api.get<Map<String, dynamic>>(
       '/photos/search/',
